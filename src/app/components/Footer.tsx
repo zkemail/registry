@@ -1,0 +1,101 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+
+const Footer = () => {
+  const [hoveredImages, setHoveredImages] = useState({
+    XLogo: false,
+    YoutubeLogo: false,
+    TelegramLogo: false,
+    GithubLogo: false,
+  });
+
+  const handleMouseEnter = (image: 'XLogo' | 'YoutubeLogo' | 'TelegramLogo' | 'GithubLogo') => {
+    setHoveredImages((prev) => ({ ...prev, [image]: true }));
+  };
+
+  const handleMouseLeave = (image: 'XLogo' | 'YoutubeLogo' | 'TelegramLogo' | 'GithubLogo') => {
+    setHoveredImages((prev) => ({ ...prev, [image]: false }));
+  };
+
+  return (
+    <footer className="w-full border-t border-grey-100 py-4 bg-white">
+      <div className="container mx-auto px-4 flex justify-between items-center">
+        {/* Left side - Links */}
+        <div className="flex items-center gap-4">
+          <Link href="https://docs.prove.email/introduction" className="text-grey-600 hover:text-grey-900">
+            Documentation
+          </Link>
+          <span className="text-grey-300">•</span>
+          <a href="/privacy" className="text-grey-600 hover:text-grey-900">
+            Privacy Policy
+          </a>
+        </div>
+
+        {/* Right side - Social Icons */}
+        <div className="flex items-center gap-4">
+          <Link href="https://x.com/zkemail?lang=en" target="_blank">
+            <Image
+              onMouseEnter={() => handleMouseEnter('XLogo')}
+              onMouseLeave={() => handleMouseLeave('XLogo')}
+              src={hoveredImages['XLogo'] ? '/assets/XLogoFilled.svg' : '/assets/XLogo.svg'}
+              alt="twitter-logo"
+              layout="responsive"
+              height={20}
+              width={20}
+            />
+          </Link>
+          <Link href="https://www.youtube.com/@sigsing" target="_blank">
+            <Image
+              onMouseEnter={() => handleMouseEnter('YoutubeLogo')}
+              onMouseLeave={() => handleMouseLeave('YoutubeLogo')}
+              src={
+                hoveredImages['YoutubeLogo']
+                  ? '/assets/YoutubeLogoFilled.svg'
+                  : '/assets/YoutubeLogo.svg'
+              }
+              alt="youtube-logo"
+              layout="responsive"
+              height={20}
+              width={20}
+            />
+          </Link>
+          <Link href="https://t.me/zkemail" target="_blank">
+            <Image
+              onMouseEnter={() => handleMouseEnter('TelegramLogo')}
+              onMouseLeave={() => handleMouseLeave('TelegramLogo')}
+              src={
+                hoveredImages['TelegramLogo']
+                  ? '/assets/TelegramLogoFilled.svg'
+                  : '/assets/TelegramLogo.svg'
+              }
+              alt="telegram-logo"
+              layout="responsive"
+              height={20}
+              width={20}
+            />
+          </Link>
+          <Link href="https://github.com/zkemail" target="_blank">
+            <Image
+              onMouseEnter={() => handleMouseEnter('GithubLogo')}
+              onMouseLeave={() => handleMouseLeave('GithubLogo')}
+              src={
+                hoveredImages['GithubLogo']
+                  ? '/assets/GithubLogoFilled.svg'
+                  : '/assets/GithubLogo.svg'
+              }
+              alt="github-logo"
+              layout="responsive"
+              height={20}
+              width={20}
+            />
+          </Link>
+        </div>
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;
