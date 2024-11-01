@@ -1,68 +1,58 @@
 import Image from 'next/image';
-import { getStatusColorLight, getStatusIcon } from '../utils';
+import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
+import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
 
 interface BlueprintCardProps {
-  title: string;
-  slug: string;
-  description: string;
-  status: 'Compiled' | 'In Progress' | 'Failed';
-  stats: {
-    views: number;
-    stars: number;
-    id: number;
-  };
-  extractableValues: string[];
-  updatedAt: string;
+  blueprint: Blueprint;
 }
 
-const BlueprintCard = ({
-  title,
-  slug,
-  description,
-  status,
-  stats,
-  extractableValues,
-  updatedAt,
-}: BlueprintCardProps) => {
+const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
   return (
-    <div className="border p-6 hover:shadow-md transition-shadow bg-white rounded-2xl">
-      <div className="flex items-center justify-between mb-2">
+    <div className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
+      <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="font-bold text-xl">{title}</h2>
+          <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           <span
-            className={`px-2 py-1 flex flex-row gap-1 rounded-full text-xs font-semibold ${getStatusColorLight(
-              status
+            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
+              blueprint.props.status
             )}`}
           >
-            <Image width={12} height={12} src={getStatusIcon(status)} alt={status} />
-            {status}
+            <Image
+              width={12}
+              height={12}
+              src={getStatusIcon(blueprint.props.status)}
+              alt={blueprint.props.status?.toString() || 'Draft'}
+            />
+            {getStatusName(blueprint.props.status)}
           </span>
         </div>
-        <div className="flex items-center gap-4 text-sm text-grey-600">
-          <span className="flex flex-row gap-1 border border-grey-400 rounded px-2 py-1">
+        {/* <div className="flex items-center gap-4 text-sm text-grey-600">
+          <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1">
             <Image width={16} height={16} src="assets/Users.svg" alt="views" /> {stats.views}
           </span>
-          <span className="flex flex-row gap-1 bg-grey-100 border border-grey-500 rounded px-2 py-1 text-grey-800">
+          <span className="flex flex-row gap-1 rounded border border-grey-500 bg-grey-100 px-2 py-1 text-grey-800">
             <Image width={16} height={16} src="assets/Star.svg" alt="stars" /> Stars | {stats.stars}
           </span>
-        </div>
+        </div> */}
       </div>
-      <p className="text-md font-medium text-grey-600 mb-2">{slug}</p>
-      <p className="text-md font-medium text-grey-700 mb-4">{description}</p>
+      <p className="text-md mb-2 font-medium text-grey-600">{blueprint.props.slug}</p>
+      <p className="text-md mb-4 font-medium text-grey-700">{blueprint.props.description}</p>
 
-      <div className="mt-4 flex flex-row justify-between items-center">
-        <div className="flex flex-wrap gap-2 items-center">
+      <div className="mt-4 flex flex-row items-center justify-between">
+        <div className="flex flex-wrap items-center gap-2">
           <p className="text-md font-medium text-grey-600">Extractable values:</p>
-          {extractableValues.map((value, index) => (
+          {blueprint.props.decomposedRegexes.map((dr, index) => (
             <div
               key={index}
-              className="px-2 py-[1px] leading-[18px] font-light h-fit border border-grey-500 rounded-md text-sm"
+              className="h-fit rounded-md border border-grey-500 px-2 py-[1px] text-sm font-light leading-[18px]"
             >
-              {value}
+              {dr.name}
             </div>
           ))}
         </div>
-        <p className="text-xs text-grey-500">Updated {updatedAt}</p>
+        <p className="text-xs text-grey-500" title={blueprint.props.updatedAt?.toLocaleString()}>
+          Updated {getDateToNowStr(blueprint.props.updatedAt || new Date())}
+        </p>
       </div>
     </div>
   );

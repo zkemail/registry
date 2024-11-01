@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import Navbar from '@/app/components/Navbar';
+import Footer from '@/app/components/Footer';
 import { ThemeProvider } from 'next-themes';
 import { Fustat } from 'next/font/google';
 
@@ -19,10 +19,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fustat.className} antialiased min-h-screen flex flex-col`}>
+      <body className={`${fustat.className} flex min-h-screen flex-col antialiased`}>
         <ThemeProvider attribute="class">
           <Navbar />
-          <div className="flex-grow w-full md:w-[768px] mx-auto">{children}</div>
+          <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>
           <div className="mt-auto">
             <Footer />
           </div>

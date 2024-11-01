@@ -9,10 +9,13 @@
     "lint": "bunx --bun next lint"
   },
   "dependencies": {
+    "@dimidumo/zk-email-sdk-ts": "^1.0.13",
+    "copy-webpack-plugin": "^12.0.2",
     "next": "15.0.1",
     "next-themes": "^0.3.0",
     "react": "19.0.0-rc-69d4b800-20241021",
-    "react-dom": "19.0.0-rc-69d4b800-20241021"
+    "react-dom": "19.0.0-rc-69d4b800-20241021",
+    "use-debounce": "^10.0.4"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -21,7 +24,10 @@
     "eslint": "^8",
     "eslint-config-next": "15.0.1",
     "postcss": "^8",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
-  }
+  },
+  "type": "module"
 }
