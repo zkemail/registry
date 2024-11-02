@@ -41,8 +41,8 @@ export default function BlueprintList({ search }: BlueprintListProps) {
       });
 
       // If we got fewer results than the limit, we've reached the end
-      setHasMore(results.length === limit);
-      setSkip((prevSkip) => prevSkip + limit);
+      setHasMore(results.length === PAGINATION_LIMIT);
+      setSkip((prevSkip) => prevSkip + PAGINATION_LIMIT);
     } catch (err) {
       // In React 19, errors are not re-thrown, so we handle them explicitly
       setError(err instanceof Error ? err : new Error('Failed to fetch blueprints'));
@@ -50,7 +50,7 @@ export default function BlueprintList({ search }: BlueprintListProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [search, skip, limit, isLoading, hasMore]);
+  }, [search, skip, isLoading, hasMore]);
 
   // Reset state when search changes
   useEffect(() => {

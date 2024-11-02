@@ -19,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fustat.className} flex min-h-screen flex-col antialiased`}>
+      <body className={`${fustat.className} antialiased min-h-screen flex flex-col bg-[#F5F3EF]`}>
         <ThemeProvider attribute="class">
           <Navbar />
           <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>

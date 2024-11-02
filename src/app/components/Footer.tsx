@@ -25,13 +25,17 @@ const Footer = () => {
       <div className="container mx-auto px-4 flex justify-between items-center">
         {/* Left side - Links */}
         <div className="flex items-center gap-4">
-          <Link href="https://docs.prove.email/introduction" className="text-grey-600 hover:text-grey-900">
+          <Link
+            href="https://docs.prove.email/introduction"
+            target="_blank"
+            className="text-grey-800 hover:text-grey-900"
+          >
             Documentation
           </Link>
           <span className="text-grey-300">•</span>
-          <a href="/privacy" className="text-grey-600 hover:text-grey-900">
+          <Link href="/privacy" className="text-grey-800 hover:text-grey-900">
             Privacy Policy
-          </a>
+          </Link>
         </div>
 
         {/* Right side - Social Icons */}
