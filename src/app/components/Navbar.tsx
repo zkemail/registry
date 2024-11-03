@@ -1,15 +1,14 @@
+import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 
 const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-6 py-3 bg-white dark:bg-black border-b dark:border-grey-800">
-      <div className="flex items-center gap-2">
-        <Link href="/">
-          <Image src={'/assets/ZKEmailLogoDark.svg'} alt="zkemail-logo" height={24} width={24} />
-        </Link>
+      <Link href="/" className="flex items-center gap-2">
+        <Image src={'/assets/ZKEmailLogoDark.svg'} alt="zkemail-logo" height={24} width={24} />
         <span className="text-xl font-semibold dark:text-white">Registry</span>
-      </div>
+      </Link>
 
       <div className="flex items-center gap-4">
         <div className="relative">
@@ -33,9 +32,7 @@ const Navbar = () => {
           </svg>
         </div>
 
-        <button className="px-4 py-2 text-white bg-black dark:bg-white dark:text-black rounded-lg">
-          Login
-        </button>
+        <Button className="rounded-xl">Login</Button>
       </div>
     </nav>
   );
