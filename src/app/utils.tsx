@@ -39,7 +39,8 @@ const getStatusName = (status?: Status) => {
   }
 };
 
-const getDateToNowStr = (date: Date) => {
+const getDateToNowStr = (date?: Date) => {
+  if (!date) return '';
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffSecs = Math.floor(diffMs / 1000);

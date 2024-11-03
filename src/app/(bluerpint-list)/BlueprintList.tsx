@@ -5,6 +5,8 @@ import BlueprintCard from '@/app/components/BlueprintCard';
 import zkeSdk, { Blueprint } from '@dimidumo/zk-email-sdk-ts';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+const PAGINATION_LIMIT = 30;
+
 interface BlueprintListProps {
   search: string | null;
 }
@@ -12,25 +14,24 @@ interface BlueprintListProps {
 export default function BlueprintList({ search }: BlueprintListProps) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [skip, setSkip] = useState(0);
-  const [limit] = useState(10);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const observerRef = useRef<IntersectionObserver>();
   const loadingRef = useRef<HTMLDivElement>(null);
+  const sdk = zkeSdk();
 
   const fetchBlueprints = useCallback(async () => {
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
     setError(null);
-    const sdk = zkeSdk();
 
     try {
       const results = await sdk.listBlueprints({
         search: search || '',
         skip,
-        limit,
+        limit: PAGINATION_LIMIT,
       });
 
       setBlueprints((prev) => {

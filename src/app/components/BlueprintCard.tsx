@@ -51,7 +51,7 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
           ))}
         </div>
         <p className="text-xs text-grey-500" title={blueprint.props.updatedAt?.toLocaleString()}>
-          Updated {getDateToNowStr(blueprint.props.updatedAt || new Date())}
+          Updated {getDateToNowStr(blueprint.props.updatedAt)}
         </p>
       </div>
     </div>
