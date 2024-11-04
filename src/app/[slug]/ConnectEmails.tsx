@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
+import DragAndDropFile from '../components/DragAndDropFile';
 
 const ConnectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
   const [file, setFile] = useState<File | null>(null);
@@ -31,48 +32,7 @@ const ConnectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
         <Separator className="flex-1" />
       </div>
 
-      <div
-        className="w-full cursor-pointer rounded-lg p-8"
-        onClick={() => document.getElementById('email-file')?.click()}
-        onDragOver={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
-        onDrop={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          const files = e.dataTransfer.files;
-          if (files?.[0]) {
-            setFile(files[0]);
-          }
-        }}
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
-        }}
-      >
-        <div className="flex flex-col items-center justify-center gap-4">
-          <Image src="/assets/FileArrowUp.svg" alt="Upload icon" width={40} height={40} />
-          <div className="flex flex-col items-center text-base font-semibold">
-            <p className="text-brand-400">
-              Click to upload <span className="text-grey-700">or drag and drop</span>
-            </p>
-            <p className="text-grey-700">(.eml format)</p>
-          </div>
-          <Input
-            id="email-file"
-            type="file"
-            accept=".eml"
-            className="hidden"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-              // Handle file upload
-              const file = e.target.files?.[0];
-              if (file) {
-                // Add your file handling logic here
-              }
-            }}
-          />
-        </div>
-      </div>
+        <DragAndDropFile accept=".eml" setFile={setFile} />
     </div>
   );
 };
