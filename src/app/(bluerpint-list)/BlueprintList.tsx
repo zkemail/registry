@@ -103,7 +103,7 @@ export default function BlueprintList({ search }: BlueprintListProps) {
     <>
       {blueprints.map((blueprint) => (
         <div className="mb-3" key={blueprint.props.id}>
-          <Link href={`/${encodeURIComponent(blueprint.props.slug || '?')}`}>
+          <Link href={`/${encodeURIComponent(blueprint.props.id!)}`}>
             <BlueprintCard blueprint={blueprint} />
           </Link>
         </div>
