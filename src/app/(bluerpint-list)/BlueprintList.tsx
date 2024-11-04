@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import BlueprintCard from '@/app/components/BlueprintCard';
-import zkeSdk, { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import sdk from '@/lib/sdk';
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 const PAGINATION_LIMIT = 30;
@@ -19,7 +20,6 @@ export default function BlueprintList({ search }: BlueprintListProps) {
   const [error, setError] = useState<Error | null>(null);
   const observerRef = useRef<IntersectionObserver>();
   const loadingRef = useRef<HTMLDivElement>(null);
-  const sdk = zkeSdk();
 
   const fetchBlueprints = useCallback(async () => {
     if (isLoading || !hasMore) return;

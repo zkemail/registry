@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
+import LoginButton from './LoginButton';
 
 const Navbar = () => {
   return (
-    <nav className="flex items-center justify-between px-6 py-3 bg-white dark:bg-black border-b dark:border-grey-800">
+    <nav className="flex items-center justify-between border-b bg-white px-6 py-3 dark:border-grey-800 dark:bg-black">
       <Link href="/" className="flex items-center gap-2">
         <Image src={'/assets/ZKEmailLogoDark.svg'} alt="zkemail-logo" height={24} width={24} />
         <span className="text-xl font-semibold dark:text-white">Registry</span>
@@ -15,10 +15,10 @@ const Navbar = () => {
           <input
             type="text"
             placeholder="Search blueprints.."
-            className="px-4 py-2 pl-10 border rounded-lg w-[300px] dark:bg-grey-900 dark:border-grey-700 dark:text-white dark:placeholder-grey-400"
+            className="w-[300px] rounded-lg border px-4 py-2 pl-10 dark:border-grey-700 dark:bg-grey-900 dark:text-white dark:placeholder-grey-400"
           />
           <svg
-            className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-grey-400"
+            className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-grey-400"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -32,7 +32,7 @@ const Navbar = () => {
           </svg>
         </div>
 
-        <Button className="rounded-xl">Login</Button>
+        <LoginButton />
       </div>
     </nav>
   );
