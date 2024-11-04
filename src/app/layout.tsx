@@ -5,6 +5,8 @@ import Footer from '@/app/components/Footer';
 import { ThemeProvider } from 'next-themes';
 import { Fustat } from 'next/font/google';
 import AuthHandler from './components/AuthHandler';
+import GoogleAuthProvider from './contexts/GoogleAuthProvider';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
@@ -22,12 +24,16 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${fustat.className} flex min-h-screen flex-col bg-[#F5F3EF] antialiased`}>
         <ThemeProvider attribute="class">
-          <AuthHandler />
-          <Navbar />
-          <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>
-          <div className="mt-auto">
-            <Footer />
-          </div>
+          <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
+            <GoogleAuthProvider>
+              <AuthHandler />
+              <Navbar />
+              <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>
+              <div className="mt-auto">
+                <Footer />
+              </div>
+            </GoogleAuthProvider>
+          </GoogleOAuthProvider>
         </ThemeProvider>
       </body>
     </html>

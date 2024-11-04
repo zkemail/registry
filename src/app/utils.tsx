@@ -59,4 +59,16 @@ const getDateToNowStr = (date?: Date) => {
   }
 };
 
-export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName };
+const formatDate = (timestamp: string) => {
+  return new Date(Number(timestamp)).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+};
+
+export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate };

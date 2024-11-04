@@ -39,11 +39,23 @@ export interface ButtonProps
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
   onClick?: () => void;
+  loading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
-    { className, onClick, startIcon, endIcon, variant, size, asChild = false, children, ...props },
+    {
+      className,
+      onClick,
+      startIcon,
+      endIcon,
+      variant,
+      loading,
+      size,
+      asChild = false,
+      children,
+      ...props
+    },
     ref
   ) => {
     const Comp = asChild ? Slot : 'button';
@@ -51,6 +63,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         onClick={onClick}
+        disabled={loading}
         ref={ref}
         {...props}
       >

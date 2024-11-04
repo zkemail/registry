@@ -4,10 +4,11 @@ import Image from 'next/image';
 import { getStatusColorLight, getStatusIcon } from '../utils';
 import Button from '../components/Button';
 import Stepper from '../components/Stepper';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ConnectEmails from './ConnectEmails';
 import SelectEmails from './SelectEmails';
 import ViewProof from './ViewProof';
+import useGoogleAuth from '../hooks/useGoogleAuth';
 
 const blueprint = {
   title: 'Proof Of Devcon Rejection',
@@ -24,7 +25,14 @@ const Pattern = ({ params }: { params: { slug: string } }) => {
   const slug = decodeURIComponent(params.slug);
   const [step, setStep] = useState(0);
   //   const [blueprint, setBlueprint] = useState(blueprintData);
-  console.log(slug);
+
+  const { isGoogleAuthed } = useGoogleAuth();
+
+  useEffect(() => {
+    if (isGoogleAuthed) {
+      setStep(1);
+    }
+  }, [isGoogleAuthed]);
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">

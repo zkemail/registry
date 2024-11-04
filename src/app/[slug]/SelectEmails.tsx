@@ -1,10 +1,55 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
+import { fetchEmailList } from '../hooks/useGmailClient';
+import useGoogleAuth from '../hooks/useGoogleAuth';
+import { formatDate } from '../utils';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 
 const SelectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
+  const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
+  const [pageToken, setPageToken] = useState<string | null>('0');
+  const [fetchedEmails, setFetchedEmails] = useState<RawEmailResponse[]>([]);
+
+  const { googleAuthToken } = useGoogleAuth();
+
+  const handleFetchEmails = async () => {
+    try {
+      setIsFetchEmailLoading(true);
+      const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
+        pageToken: pageToken,
+      });
+
+      const emailResponseMessages = emailListResponse.messages;
+      if (emailResponseMessages?.length > 0) {
+        const emailIds = emailResponseMessages.map((message) => message.id);
+        const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
+
+        setFetchedEmails([...fetchedEmails, ...emails]);
+        setPageToken(emailListResponse.nextPageToken || null);
+      } else {
+        setFetchedEmails([]);
+      }
+    } catch (error) {
+      console.error('Error in fetching data:', error);
+    } finally {
+      setIsFetchEmailLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (googleAuthToken.access_token) {
+      handleFetchEmails();
+    }
+  }, [googleAuthToken.access_token]);
+
+  console.log(fetchedEmails);
+
   return (
-    <div className="flex flex-col justify-center items-center gap-6">
-      <div className="w-full flex flex-col gap-1">
+    <div className="flex flex-col items-center justify-center gap-6">
+      <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Select Emails</h4>
         <p className="text-base font-medium text-grey-700">
           Choose the emails you want to create proofs for. You can select multiple emails.
@@ -17,10 +62,10 @@ const SelectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
       </div>
 
       <div className="mt-6">
-        <div className="w-full grid">
+        <div className="grid w-full">
           {/* Header */}
           <div
-            className="grid text-left font-semibold mb-2 gap-6"
+            className="mb-2 grid gap-6 text-left font-semibold"
             style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
           >
             <div className="text-left">Select</div>
@@ -31,34 +76,53 @@ const SelectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
           </div>
 
           {/* Rows */}
-          <div
-            className="border-t-2 border-neutral-100 grid items-center py-3 gap-6 text-grey-700"
-            style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
-          >
-            <div className="ml-4">
-              <input type="checkbox" className="rounded" />
-            </div>
-            <div className="flex items-center justify-center">
-              <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
-            </div>
-            <div>9/22/2024 06:45:18 PM</div>
-            <div>[GitHub] A third party OAuth has been added to your workspace</div>
-            <div>
-              <button className="flex items-center underline hover:underline gap-1">
-                <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
-                View Input
-              </button>
-            </div>
-          </div>
+          <AnimatePresence initial={false}>
+            {fetchedEmails.map((email, index) => (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
+                style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
+              >
+                <div className="ml-4">
+                  <Checkbox />
+                </div>
+                <div className="flex items-center justify-center">
+                  <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
+                </div>
+                <div>{formatDate(email.internalDate)}</div>
+                <div className="overflow-hidden text-ellipsis">{email.subject}</div>
+                <div>
+                  <button className="flex items-center gap-1 underline hover:underline">
+                    <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
+                    View Input
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
 
-        <div className="flex flex-col items-center gap-4 mt-6">
-          <Button variant="ghost" className="gap-2 text-grey-700">
-            <Image src="/assets/ArrowsClockwise.svg" alt="arrow down" width={16} height={16} />
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <Button
+            variant="ghost"
+            className="gap-2 text-grey-700"
+            onClick={handleFetchEmails}
+            loading={isFetchEmailLoading}
+          >
+            <Image
+              src="/assets/ArrowsClockwise.svg"
+              alt="arrow down"
+              width={16}
+              height={16}
+              className={isFetchEmailLoading ? 'animate-spin' : ''}
+            />
             Load More Emails
           </Button>
 
-          <Button className="flex gap-2 items-center w-max" onClick={() => setStep(2)}>
+          <Button className="flex w-max items-center gap-2" onClick={() => setStep(2)}>
             Create Proof Remotely
           </Button>
         </div>
