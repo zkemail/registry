@@ -4,6 +4,7 @@ import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
 import { ThemeProvider } from 'next-themes';
 import { Fustat } from 'next/font/google';
+import AuthHandler from './components/AuthHandler';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
@@ -19,8 +20,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fustat.className} antialiased min-h-screen flex flex-col bg-[#F5F3EF]`}>
+      <body className={`${fustat.className} flex min-h-screen flex-col bg-[#F5F3EF] antialiased`}>
         <ThemeProvider attribute="class">
+          <AuthHandler />
           <Navbar />
           <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>
           <div className="mt-auto">
