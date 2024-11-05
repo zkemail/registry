@@ -8,7 +8,7 @@ import { useParams } from 'next/dist/client/components/navigation';
 
 const VersionsPage = ({ params }: { params: { slug: string } }) => {
   //   const slug = params.slug;
-  const {slug} = useParams();
+  const { slug } = useParams();
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">
@@ -35,13 +35,15 @@ const VersionsPage = ({ params }: { params: { slug: string } }) => {
                 >
                   11 Versions
                 </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  startIcon={<Image src="/assets/Plus.svg" alt="add" width={16} height={16} />}
-                >
-                  Create from scratch
-                </Button>
+                <Link href={`/create`}>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    startIcon={<Image src="/assets/Plus.svg" alt="add" width={16} height={16} />}
+                  >
+                    Create from scratch
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
