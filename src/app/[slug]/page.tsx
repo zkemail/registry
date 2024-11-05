@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import { getStatusColorLight, getStatusIcon } from '../utils';
-import Button from '../components/Button';
 import Stepper from '../components/Stepper';
 import { useEffect, useState } from 'react';
 import ConnectEmails from './ConnectEmails';
@@ -11,6 +10,7 @@ import ViewProof from './ViewProof';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import Link from 'next/link';
 import { useParams } from 'next/dist/client/components/navigation';
+import { Button } from '@/components/ui/button';
 
 const blueprint = {
   title: 'Proof Of Devcon Rejection',
@@ -85,7 +85,16 @@ const Pattern = () => {
         </div>
         <div>
           <Link href={`/${slug}/versions`}>
-            <Button startImg="assets/GitCommit.svg">View all versions</Button>
+            <Button
+              variant="secondary"
+              className="bg-white"
+              size="sm"
+              startIcon={
+                <Image src="assets/GitCommit.svg" alt="Git Commit" width={16} height={16} />
+              }
+            >
+              View all versions
+            </Button>
           </Link>
         </div>
       </div>
