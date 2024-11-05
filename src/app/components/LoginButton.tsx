@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 export default function LoginButton() {
   const router = useRouter();
-  const token = useAuthStore((state) => state.username);
+  const token = useAuthStore((state) => state.token);
   const isLoading = useAuthStore((state) => state.isLoading);
   const { clearAuth, setLoading } = useAuthStore();
 
