@@ -1,4 +1,5 @@
-import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import { getFileContent } from '@/lib/utils';
+import { Blueprint, parseEmail } from '@dimidumo/zk-email-sdk-ts';
 import { create } from 'zustand';
 
 type Step = '0' | '1' | '2';
@@ -11,7 +12,7 @@ interface ProofState {
   // Actions
   setEmailContent: (content: string | null) => void;
   setStep: (step: Step) => void;
-  setFile: (file: string) => void;
+  setFile: (file: File) => Promise<void>;
   setBlueprint: (blueprint: Blueprint) => void;
   reset: () => void;
 }
@@ -32,7 +33,27 @@ export const useProofStore = create<ProofState>((set) => ({
     window.history.pushState(null, '', `?${params.toString()}`);
     set({ step });
   },
-  setFile: (file: string) => set({ file }),
+  setFile: async (file: File) => {
+    let content = '';
+    try {
+      content = await getFileContent(file);
+      console.log('content: ', content);
+    } catch (err) {
+      console.error('Failed to get file contents: ', err);
+      throw err;
+      // TODO: Notify user about this
+    }
+
+    try {
+      await parseEmail(content);
+    } catch (err) {
+      console.error('Failed to parse email, email is invalid: ', err);
+      throw err;
+      // TODO: Notify user about this, cannot go to next step, email is invalid
+    }
+
+    set({ file: content });
+  },
   setBlueprint: (blueprint: Blueprint) => set({ blueprint }),
   reset: () => set({ ...initialState }),
 }));

@@ -5,7 +5,7 @@ interface GoogleAuthValues {
   isGoogleAuthed: boolean;
   loggedInGmail: string | null;
   scopesApproved: boolean;
-  googleLogIn: () => void;
+  googleLogIn: (cb: () => void) => () => void;
   googleLogOut: () => void;
 }
 
@@ -14,7 +14,7 @@ const defaultValues: GoogleAuthValues = {
   isGoogleAuthed: false,
   loggedInGmail: null,
   scopesApproved: false,
-  googleLogIn: () => {},
+  googleLogIn: () => () => {},
   googleLogOut: () => {},
 };
 

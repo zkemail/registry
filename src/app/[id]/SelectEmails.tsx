@@ -1,9 +1,54 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
+import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
+import { fetchEmailList } from '../hooks/useGmailClient';
+import useGoogleAuth from '../hooks/useGoogleAuth';
+import { formatDate } from '../utils';
+import { Checkbox } from '@/components/ui/checkbox';
+import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 
 const SelectEmails = () => {
   const { setStep } = useProofStore();
+  const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
+  const [pageToken, setPageToken] = useState<string | null>('0');
+  const [fetchedEmails, setFetchedEmails] = useState<RawEmailResponse[]>([]);
+
+  const { googleAuthToken } = useGoogleAuth();
+
+  const handleFetchEmails = async () => {
+    try {
+      setIsFetchEmailLoading(true);
+      const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
+        pageToken: pageToken,
+      });
+
+      const emailResponseMessages = emailListResponse.messages;
+      if (emailResponseMessages?.length > 0) {
+        const emailIds = emailResponseMessages.map((message) => message.id);
+        const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
+
+        setFetchedEmails([...fetchedEmails, ...emails]);
+        setPageToken(emailListResponse.nextPageToken || null);
+      } else {
+        setFetchedEmails([]);
+      }
+    } catch (error) {
+      console.error('Error in fetching data:', error);
+    } finally {
+      setIsFetchEmailLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (googleAuthToken.access_token) {
+      handleFetchEmails();
+    }
+  }, [googleAuthToken.access_token]);
+
+  console.log(fetchedEmails);
+
   return (
     <div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
@@ -79,7 +124,7 @@ const SelectEmails = () => {
             Load More Emails
           </Button>
 
-          <Button className="flex w-max items-center gap-2" onClick={() => setStep(2)}>
+          <Button className="flex w-max items-center gap-2" onClick={() => setStep('2')}>
             Create Proof Remotely
           </Button>
         </div>

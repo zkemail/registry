@@ -2,7 +2,7 @@
 import { use, useEffect } from 'react';
 import Image from 'next/image';
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
-import Button from '../components/Button';
+import { Button } from '@/components/ui/button';
 import Stepper from '../components/Stepper';
 import ConnectEmails from './ConnectEmails';
 import SelectEmails from './SelectEmails';

@@ -4,45 +4,12 @@ import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { parseEmail } from '@dimidumo/zk-email-sdk-ts';
 import { useProofStore } from './store';
-
-async function getFileContent(file: File): Promise<string> {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result;
-      if (!content) {
-        return rej('File has no content');
-      }
-      res(content.toString());
-    };
-    reader.readAsText(file);
-  });
-}
+import useGoogleAuth from '../hooks/useGoogleAuth';
 
 const ConnectEmails = () => {
   const { setFile, setStep } = useProofStore();
 
-  // TODO: Can jump to step 2 directly if uploaded manually
-  const onFileInput = async (file: File) => {
-    let content = '';
-    try {
-      content = await getFileContent(file);
-      console.log('content: ', content);
-    } catch (err) {
-      console.error('Failed to get file contents: ', err);
-      // TODO: Notify user about this
-    }
-
-    try {
-      await parseEmail(content);
-    } catch (err) {
-      console.error('Failed to parse email, email is invalid: ', err);
-      // TODO: Notify user about this, cannot go to next step, email is invalid
-    }
-
-    // TODO: Do we notify the user on success of a valid email?
-    setFile(content);
-  };
+  const { googleLogIn } = useGoogleAuth();
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -56,7 +23,7 @@ const ConnectEmails = () => {
           locally and never sent out to any of our servers.
         </p>
       </div>
-      <Button className="flex w-max items-center gap-2" onClick={() => googleLogIn()}>
+      <Button className="flex w-max items-center gap-2" onClick={googleLogIn(() => setStep('1'))}>
         <Image src="/assets/GoogleLogo.svg" alt="Google Logo" width={16} height={16} />
         Connect Gmail Account
       </Button>
@@ -79,7 +46,7 @@ const ConnectEmails = () => {
           e.stopPropagation();
           const files = e.dataTransfer.files;
           if (files?.[0]) {
-            onFileInput(files[0]);
+            setFile(files[0]).then(() => setStep('2'));
           }
         }}
         style={{
@@ -102,7 +69,7 @@ const ConnectEmails = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const file = e.target.files?.[0];
               if (file) {
-                onFileInput(file);
+                setFile(file).then(() => setStep('2'));
               }
             }}
           />
