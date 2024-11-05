@@ -14,7 +14,7 @@ const DragAndDropFile = ({
   setFile: (file: File) => void;
 }) => {
   return (
-    <div className="flex flex-col gap-4 w-full">
+    <div className="flex w-full flex-col gap-4">
       {title ? (
         <Label className="text-base text-grey-900" htmlFor={title}>
           {title}
@@ -56,7 +56,7 @@ const DragAndDropFile = ({
               // Handle file upload
               const file = e.target.files?.[0];
               if (file) {
-                // Add your file handling logic here
+                setFile(file);
               }
             }}
           />

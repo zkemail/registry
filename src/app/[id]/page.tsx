@@ -10,6 +10,7 @@ import ViewProof from './ViewProof';
 import { useProofStore } from './store';
 import { useSearchParams } from 'next/navigation';
 import sdk from '@/lib/sdk';
+import Link from 'next/link';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -86,9 +87,11 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
               </span>
             </div>
             <div>
-              <Button onClick={() => {}} startImg="assets/GitCommit.svg">
-                View all versions
-              </Button>
+              <Link href={`/${id}/versions`}>
+                <Button onClick={() => {}} startImg="assets/GitCommit.svg">
+                  View all versions
+                </Button>
+              </Link>
             </div>
           </div>
         </>
