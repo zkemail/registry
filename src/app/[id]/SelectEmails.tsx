@@ -7,8 +7,10 @@ import useGoogleAuth from '../hooks/useGoogleAuth';
 import { formatDate } from '../utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion'; // Add this import
+import { useProofStore } from './store';
 
-const SelectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
+const SelectEmails = () => {
+  const { setStep } = useProofStore();
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<RawEmailResponse[]>([]);
@@ -122,7 +124,7 @@ const SelectEmails = ({ setStep }: { setStep: (step: number) => void }) => {
             Load More Emails
           </Button>
 
-          <Button className="flex w-max items-center gap-2" onClick={() => setStep(2)}>
+          <Button className="flex w-max items-center gap-2" onClick={() => setStep('2')}>
             Create Proof Remotely
           </Button>
         </div>
