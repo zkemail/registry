@@ -8,7 +8,7 @@ const Button = ({
   startImg,
   variant = 'primary',
 }: {
-  onClick: () => void;
+  onClick?: () => void;
   children: React.ReactNode;
   startImg?: string;
   variant?: 'primary' | 'secondary';

@@ -16,13 +16,13 @@ const getStatusColorLight = (status?: Status) => {
 const getStatusIcon = (status?: Status) => {
   switch (status) {
     case Status.Done:
-      return 'assets/CompiledIcon.svg';
+      return '/assets/CompiledIcon.svg';
     case Status.InProgress:
-      return 'assets/InProgressIcon.svg';
+      return '/assets/InProgressIcon.svg';
     case Status.Failed:
-      return 'assets/FailedIcon.svg';
+      return '/assets/FailedIcon.svg';
     default:
-      return 'assets/CompiledIcon.svg';
+      return '/assets/CompiledIcon.svg';
   }
 };
 

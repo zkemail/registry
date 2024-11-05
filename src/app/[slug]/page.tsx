@@ -9,6 +9,8 @@ import ConnectEmails from './ConnectEmails';
 import SelectEmails from './SelectEmails';
 import ViewProof from './ViewProof';
 import useGoogleAuth from '../hooks/useGoogleAuth';
+import Link from 'next/link';
+import { useParams } from 'next/dist/client/components/navigation';
 
 const blueprint = {
   title: 'Proof Of Devcon Rejection',
@@ -21,8 +23,8 @@ const blueprint = {
   repoLink: '#',
 };
 
-const Pattern = ({ params }: { params: { slug: string } }) => {
-  const slug = decodeURIComponent(params.slug);
+const Pattern = () => {
+  const { slug } = useParams();
   const [step, setStep] = useState(0);
   //   const [blueprint, setBlueprint] = useState(blueprintData);
 
@@ -82,9 +84,9 @@ const Pattern = ({ params }: { params: { slug: string } }) => {
           </span>
         </div>
         <div>
-          <Button onClick={() => {}} startImg="assets/GitCommit.svg">
-            View all versions
-          </Button>
+          <Link href={`/${slug}/versions`}>
+            <Button startImg="assets/GitCommit.svg">View all versions</Button>
+          </Link>
         </div>
       </div>
       <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
