@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import { toast } from 'react-toastify';
 
 interface BlueprintCardProps {
   blueprint: Blueprint;
@@ -35,22 +36,35 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
           </span>
         </div> */}
       </div>
-      <p className="text-md mb-2 font-medium text-grey-600">{blueprint.props.slug}</p>
-      <p className="text-md mb-4 font-medium text-grey-700">{blueprint.props.description}</p>
+      <p className="text-md mb-2 inline-flex items-center font-medium text-grey-800">
+        {blueprint.props.slug}
+        <span
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            navigator.clipboard.writeText(blueprint.props.slug);
+            toast.success('Copied to clipboard');
+          }}
+          className="ml-2 cursor-pointer rounded-sm border border-grey-500 bg-neutral-100 p-1 py-0.5"
+        >
+          <Image src="/assets/LinkIcon.svg" alt="copy" width={16} height={16} />
+        </span>
+      </p>
+      <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
 
       <div className="mt-4 flex flex-row items-center justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-md font-medium text-grey-600">Extractable values:</p>
-          {blueprint.props.decomposedRegexes.map((dr, index) => (
+          <p className="text-md font-medium text-grey-800">Extractable values:</p>
+          {blueprint.props.decomposedRegexes?.map((dr, index) => (
             <div
               key={index}
-              className="h-fit rounded-md border border-grey-500 px-2 py-[1px] text-sm font-light leading-[18px]"
+              className="h-fit rounded-md border border-grey-900 px-2 py-[1px] text-sm font-light leading-[18px]"
             >
               {dr.name}
             </div>
           ))}
         </div>
-        <p className="text-xs text-grey-500" title={blueprint.props.updatedAt?.toLocaleString()}>
+        <p className="text-sm text-grey-700" title={blueprint.props.updatedAt?.toLocaleString()}>
           Updated {getDateToNowStr(blueprint.props.updatedAt)}
         </p>
       </div>

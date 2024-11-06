@@ -69,6 +69,7 @@ export async function fetchEmailList(
  */
 
 export type RawEmailResponse = {
+  emailMessageId: string;
   subject: string;
   internalDate: string;
   decodedContents: string;
@@ -106,6 +107,7 @@ export async function fetchEmailsRaw(
           const subject = decodedContents.match(/Subject: (.*)/)?.[1] || 'No Subject';
 
           return {
+            emailMessageId: messageId,
             subject,
             internalDate: data.internalDate,
             decodedContents,
