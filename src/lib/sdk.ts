@@ -1,4 +1,4 @@
-import zkeSdk from '@dimidumo/zk-email-sdk-ts';
+import zkeSdk from '@zk-email/sdk';
 import auth from './auth';
 
 const sdk = zkeSdk({ auth });

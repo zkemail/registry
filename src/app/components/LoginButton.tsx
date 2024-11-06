@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { getLoginWithGithubUrl } from '@dimidumo/zk-email-sdk-ts';
+import { getLoginWithGithubUrl } from '@zk-email/sdk';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 export default function LoginButton() {

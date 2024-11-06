@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { parseEmail } from '@dimidumo/zk-email-sdk-ts';
+import { parseEmail } from '@zk-email/sdk';
 import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 

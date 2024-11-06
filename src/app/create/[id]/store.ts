@@ -1,17 +1,12 @@
 import sdk from '@/lib/sdk';
-import {
-  Blueprint,
-  BlueprintProps,
-  DecomposedRegex,
-  DecomposedRegexPart,
-} from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint, BlueprintProps, DecomposedRegex, DecomposedRegexPart } from '@zk-email/sdk';
 import { create } from 'zustand';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
   setField: (field: keyof BlueprintProps, value: any) => void;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
-  setToExistingBlueprint: (id: string) => void;
+  setToExistingBlueprint: (id: string) => Promise<void>;
   compile: () => Promise<string>;
   submit: () => Promise<string>;
   reset: () => void;
@@ -54,6 +49,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
     });
   },
   submit: async (): Promise<string> => {
+    console.log('calling submit blueprint');
     const state = get();
 
     // Remove functions from the state data and clone
@@ -77,6 +73,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
     try {
       // Create a new blueprint
       if (!state.id || state.id === 'new') {
+        console.log('creating new blueprint');
         const blueprint = sdk.createBlueprint(data);
         await blueprint.submitDraft();
         set({ blueprint });
@@ -84,14 +81,17 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
       }
 
       // Update an existing blueprint
+      // TODO: fix update!
       if (state.blueprint && state.blueprint.canUpdate()) {
-        await state.blueprint.update(state);
+        console.log('updating');
+        await state.blueprint.update(data);
         return state.blueprint.props.id!;
       }
 
       // Create a new version of an blueprint
       if (state.blueprint && !state.blueprint.canUpdate()) {
-        await state.blueprint.submitNewVersionDraft(state);
+        console.log('creating new version');
+        await state.blueprint.submitNewVersionDraft(data);
         return state.blueprint.props.id!;
       }
 
@@ -104,7 +104,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
   setToExistingBlueprint: async (id: string) => {
     try {
       const blueprint = await sdk.getBlueprint(id);
-      console.log('blueprint: ', blueprint);
       blueprint.props.decomposedRegexes.forEach((dcr) => {
         dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
       });
@@ -114,8 +113,19 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
       throw err;
     }
   },
-  compile: async () => {
-    throw new Error('not implemented yet');
+  compile: async (): Promise<string> => {
+    const state = get();
+    // In theory we could also save before compiling here if we want, caling createBlueprint first
+    if (!state.blueprint) {
+      throw new Error("Blueprint must be saved first");
+    }
+    try {
+      await state.blueprint.submit();
+    }catch(err){
+      console.error('Failed to start blueprint compilation: ' err);
+      throw err
+    }
+    return state.blueprint.props.id!;
   },
   reset: () => set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps) }),
 }));

@@ -26,7 +26,7 @@ import {
   DecomposedRegexPart,
   ExternalInput,
   testDecomposedRegex,
-} from '@dimidumo/zk-email-sdk-ts';
+} from '@zk-email/sdk';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useRouter } from 'next/navigation';
@@ -37,7 +37,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
-  const { setField, submit, getParsedDecomposedRegexes, setToExistingBlueprint } = store;
+  const { setField, save, getParsedDecomposedRegexes, setToExistingBlueprint } = store;
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   // TODO: Add a checkbox in UI. This will reveal the isPublic: false fields if set to true
@@ -45,18 +45,19 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   // Load data if an id is provided
   useEffect(() => {
+    console.log('id: ', id);
     if (id !== 'new') {
-      setToExistingBlueprint(id);
+      setToExistingBlueprint(id).catch(console.error);
     }
   }, [id]);
 
   const handleSubmitBlueprint = async () => {
     try {
-      const newId = await submit();
+      const newId = await save();
       setErrors([]);
       console.log('successfully saved blueprint');
       if (newId !== id) {
-        router.push(`/create/${id}`);
+        router.replace(`/create/${newId}`, { scroll: false });
       }
     } catch (err) {
       console.log('Failed to submit blueprint');

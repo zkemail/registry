@@ -1,5 +1,5 @@
 import { getFileContent } from '@/lib/utils';
-import { Blueprint, parseEmail } from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint, parseEmail } from '@zk-email/sdk';
 import { create } from 'zustand';
 
 type Step = '0' | '1' | '2';
