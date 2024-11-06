@@ -1,5 +1,5 @@
 import sdk from '@/lib/sdk';
-import { Blueprint, BlueprintProps, DecomposedRegex, DecomposedRegexPart } from '@zk-email/sdk';
+import { Blueprint, BlueprintProps, DecomposedRegex, DecomposedRegexPart, Status } from '@zk-email/sdk';
 import { create } from 'zustand';
 
 type CreateBlueprintState = BlueprintProps & {
@@ -8,7 +8,7 @@ type CreateBlueprintState = BlueprintProps & {
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => Promise<void>;
   compile: () => Promise<string>;
-  submit: () => Promise<string>;
+  saveDraft: () => Promise<string>;
   reset: () => void;
 };
 
@@ -48,7 +48,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
       };
     });
   },
-  submit: async (): Promise<string> => {
+  saveDraft: async (): Promise<string> => {
     console.log('calling submit blueprint');
     const state = get();
 
@@ -121,10 +121,13 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
     }
     try {
       await state.blueprint.submit();
-    }catch(err){
+    } catch(err) {
       console.error('Failed to start blueprint compilation: ' err);
       throw err
     }
+
+    // const status = await state.blueprint.checkStatus()
+
     return state.blueprint.props.id!;
   },
   reset: () => set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps) }),

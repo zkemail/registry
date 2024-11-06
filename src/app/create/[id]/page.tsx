@@ -37,7 +37,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
-  const { setField, save, getParsedDecomposedRegexes, setToExistingBlueprint } = store;
+  const { setField, saveDraft, getParsedDecomposedRegexes, setToExistingBlueprint } = store;
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   // TODO: Add a checkbox in UI. This will reveal the isPublic: false fields if set to true
@@ -51,9 +51,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [id]);
 
-  const handleSubmitBlueprint = async () => {
+  const handleSaveDraft = async () => {
     try {
-      const newId = await save();
+      const newId = await saveDraft();
       setErrors([]);
       console.log('successfully saved blueprint');
       if (newId !== id) {
@@ -331,7 +331,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           <Status />
 
           <div className="flex justify-center">
-            <Button onClick={handleSubmitBlueprint}>Submit Blueprint</Button>
+            <Button onClick={handleSaveDraft}>Submit Blueprint</Button>
           </div>
           <div className="flex justify-center">
             <Button onClick={handleTestEmail}>Get "Fields to Extract" output on Email</Button>
