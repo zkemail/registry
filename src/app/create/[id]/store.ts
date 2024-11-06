@@ -1,10 +1,5 @@
 import sdk from '@/lib/sdk';
-import {
-  Blueprint,
-  BlueprintProps,
-  DecomposedRegex,
-  DecomposedRegexPart,
-} from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint, BlueprintProps, DecomposedRegex, DecomposedRegexPart, Status } from '@zk-email/sdk';
 import { create } from 'zustand';
 
 type CreateBlueprintState = BlueprintProps & {
@@ -13,7 +8,7 @@ type CreateBlueprintState = BlueprintProps & {
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => void;
   compile: () => Promise<string>;
-  submit: () => Promise<string>;
+  saveDraft: () => Promise<string>;
   reset: () => void;
 };
 
@@ -53,7 +48,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
       };
     });
   },
-  submit: async (): Promise<string> => {
+  saveDraft: async (): Promise<string> => {
+    console.log('calling submit blueprint');
     const state = get();
 
     // Remove functions from the state data and clone
@@ -114,8 +110,22 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
       throw err;
     }
   },
-  compile: async () => {
-    throw new Error('not implemented yet');
+  compile: async (): Promise<string> => {
+    const state = get();
+    // In theory we could also save before compiling here if we want, caling createBlueprint first
+    if (!state.blueprint) {
+      throw new Error("Blueprint must be saved first");
+    }
+    try {
+      await state.blueprint.submit();
+    } catch(err) {
+      console.error('Failed to start blueprint compilation: ' err);
+      throw err
+    }
+
+    // const status = await state.blueprint.checkStatus()
+
+    return state.blueprint.props.id!;
   },
   reset: () => set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps) }),
 }));
