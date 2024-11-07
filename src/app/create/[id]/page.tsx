@@ -340,6 +340,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 />
                 <Select
                   label="Data Location"
+                  value={regex.location}
                   onChange={(value: string) => {
                     const updatedRegexes = [...store.decomposedRegexes];
                     updatedRegexes[index] = { ...regex, location: value as 'body' | 'header' };

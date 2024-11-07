@@ -31,7 +31,7 @@ export default function ToastProvider({ children }: ToastProviderProps) {
         }
         bodyClassName={() => 'text-base'}
         position="bottom-left"
-        autoClose={30000}
+        autoClose={3000}
         icon={false}
         closeButton={({ closeToast }) => (
           <Image
