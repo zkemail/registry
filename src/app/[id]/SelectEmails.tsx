@@ -8,14 +8,17 @@ import { formatDate } from '../utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const SelectEmails = () => {
-  const { setStep } = useProofStore();
+  const { setStep, setEmailContent, blueprint } = useProofStore();
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<RawEmailResponse[]>([]);
-
+  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const { googleAuthToken } = useGoogleAuth();
+
+  console.log('selectedEmail: ', fetchedEmails);
 
   const handleFetchEmails = async () => {
     try {
@@ -42,10 +45,10 @@ const SelectEmails = () => {
   };
 
   useEffect(() => {
-    if (googleAuthToken.access_token) {
+    if (googleAuthToken?.access_token) {
       handleFetchEmails();
     }
-  }, [googleAuthToken.access_token]);
+  }, [googleAuthToken?.access_token]);
 
   console.log(fetchedEmails);
 
@@ -78,33 +81,34 @@ const SelectEmails = () => {
           </div>
 
           {/* Rows */}
-          <AnimatePresence initial={false}>
-            {fetchedEmails.map((email, index) => (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
-                style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
-              >
-                <div className="ml-4">
-                  <Checkbox />
-                </div>
-                <div className="flex items-center justify-center">
-                  <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
-                </div>
-                <div>{formatDate(email.internalDate)}</div>
-                <div className="overflow-hidden text-ellipsis">{email.subject}</div>
-                <div>
-                  <button className="flex items-center gap-1 underline hover:underline">
-                    <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
-                    View Input
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
+          <RadioGroup onValueChange={(value) => setEmailContent(value)}>
+            <AnimatePresence initial={false}>
+              {fetchedEmails.map((email, index) => (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3, ease: 'easeInOut' }}
+                  className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
+                  style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
+                >
+                  <RadioGroupItem value={email.decodedContents} id={email.emailMessageId} />
+
+                  <div className="flex items-center justify-center">
+                    <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
+                  </div>
+                  <div>{formatDate(email.internalDate)}</div>
+                  <div className="overflow-hidden text-ellipsis">{email.subject}</div>
+                  <div>
+                    <button className="flex items-center gap-1 underline hover:underline">
+                      <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
+                      View Input
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </RadioGroup>
         </div>
 
         <div className="mt-6 flex flex-col items-center gap-4">
@@ -124,8 +128,11 @@ const SelectEmails = () => {
             Load More Emails
           </Button>
 
-          <Button className="flex w-max items-center gap-2" onClick={() => setStep('2')}>
-            Create Proof Remotely
+          <Button
+            className="flex w-max items-center gap-2"
+            onClick={() => setStep(blueprint?.props.externalInputs ? '2' : '3')}
+          >
+            {blueprint?.props.externalInputs ? 'Add Inputs' : 'Create Proof Remotely'}
           </Button>
         </div>
       </div>

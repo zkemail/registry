@@ -4,12 +4,14 @@ import { getStatusColorLight, getStatusName } from '@/app/utils';
 import Image from 'next/image';
 import { Blueprint, Status } from '@dimidumo/zk-email-sdk-ts';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface VersionCardProps {
   blueprint: Blueprint;
 }
 
 const VersionCard = ({ blueprint }: VersionCardProps) => {
+  console.log(blueprint);
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between">
@@ -48,13 +50,15 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
           >
             Download
           </Button>
-          <Button
-            variant="secondary"
-            startIcon={<Image src="/assets/Edit.svg" alt="Edit" width={16} height={16} />}
-            size="sm"
-          >
-            Edit
-          </Button>
+          <Link href={`/create/${blueprint.props.id}`}>
+            <Button
+              variant="secondary"
+              startIcon={<Image src="/assets/Edit.svg" alt="Edit" width={16} height={16} />}
+              size="sm"
+            >
+              Edit
+            </Button>
+          </Link>
         </div>
         <div>
           <Button

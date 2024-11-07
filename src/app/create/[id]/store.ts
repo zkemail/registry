@@ -119,7 +119,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>((set, get) =
     try {
       await state.blueprint.submit();
     } catch(err) {
-      console.error('Failed to start blueprint compilation: ' err);
+      console.error('Failed to start blueprint compilation: ', err);
       throw err
     }
 

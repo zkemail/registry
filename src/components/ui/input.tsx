@@ -2,13 +2,32 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 import { Label } from './label';
+import { cva } from 'class-variance-authority';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   helpText?: string;
+  startIcon?: React.ReactNode;
+  size?: 'default' | 'sm' | 'lg';
 }
 
+const inputVariants = cva(
+  'inline-flex items-center border border-grey-500 disabled:border-grey-500 disabled:bg-neutral-100 justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:text-grey-700 .placeholder-text-grey-700::placeholder',
+  {
+    variants: {
+      size: {
+        default: 'px-4 h-9 px-3 py-1 leading-[0.875rem]',
+        sm: 'h-8 rounded-md px-3 text-sm leading-[0.875rem]',
+        lg: 'h-10 rounded-md px-8',
+      },
+    },
+    defaultVariants: {
+      size: 'default',
+    },
+  }
+);
+
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, helpText, ...props }, ref) => {
+  ({ className, type, helpText, startIcon, size, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
@@ -18,13 +37,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ) : null}
         <input
           type={type}
-          className={cn(
-            'flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:border-grey-500 disabled:bg-neutral-100',
-            className
-          )}
+          className={cn(inputVariants({ size, className }))}
           ref={ref}
           {...props}
         />
+        {startIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{startIcon}</span>}
         {helpText ? <p className="text-base text-grey-600">{helpText}</p> : null}
       </div>
     );

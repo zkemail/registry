@@ -20,7 +20,7 @@ const buttonVariants = cva(
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {
-        default: 'px-4 py-3 leading-[0.875rem]',
+        default: 'px-4 py-3 h-10 text-base leading-[0.875rem]',
         sm: 'h-8 rounded-md px-3 text-sm leading-[0.875rem]',
         lg: 'h-10 rounded-md px-8',
         icon: 'h-9 w-9',
@@ -68,9 +68,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {startIcon && <span className="mr-2">{startIcon}</span>}
+        {startIcon && <span className="mr-2 w-max">{startIcon}</span>}
         {children}
-        {endIcon && <span className="ml-2">{endIcon}</span>}
+        {endIcon && <span className="ml-2 w-max">{endIcon}</span>}
       </Comp>
     );
   }

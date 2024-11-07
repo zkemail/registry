@@ -3,6 +3,8 @@ import { Suspense } from 'react';
 import SearchBar from '@/app/components/SearchBar';
 import BlueprintList from './BlueprintList';
 import { useSearchParams } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -14,7 +16,14 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Blueprints</h1>
         <div className="flex items-center gap-4">
           <SearchBar />
-          <button className="hover:bg-grey-50 rounded-lg border px-4 py-2">Filters</button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="bg-white"
+            startIcon={<Image src="/assets/Faders.svg" alt="filter" width={16} height={16} />}
+          >
+            Filter and Sort
+          </Button>
         </div>
       </div>
 

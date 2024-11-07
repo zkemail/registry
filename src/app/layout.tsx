@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import Navbar from '@/app/components/Navbar';
-import Footer from '@/app/components/Footer';
 import { ThemeProvider } from 'next-themes';
 import { Fustat } from 'next/font/google';
 import AuthHandler from './components/AuthHandler';
 import GoogleAuthProvider from './contexts/GoogleAuthProvider';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ToastProvider from './contexts/ToastProvider';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
@@ -27,12 +26,10 @@ export default function RootLayout({
         <ThemeProvider attribute="class">
           <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
             <GoogleAuthProvider>
-              <AuthHandler />
-              <Navbar />
-              <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>
-              <div className="mt-auto">
-                <Footer />
-              </div>
+              <ToastProvider>
+                <AuthHandler />
+                {children}
+              </ToastProvider>
             </GoogleAuthProvider>
           </GoogleOAuthProvider>
         </ThemeProvider>
