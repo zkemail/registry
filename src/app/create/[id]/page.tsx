@@ -236,12 +236,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             checked={store.ignoreBodyHashCheck}
             onCheckedChange={(checked) => setField('ignoreBodyHashCheck', checked)}
           />
-          <Checkbox
+          {/* <Checkbox
             title="Enable email masking"
             helpText="Enable and send a mask to return a masked email in the public output. We recommend to disable this for most patterns"
             checked={store.enableBodyMasking}
             onCheckedChange={(checked) => setField('enableBodyMasking', checked)}
-          />
+          /> */}
           <Input
             title="Sender domain"
             placeholder="twitter.com"
@@ -251,8 +251,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           />
           <Input
             title="Email Body Cutoff Value (optional)"
-            placeholder="1000"
-            type="number"
+            placeholder=">Not my Account<"
+            type="text"
+            disabled={store.ignoreBodyHashCheck}
             helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
             value={store.shaPrecomputeSelector}
             onChange={(e) => setField('shaPrecomputeSelector', e.target.value)}
@@ -267,6 +268,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           />
           <Input
             title="Max Email Body Length"
+            disabled={store.ignoreBodyHashCheck}
             placeholder="4032"
             type="number"
             helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
@@ -350,6 +352,17 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                     { label: 'Email Body', value: 'body' },
                     { label: 'Email Headers', value: 'header' },
                   ]}
+                />
+                <Input
+                  title="Max Length"
+                  placeholder="64"
+                  type="number"
+                  value={regex.maxLength}
+                  onChange={(e) => {
+                    const updatedRegexes = [...store.decomposedRegexes];
+                    updatedRegexes[index] = { ...regex, maxLength: parseInt(e.target.value) };
+                    setField('decomposedRegexes', updatedRegexes);
+                  }}
                 />
 
                 <Textarea
