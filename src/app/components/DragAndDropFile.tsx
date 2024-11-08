@@ -14,7 +14,7 @@ const DragAndDropFile = ({
   title?: string;
   helpText?: string;
   file: File | null;
-  setFile: (file: File) => void;
+  setFile: (file: File | null) => void;
 }) => {
   return (
     <div className="flex w-full flex-col gap-4">
@@ -56,10 +56,8 @@ const DragAndDropFile = ({
                   startIcon={
                     <Image src="/assets/Trash.svg" alt="Trash icon" width={16} height={16} />
                   }
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setFile(null);
+                  onClick={() => {
+                    setFile(null);  
                   }}
                 >
                   Delete file
