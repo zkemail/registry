@@ -1,6 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  experimental: {
+    ppr: false,
+  },
   webpack: (config, { isServer }) => {
     // This is a browser-only package
     if (!isServer) {

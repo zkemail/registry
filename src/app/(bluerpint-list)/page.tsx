@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import SearchBar from '@/app/components/SearchBar';
 import BlueprintList from './BlueprintList';
 import { useSearchParams } from 'next/navigation';
-import Image from 'next/image';
 import FilterAndSortButton from './FilterAndSortButton';
 import { Status } from '@zk-email/sdk';
 
@@ -28,7 +27,8 @@ export default function Home() {
 function BlueprintListWrapper() {
   const searchParams = useSearchParams();
   const search = searchParams.get('search');
-  const filters = (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || [];
+  const filters =
+    (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || [];
   const sort = searchParams.get('sort') || '';
 
   return (

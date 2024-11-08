@@ -25,7 +25,7 @@ const DragAndDropFile = ({
       ) : null}
       <div
         className="w-full cursor-pointer rounded-lg p-8"
-        onClick={() => document.getElementById('email-file')?.click()}
+        // onClick={() => document.getElementById('email-file')?.click()}
         onDragOver={(e) => {
           e.preventDefault();
           e.stopPropagation();
