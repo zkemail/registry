@@ -14,7 +14,7 @@ import { useCreateBlueprintStore } from '../create/[id]/store';
 import { DecomposedRegex, testDecomposedRegex } from '@zk-email/sdk';
 
 type Email = RawEmailResponse & {
-  valid: { name: string; value: string[] }[];
+  valid: boolean;
 };
 
 const SelectEmails = ({ id }: { id: string }) => {
@@ -36,7 +36,7 @@ const SelectEmails = ({ id }: { id: string }) => {
     return () => {
       reset();
     };
-  }, [id]);
+  }, []);
 
   const handleValidateEmail = async (content: string) => {
     try {
@@ -84,9 +84,10 @@ const SelectEmails = ({ id }: { id: string }) => {
     checkFileValidity(file);
   }, []);
 
-  console.log('selectedEmail: ', fetchedEmails);
+  console.log('selectedEmail: ', fetchedEmails, selectedEmail);
 
   const handleFetchEmails = async () => {
+    console.log('fetching emails');
     try {
       setIsFetchEmailLoading(true);
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
@@ -104,7 +105,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
-              valid: validationResult ? [{ name: 'email', value: ['true'] }] : []
+              valid: validationResult ?? false,
             };
           })
         );
@@ -131,8 +132,6 @@ const SelectEmails = ({ id }: { id: string }) => {
       handleFetchEmails();
     }
   }, [googleAuthToken?.access_token]);
-
-  console.log(fetchedEmails);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -165,10 +164,10 @@ const SelectEmails = ({ id }: { id: string }) => {
           {/* Rows */}
           <RadioGroup
             onValueChange={(value) => {
-              const selectedEmail = fetchedEmails.find((email) => email.decodedContents === value);
-              if (selectedEmail) {
-                setSelectedEmail(selectedEmail);
-              }
+              setSelectedEmail(
+                fetchedEmails.find((email) => email.decodedContents === value) || null
+              );
+
               setEmailContent(value);
             }}
           >

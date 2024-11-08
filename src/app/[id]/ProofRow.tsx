@@ -12,6 +12,28 @@ interface ProofProps {
   proofId: string;
 }
 
+export const handleGetStatusIcon = (status: ProofStatus) => {
+  switch (status) {
+    case ProofStatus.None:
+      return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
+    case ProofStatus.InProgress:
+      return (
+        <Image
+          src="/assets/SpinnerGap.svg"
+          className="animate-spin"
+          alt="status"
+          width={20}
+          height={20}
+        />
+      );
+    case ProofStatus.Done:
+      return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
+    case ProofStatus.Failed:
+      console.log('got failed status======================================');
+      return <Image src="/assets/X.svg" alt="❌" width={20} height={20} />;
+  }
+};
+
 const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   const { getUpdatingStatus } = useProofEmailStore();
   const emailProof = useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId]);
@@ -19,30 +41,11 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   const [status, setStatus] = useState<ProofStatus>(emailProof.status!);
 
   useEffect(() => {
-    getUpdatingStatus(emailProof).then(setStatus);
-  }, []);
+    const statusPromise = getUpdatingStatus(emailProof);
+    statusPromise.then(setStatus);
 
-  const handleGetStatusIcon = (status: ProofStatus) => {
-    switch (status) {
-      case ProofStatus.None:
-        return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
-      case ProofStatus.InProgress:
-        return (
-          <Image
-            src="/assets/SpinnerGap.svg"
-            className="animate-spin"
-            alt="status"
-            width={20}
-            height={20}
-          />
-        );
-      case ProofStatus.Done:
-        return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
-      case ProofStatus.Failed:
-        console.log('got failed status======================================');
-        return <Image src="/assets/X.svg" alt="❌" width={20} height={20} />;
-    }
-  };
+    return () => statusPromise.abort();
+  }, []);
 
   // TODO: Add blueprint information?
   const handleProofDownload = () => {
@@ -63,7 +66,8 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   return (
     <>
       <Link
-        href={`/${emailProof.blueprintId}/${emailProof.id}`}
+        target="_blank"
+        href={`/${emailProof.blueprintId}/proofs/${emailProof.id}`}
         className="flex max-w-fit items-center gap-2 rounded border border-grey-500 px-3 py-1 text-sm font-semibold text-grey-800"
       >
         <span>{index + 1}</span>

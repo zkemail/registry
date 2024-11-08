@@ -46,42 +46,62 @@ export const useProofEmailStore = create<ProofEmailState>()(
           .map((p) => p.id);
       },
       getUpdatingStatus(proofEmail: ProofEmail): Promise<ProofStatus> {
-        if (!proofEmail.status) {
+        if (!proofEmail || !proofEmail.id || !proofEmail.status) {
           throw new Error('Unknown error, proofProps have no status');
         }
 
-        // Get the proof first to then track the status async and wait for completion
-        // After completion updates the store
-        if (proofEmail.status === ProofStatus.InProgress) {
-          return new Promise(async (resolve, reject) => {
-            try {
-              const proof = await sdk.getProof(proofEmail.id);
-              console.log('got new proof: ', proof);
-              // checkStatus internally has a setTimeout
-              while ((await proof.checkStatus()) === ProofStatus.InProgress) {}
-              const status = await proof.checkStatus();
-
-              // Get updated proof
-              const newProof = await sdk.getProof(proofEmail.id);
-              console.log('got the new proof: ', newProof);
-
-              set((state: ProofEmailState) => {
-                // Ensure the blueprintId exists
-                state.data[proofEmail.blueprintId][proof.props.id] = {
-                  ...newProof.props,
-                  email: proofEmail.email,
-                };
-              });
-              resolve(status);
-            } catch (err) {
-              console.error('failed to get proof and track status');
-              reject(err);
-            }
-          });
-          // Immedeately resolve proof
-        } else {
+        if (proofEmail.status !== ProofStatus.InProgress) {
           return Promise.resolve(proofEmail.status);
         }
+
+        // Create an AbortController to handle cleanup
+        const abortController = new AbortController();
+
+        // Get the proof first to then track the status async and wait for completion
+        // After completion updates the store
+        const statusPromise = new Promise<ProofStatus>(async (resolve, reject) => {
+          try {
+            let status = proofEmail.status;
+            const proof = await sdk.getProof(proofEmail.id);
+            console.log('got new proof: ', proof);
+
+            while (status === ProofStatus.InProgress && !abortController.signal.aborted) {
+              status = await proof.checkStatus();
+              console.log('current status: ', status);
+
+              if (status === ProofStatus.InProgress) {
+                await new Promise((resolve) => {
+                  const timeoutId = setTimeout(resolve, 5000);
+                  // Clear timeout if aborted
+                  abortController.signal.addEventListener('abort', () => {
+                    clearTimeout(timeoutId);
+                    resolve(undefined);
+                  });
+                });
+              } else {
+                set((state: ProofEmailState) => {
+                  state.data[proofEmail.blueprintId][proof.props.id] = {
+                    ...proof.props,
+                    email: proofEmail.email,
+                  };
+                });
+                resolve(status);
+              }
+            }
+            // Resolve with current status if aborted
+            if (abortController.signal.aborted) {
+              resolve(status);
+            }
+          } catch (err) {
+            console.error('failed to get proof and track status');
+            reject(err);
+          }
+        });
+
+        // Attach abort controller to the promise for cleanup
+        (statusPromise as any).abort = () => abortController.abort();
+
+        return statusPromise;
       },
       addProof: (blueprintId: string, proofId: string, data: ProofEmail) =>
         set((state: ProofEmailState) => {
