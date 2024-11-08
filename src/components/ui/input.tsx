@@ -6,6 +6,7 @@ import { cva } from 'class-variance-authority';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   helpText?: string;
+  error?: boolean;
   startIcon?: React.ReactNode;
   size?: 'default' | 'sm' | 'lg';
 }
@@ -27,7 +28,7 @@ const inputVariants = cva(
 );
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, helpText, startIcon, size, ...props }, ref) => {
+  ({ className, type, helpText, startIcon, error, size, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
@@ -39,10 +40,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           className={cn(inputVariants({ size, className }))}
           ref={ref}
+          onWheel={(e) => e.target.blur()}
           {...props}
         />
         {startIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{startIcon}</span>}
-        {helpText ? <p className="text-base text-grey-600">{helpText}</p> : null}
+        {helpText ? (
+          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>{helpText}</p>
+        ) : null}
       </div>
     );
   }
