@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Image from 'next/image';
@@ -6,11 +7,13 @@ const DragAndDropFile = ({
   accept,
   title,
   helpText,
+  file,
   setFile,
 }: {
   accept: string;
   title?: string;
   helpText?: string;
+  file: File | null;
   setFile: (file: File) => void;
 }) => {
   return (
@@ -40,13 +43,40 @@ const DragAndDropFile = ({
         }}
       >
         <div className="flex flex-col items-center justify-center gap-4">
-          <Image src="/assets/FileArrowUp.svg" alt="Upload icon" width={40} height={40} />
-          <div className="flex flex-col items-center text-base font-semibold">
-            <p className="text-brand-400">
-              Click to upload <span className="text-grey-700">or drag and drop</span>
-            </p>
-            <p className="text-grey-700">({accept} format)</p>
-          </div>
+          {file ? (
+            <>
+              <Image src="/assets/CheckCircle.svg" alt="Upload icon" width={40} height={40} />
+              <div className="flex flex-col items-center text-base font-semibold">
+                <p className="text-grey-800">
+                  {file.name} <span className="text-grey-700">(Uploaded)</span>
+                </p>
+                <Button
+                  variant="link"
+                  className="text-grey-700"
+                  startIcon={
+                    <Image src="/assets/Trash.svg" alt="Trash icon" width={16} height={16} />
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFile(null);
+                  }}
+                >
+                  Delete file
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Image src="/assets/FileArrowUp.svg" alt="Upload icon" width={40} height={40} />
+              <div className="flex flex-col items-center text-base font-semibold">
+                <p className="text-brand-400">
+                  Click to upload <span className="text-grey-700">or drag and drop</span>
+                </p>
+                <p className="text-grey-700">({accept} format)</p>
+              </div>
+            </>
+          )}
           <Input
             id="email-file"
             type="file"
