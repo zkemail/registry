@@ -55,7 +55,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     } finally {
       setIsLoading(false);
     }
-  }, [search, skip, isLoading, hasMore]);
+  }, [search, filters, sort, skip, isLoading, hasMore]);
 
   // Reset state when search changes
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     setSkip(0);
     setHasMore(true);
     setError(null);
-  }, [search]);
+  }, [search, filters, sort]);
 
   // Initialize intersection observer
   useEffect(() => {
