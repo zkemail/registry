@@ -74,7 +74,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             ? new Date(file.match(/Date: (.*)/)?.[1] as string).toISOString()
             : 'Invalid Date',
           decodedContents: file,
-          valid: valid ? [{ name: 'file', value: ['true'] }] : [],
+          valid: valid ?? false,
         };
 
         setFetchedEmails([selectedEmail]);

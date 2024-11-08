@@ -40,7 +40,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           type={type}
           className={cn(inputVariants({ size, className }))}
           ref={ref}
-          onWheel={(e) => e.target.blur()}
+          onWheel={(e) => (e.target as HTMLElement).blur()}
           {...props}
         />
         {startIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{startIcon}</span>}

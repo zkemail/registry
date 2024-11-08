@@ -35,6 +35,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     const statusPromise = getUpdatingStatus(data[id!]?.[proofId]);
     statusPromise.then(setStatus);
 
+    // @ts-ignore
     return () => statusPromise.abort();
   }, [data[id!]?.[proofId]]);
 
@@ -104,7 +105,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <div className="text-base font-medium text-grey-700">Time taken</div>
           <div className="text-base font-medium text-grey-800">
             {emailProof?.provedAt && emailProof?.startedAt
-              ? `${(emailProof?.provedAt! - emailProof?.startedAt!).toString()} seconds`
+              ? `${((new Date(emailProof.provedAt).getTime() - new Date(emailProof.startedAt).getTime()) / 1000).toString()} seconds`
               : '-'}
           </div>
         </div>

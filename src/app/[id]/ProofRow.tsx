@@ -44,6 +44,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
     const statusPromise = getUpdatingStatus(emailProof);
     statusPromise.then(setStatus);
 
+    // @ts-ignore
     return () => statusPromise.abort();
   }, []);
 

@@ -90,7 +90,7 @@ export const useProofEmailStore = create<ProofEmailState>()(
             }
             // Resolve with current status if aborted
             if (abortController.signal.aborted) {
-              resolve(status);
+              resolve(status ?? ProofStatus.Failed);
             }
           } catch (err) {
             console.error('failed to get proof and track status');
