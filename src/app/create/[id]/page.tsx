@@ -60,13 +60,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   // Load data if an id is provided
   useEffect(() => {
+    reset();
     if (id !== 'new') {
       setToExistingBlueprint(id);
     }
-
-    return () => {
-      reset();
-    };
   }, [id]);
 
   const handleSaveDraft = async () => {
