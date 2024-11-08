@@ -2,12 +2,12 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { parseEmail } from '@dimidumo/zk-email-sdk-ts';
+import { parseEmail } from '@zk-email/sdk';
 import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 
 const ConnectEmails = () => {
-  const { setFile, setStep } = useProofStore();
+  const { setFile, setStep, blueprint, startProofGeneration } = useProofStore();
 
   const { googleLogIn } = useGoogleAuth();
 
@@ -69,7 +69,14 @@ const ConnectEmails = () => {
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const file = e.target.files?.[0];
               if (file) {
-                setFile(file).then(() => setStep('2'));
+                setFile(file).then(() => {
+                  if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
+                    setStep('2');
+                  } else {
+                    startProofGeneration();
+                    setStep('3');
+                  }
+                });
               }
             }}
           />

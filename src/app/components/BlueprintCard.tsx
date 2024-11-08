@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
-import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 
 interface BlueprintCardProps {

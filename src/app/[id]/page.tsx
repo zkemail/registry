@@ -25,17 +25,14 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const step = searchParams.get('step') || '0';
 
   useEffect(() => {
+    reset();
+
     sdk
       .getBlueprint(id)
       .then(setBlueprint)
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
       });
-
-    // Cleanup store on unmount
-    return () => {
-      reset();
-    };
   }, []);
 
   if (!blueprint) return <div>Loading...</div>;

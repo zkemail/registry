@@ -6,7 +6,7 @@ import VersionCard from './VersionCard';
 import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
 import sdk from '@/lib/sdk';
-import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint } from '@zk-email/sdk';
 
 const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);

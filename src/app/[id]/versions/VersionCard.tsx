@@ -2,7 +2,7 @@ import { getDateToNowStr, getStatusIcon } from '@/app/utils';
 
 import { getStatusColorLight, getStatusName } from '@/app/utils';
 import Image from 'next/image';
-import { Blueprint, Status } from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint, Status } from '@zk-email/sdk';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 

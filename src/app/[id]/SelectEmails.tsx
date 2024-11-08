@@ -11,11 +11,10 @@ import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 const SelectEmails = () => {
-  const { setStep, setEmailContent, blueprint } = useProofStore();
+  const { setStep, setEmailContent, blueprint, startProofGeneration } = useProofStore();
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<RawEmailResponse[]>([]);
-  const [selectedEmail, setSelectedEmail] = useState<string | null>(null);
   const { googleAuthToken } = useGoogleAuth();
 
   console.log('selectedEmail: ', fetchedEmails);
@@ -130,7 +129,14 @@ const SelectEmails = () => {
 
           <Button
             className="flex w-max items-center gap-2"
-            onClick={() => setStep(blueprint?.props.externalInputs ? '2' : '3')}
+            onClick={() => {
+              if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
+                setStep('2');
+              } else {
+                startProofGeneration();
+                setStep('3');
+              }
+            }}
           >
             {blueprint?.props.externalInputs ? 'Add Inputs' : 'Create Proof Remotely'}
           </Button>

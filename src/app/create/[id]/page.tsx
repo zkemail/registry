@@ -26,7 +26,7 @@ import {
   DecomposedRegexPart,
   ExternalInput,
   testDecomposedRegex,
-} from '@dimidumo/zk-email-sdk-ts';
+} from '@zk-email/sdk';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useRouter } from 'next/navigation';

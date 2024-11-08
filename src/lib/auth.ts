@@ -1,5 +1,5 @@
 // TODO: use Auth from sdk once we export it
-// import { Auth } from '@dimidumo/zk-email-sdk-ts';
+// import { Auth } from '@zk-email/sdk';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 // TODO: use Auth from sdk once we export it

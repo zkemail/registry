@@ -1,4 +1,4 @@
-import { Status } from '@dimidumo/zk-email-sdk-ts';
+import { Status } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {

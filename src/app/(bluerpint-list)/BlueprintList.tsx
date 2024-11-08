@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import BlueprintCard from '@/app/components/BlueprintCard';
-import { Blueprint } from '@dimidumo/zk-email-sdk-ts';
+import { Blueprint } from '@zk-email/sdk';
 import sdk from '@/lib/sdk';
 import { useState, useEffect, useRef, useCallback } from 'react';
 

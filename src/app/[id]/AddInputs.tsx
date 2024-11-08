@@ -3,7 +3,8 @@ import { useProofStore } from './store';
 import { Button } from '@/components/ui/button';
 
 const AddInputs = () => {
-  const { blueprint, externalInputs, setExternalInputs, setStep } = useProofStore();
+  const { blueprint, externalInputs, setExternalInputs, setStep, startProofGeneration } =
+    useProofStore();
 
   console.log(blueprint);
 
@@ -28,7 +29,14 @@ const AddInputs = () => {
         ))}
 
         <div className="flex justify-center">
-          <Button onClick={() => setStep('3')}>Create Proof Remotely</Button>
+          <Button
+            onClick={() => {
+              startProofGeneration();
+              setStep('3');
+            }}
+          >
+            Create Proof Remotely
+          </Button>
         </div>
       </div>
     </div>
