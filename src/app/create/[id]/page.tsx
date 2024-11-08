@@ -247,7 +247,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             title="Skip body hash check"
             helpText="Enable to ignore the contents on the email and only extract data from the headers"
             checked={store.ignoreBodyHashCheck}
-            onCheckedChange={(checked) => setField('ignoreBodyHashCheck', checked)}
+            onCheckedChange={(checked) => {
+              setField('ignoreBodyHashCheck', checked);
+              setField('removeSoftLinebreaks', checked);
+            }}
           />
           {/* <Checkbox
             title="Enable email masking"
@@ -275,15 +278,19 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             title="Max Email Header Length"
             placeholder="1024"
             type="number"
+            min={0}
+            error={!!(store.emailHeaderMaxLength && store.emailHeaderMaxLength % 64 !== 0)}
             helpText="Must be a multiple of 64"
-            value={store.emailHeaderMaxLength}
+            value={store.emailHeaderMaxLength || ''}
             onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
           />
           <Input
             title="Max Email Body Length"
             disabled={store.ignoreBodyHashCheck}
             placeholder="4032"
+            error={!!(store.emailBodyMaxLength && store.emailBodyMaxLength % 64 !== 0)}
             max={8192}
+            min={0}
             type="number"
             helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
             value={store.emailBodyMaxLength}
