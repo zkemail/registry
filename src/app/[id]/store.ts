@@ -13,6 +13,7 @@ type ExternalInputState = {
 
 interface ProofState {
   step: Step;
+  emailContent: string | null;
   // The actual text of the email file
   file: string | null;
   blueprint: Blueprint | null;

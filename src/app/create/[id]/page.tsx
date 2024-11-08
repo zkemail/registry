@@ -114,10 +114,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           name: dcr.name,
           value: output[index],
         }))
-        .filter((item: { value: string }) => item.value.length > 0); // Filter out items with no value
+        .filter((item: { value: string[] }) => item.value.length > 0); // Filter out items with no value
       // Format output as "name: value" pairs
       const formattedOutput = mappedOutput
-        .map((item: { name: string; value: string }) => `${item.name}: ${item.value}`)
+        .map((item: { name: string; value: string[] }) => `${item.name}: ${item.value}`)
         .join('\n');
       setGeneratedOutput(formattedOutput);
 

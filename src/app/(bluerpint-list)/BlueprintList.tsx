@@ -11,7 +11,7 @@ const PAGINATION_LIMIT = 30;
 
 interface BlueprintListProps {
   search: string | null;
-  filters: string[];
+  filters: Status[];
   sort: string;
 }
 
@@ -35,7 +35,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         search: search || '',
         skip,
         limit: PAGINATION_LIMIT,
-        status: filters.length > 0 ? filters.map((f) => f as Status) : undefined,
+        status: filters.length > 0 ? (filters[0] as Status) : undefined,
         sort: sort === 'most-recent' ? 1 : sort === 'most-used' ? -1 : undefined,
       });
 

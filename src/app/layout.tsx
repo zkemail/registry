@@ -6,6 +6,8 @@ import AuthHandler from './components/AuthHandler';
 import GoogleAuthProvider from './contexts/GoogleAuthProvider';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ToastProvider from './contexts/ToastProvider';
+import { Suspense } from 'react';
+import Loader from '@/components/ui/loader';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
@@ -23,16 +25,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${fustat.className} flex min-h-screen flex-col bg-[#F5F3EF] antialiased`}>
-        <ThemeProvider attribute="class">
-          <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
-            <GoogleAuthProvider>
-              <ToastProvider>
-                <AuthHandler />
-                {children}
-              </ToastProvider>
-            </GoogleAuthProvider>
-          </GoogleOAuthProvider>
-        </ThemeProvider>
+        <Suspense>
+          <ThemeProvider attribute="class">
+            <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
+              <GoogleAuthProvider>
+                <ToastProvider>
+                  <AuthHandler />
+                  {children}
+                </ToastProvider>
+              </GoogleAuthProvider>
+            </GoogleOAuthProvider>
+          </ThemeProvider>
+        </Suspense>
       </body>
     </html>
   );

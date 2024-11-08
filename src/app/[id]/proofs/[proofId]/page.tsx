@@ -2,13 +2,14 @@
 
 import sdk from '@/lib/sdk';
 import { useProofStore } from '../../store';
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 
-const ProofInfo = ({ params }: { params: { id: string; proofId: string } }) => {
+const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, emailContent, setBlueprint } = useProofStore();
+  const { id, proofId } = use(params);
 
   console.log('emailContent', emailContent);
 
@@ -16,10 +17,10 @@ const ProofInfo = ({ params }: { params: { id: string; proofId: string } }) => {
     reset();
 
     sdk
-      .getBlueprint(params.id)
+      .getBlueprint(id)
       .then(setBlueprint)
       .catch((err) => {
-        console.error(`Failed to blueprint with id ${params.id}: `, err);
+        console.error(`Failed to blueprint with id ${id}: `, err);
       });
   }, []);
 
@@ -32,15 +33,13 @@ const ProofInfo = ({ params }: { params: { id: string; proofId: string } }) => {
         <div className="flex flex-row justify-between">
           <div className="text-base font-medium text-grey-700">Job Id</div>
           <div className="gap-1 text-base font-medium text-grey-800">
-            {params.proofId}
+            {proofId}
             <span className="ml-1">
               <Button
                 variant="secondary"
                 className="h-auto w-auto p-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigator.clipboard.writeText(params.proofId);
+                onClick={() => {
+                  navigator.clipboard.writeText(proofId);
                   toast.success('Copied to clipboard');
                 }}
               >

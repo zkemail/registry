@@ -42,7 +42,7 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            navigator.clipboard.writeText(blueprint.props.slug);
+            navigator.clipboard.writeText(blueprint?.props?.slug || '');
             toast.success('Copied to clipboard');
           }}
           className="ml-2 cursor-pointer rounded-sm border border-grey-500 bg-neutral-100 p-1 py-0.5"

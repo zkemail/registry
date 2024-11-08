@@ -50,7 +50,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           name: dcr.name,
           value: output[index],
         }))
-        .filter((item: { value: string }) => item.value.length > 0); // Filter out items with no value
+        .filter((item: { value: string[] }) => item.value.length > 0); // Filter out items with no value
 
       console.log('mappedOutput: ', output);
 
@@ -61,7 +61,7 @@ const SelectEmails = ({ id }: { id: string }) => {
   };
 
   useEffect(() => {
-    const checkFileValidity = async (file) => {
+    const checkFileValidity = async (file: string | null) => {
       if (file) {
         const valid = await handleValidateEmail(file);
 
@@ -70,9 +70,11 @@ const SelectEmails = ({ id }: { id: string }) => {
         const selectedEmail = {
           emailMessageId: 'uploadedFile',
           subject,
-          internalDate: new Date(file.match(/Date: (.*)/)?.[1]).toISOString(),
+          internalDate: file.match(/Date: (.*)/)?.[1]
+            ? new Date(file.match(/Date: (.*)/)?.[1] as string).toISOString()
+            : 'Invalid Date',
           decodedContents: file,
-          valid: valid,
+          valid: valid ? [{ name: 'file', value: ['true'] }] : [],
         };
 
         setFetchedEmails([selectedEmail]);
@@ -99,9 +101,10 @@ const SelectEmails = ({ id }: { id: string }) => {
         const validatedEmails: Email[] = await Promise.all(
           emails.map(async (email) => {
             console.log('email', email);
+            const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
-              valid: await handleValidateEmail(email.decodedContents),
+              valid: validationResult ? [{ name: 'email', value: ['true'] }] : []
             };
           })
         );
@@ -162,8 +165,10 @@ const SelectEmails = ({ id }: { id: string }) => {
           {/* Rows */}
           <RadioGroup
             onValueChange={(value) => {
-              setSelectedEmail(fetchedEmails.find((email) => email.decodedContents === value));
-
+              const selectedEmail = fetchedEmails.find((email) => email.decodedContents === value);
+              if (selectedEmail) {
+                setSelectedEmail(selectedEmail);
+              }
               setEmailContent(value);
             }}
           >
