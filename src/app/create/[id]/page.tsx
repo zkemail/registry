@@ -225,6 +225,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           {/* TODO: Add check for email body max length */}
           <DragAndDropFile
             accept=".eml"
+            file={file}
             title="Upload test .eml"
             helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
             setFile={(e) => {
