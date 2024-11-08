@@ -81,6 +81,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   const handleTestEmail = async () => {
+    console.log('testing email');
     if (!file) {
       console.error('Add email first');
       return;
@@ -93,6 +94,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       console.error('Failed to get content from email');
       return;
     }
+    console.log('got email content');
 
     try {
       const parsed = getParsedDecomposedRegexes();
@@ -121,6 +123,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   useEffect(() => {
+    console.log('handleTestEmail effect');
     if (file) {
       handleTestEmail();
     }

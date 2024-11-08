@@ -3,7 +3,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { getLoginWithGithubUrl } from '@zk-email/sdk';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
-import Link from 'next/link';
 
 export default function LoginButton() {
   const router = useRouter();
