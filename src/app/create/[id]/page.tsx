@@ -54,6 +54,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
   const [aiPrompt, setAiPrompt] = useState<string>('');
+  const [isGeneratingFieldsLoading, setIsGeneratingFieldsLoading] = useState(false);
+
+  console.log(file, file?.size);
 
   // Load data if an id is provided
   useEffect(() => {
@@ -72,11 +75,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setErrors([]);
       console.log('successfully saved blueprint');
       if (newId !== id) {
-        router.push(`/create/${id}`);
+        router.push(`/create/${newId}`);
+        toast.success('Successfully saved draft');
       }
     } catch (err) {
       console.log('Failed to submit blueprint');
       // TODO: Handle different kind of errors, e.g. per field errors
+      toast.error('Failed to submit blueprint');
       setErrors(['Unknown error while submitting blueprint']);
     }
   };
@@ -150,8 +155,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   const handleGenerateFields = async () => {
+    setIsGeneratingFieldsLoading(true);
     if (!file || !aiPrompt) {
       toast.error('Please provide both an email file and extraction goals');
+      setIsGeneratingFieldsLoading(false);
       return;
     }
 
@@ -183,6 +190,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     } catch (error) {
       console.error('Error generating fields:', error);
       toast.error('Failed to generate fields');
+    } finally {
+      setIsGeneratingFieldsLoading(false);
+      handleTestEmail();
     }
   };
 
@@ -212,6 +222,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             onChange={(e) => setField('circuitName', e.target.value)}
           />
           <Input title="Slug" disabled value={`${githubUserName}/${store.circuitName}`} />
+          {/* TODO: Add check for email body max length */}
           <DragAndDropFile
             accept=".eml"
             title="Upload test .eml"
@@ -274,6 +285,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             title="Max Email Body Length"
             disabled={store.ignoreBodyHashCheck}
             placeholder="4032"
+            max={8192}
             type="number"
             helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
             value={store.emailBodyMaxLength}
@@ -295,10 +307,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
                 variant="secondary"
                 size="sm"
+                disabled={!file || aiPrompt.length === 0 || isGeneratingFieldsLoading}
+                loading={isGeneratingFieldsLoading}
                 startIcon={<Image src="/assets/Sparkle.svg" alt="sparkle" width={16} height={16} />}
                 onClick={handleGenerateFields}
               >
-                Generate Fields
+                {isGeneratingFieldsLoading ? 'Generating...' : 'Generate Fields'}
               </Button>
             </div>
           </div>
@@ -318,12 +332,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               </Button>
             </div>
 
-            {store.decomposedRegexes.map((regex: DecomposedRegex, index: number) => (
+            {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => (
               <div key={index} className="flex flex-col gap-3 pl-2">
                 <div className="flex items-center justify-between">
                   <Label>Field #{(index + 1).toString().padStart(2, '0')}</Label>
                   <Button
-                    variant="secondary"
+                    variant="destructive"
                     startIcon={<Image src="/assets/Trash.svg" alt="trash" width={16} height={16} />}
                     onClick={() => {
                       const updatedRegexes = [...store.decomposedRegexes];
@@ -409,7 +423,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <div className="flex items-center justify-between">
                   <Label>Field #{(index + 1).toString().padStart(2, '0')}</Label>
                   <Button
-                    variant="secondary"
+                    variant="destructive"
                     startIcon={<Image src="/assets/Trash.svg" alt="trash" width={16} height={16} />}
                     onClick={() => {
                       const updatedInputs = store.externalInputs ? [...store.externalInputs] : [];

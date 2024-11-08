@@ -6,6 +6,9 @@ const ViewProof = () => {
   const { blueprint } = useProofStore();
   const { getProofIdsForBlueprint } = useProofEmailStore();
 
+  console.log('blueprint', blueprint);
+  console.log('getProofIdsForBlueprint', getProofIdsForBlueprint(blueprint.props.id));
+
   return (
     <div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">

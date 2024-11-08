@@ -58,7 +58,7 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
           {blueprint.props.decomposedRegexes?.map((dr, index) => (
             <div
               key={index}
-              className="h-fit rounded-md border border-grey-900 px-2 py-[1px] text-sm font-light leading-[18px]"
+              className="h-fit rounded-md border border-grey-500 text-grey-900 px-2 py-[1px] text-sm font-light leading-[18px]"
             >
               {dr.name}
             </div>

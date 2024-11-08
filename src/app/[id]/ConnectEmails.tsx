@@ -46,7 +46,7 @@ const ConnectEmails = () => {
           e.stopPropagation();
           const files = e.dataTransfer.files;
           if (files?.[0]) {
-            setFile(files[0]).then(() => setStep('2'));
+            setFile(files[0]).then(() => setStep('1'));
           }
         }}
         style={{
@@ -71,10 +71,10 @@ const ConnectEmails = () => {
               if (file) {
                 setFile(file).then(() => {
                   if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
-                    setStep('2');
+                    setStep('1');
                   } else {
                     startProofGeneration();
-                    setStep('3');
+                    setStep('1');
                   }
                 });
               }

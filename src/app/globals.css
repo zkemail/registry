@@ -74,6 +74,11 @@ body {
   }
 }
 
+.Toastify__toast-container {
+  max-width: 500px;
+  min-width: 300px;
+}
+
 .Toastify__progress-bar--wrp {
   top: 0;
   height: 3px;
