@@ -6,6 +6,7 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { forwardRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
+import { Status } from '@zk-email/sdk';
 
 type FilterAndSortButtonProps = ButtonProps & {};
 
@@ -15,12 +16,12 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
     const searchParams = useSearchParams();
     const { replace } = useRouter();
     const pathname = usePathname();
-    const [filters, setFilters] = useState<string[]>(
-      searchParams.get('filter')?.split(',').filter(Boolean) || []
+    const [filters, setFilters] = useState<Status[]>(
+      (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || []
     );
     const [sort, setSort] = useState(searchParams.get('sort') || '');
 
-    const handleFilter = (filterValue: string, checked: boolean) => {
+    const handleFilter = (filterValue: Status, checked: boolean) => {
       const newFilters = checked
         ? [...filters, filterValue]
         : filters.filter((f) => f !== filterValue);
@@ -65,23 +66,23 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
               <div className="flex flex-col gap-2 px-3">
                 <Checkbox
                   title="Compiled"
-                  checked={filters.includes('compiled')}
+                  checked={filters.includes(Status.Done)}
                   onCheckedChange={(checked: boolean) => {
-                    handleFilter('compiled', checked);
+                    handleFilter(Status.Done, checked);
                   }}
                 />
                 <Checkbox
                   title="In Progress"
-                  checked={filters.includes('in-progress')}
+                  checked={filters.includes(Status.InProgress)}
                   onCheckedChange={(checked: boolean) => {
-                    handleFilter('in-progress', checked);
+                    handleFilter(Status.InProgress, checked);
                   }}
                 />
                 <Checkbox
                   title="Failed"
-                  checked={filters.includes('failed')}
+                  checked={filters.includes(Status.Failed)}
                   onCheckedChange={(checked: boolean) => {
-                    handleFilter('failed', checked);
+                    handleFilter(Status.Failed, checked);
                   }}
                 />
               </div>
