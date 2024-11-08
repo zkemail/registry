@@ -43,6 +43,9 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <Link href={`/${blueprint.props.id}`}>
+            <Button size="sm">Try it</Button>
+          </Link>
           <Button
             variant="secondary"
             startIcon={<Image src="/assets/Download.svg" alt="Download" width={16} height={16} />}

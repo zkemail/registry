@@ -29,7 +29,7 @@ const Checkbox = React.forwardRef<
           <CheckIcon className="h-4 w-4" />
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
-      {title ? <Label>{title}</Label> : null}
+      {title ? <Label className="text-sm text-grey-700">{title}</Label> : null}
     </div>
     {helpText ? <p className="text-base text-grey-600">{helpText}</p> : null}
   </div>

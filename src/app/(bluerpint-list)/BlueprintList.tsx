@@ -2,17 +2,20 @@
 
 import Link from 'next/link';
 import BlueprintCard from '@/app/components/BlueprintCard';
-import { Blueprint } from '@zk-email/sdk';
+import { Blueprint, Status } from '@zk-email/sdk';
 import sdk from '@/lib/sdk';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Loader from '@/components/ui/loader';
 
 const PAGINATION_LIMIT = 30;
 
 interface BlueprintListProps {
   search: string | null;
+  filters: string[];
+  sort: string;
 }
 
-export default function BlueprintList({ search }: BlueprintListProps) {
+export default function BlueprintList({ search, filters, sort }: BlueprintListProps) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
   const [skip, setSkip] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +35,8 @@ export default function BlueprintList({ search }: BlueprintListProps) {
         search: search || '',
         skip,
         limit: PAGINATION_LIMIT,
+        status: filters.length > 0 ? filters.map((f) => f as Status) : undefined,
+        sort: sort === 'most-recent' ? 1 : sort === 'most-used' ? -1 : undefined,
       });
 
       setBlueprints((prev) => {
@@ -111,14 +116,14 @@ export default function BlueprintList({ search }: BlueprintListProps) {
 
       <div ref={loadingRef} className="flex h-10 w-full items-center justify-center">
         {isLoading ? (
-          <div className="text-gray-500">Loading more blueprints...</div>
+          <Loader />
         ) : !hasMore && blueprints.length > 0 ? (
           <div className="text-gray-500">No more blueprints to load</div>
         ) : blueprints.length === 0 && !isLoading ? (
           search ? (
             <div>No blueprints found for "{search}"</div>
           ) : (
-            <div>Loading...</div>
+            <Loader />
           )
         ) : null}
       </div>

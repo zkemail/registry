@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
 import useGoogleAuth from '../hooks/useGoogleAuth';
@@ -9,13 +9,78 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { getFileContent } from '@/lib/utils';
+import { useCreateBlueprintStore } from '../create/[id]/store';
+import { DecomposedRegex, testDecomposedRegex } from '@zk-email/sdk';
 
-const SelectEmails = () => {
-  const { setStep, setEmailContent, blueprint, startProofGeneration } = useProofStore();
+type Email = RawEmailResponse & {
+  valid: { name: string; value: string[] }[];
+};
+
+const SelectEmails = ({ id }: { id: string }) => {
+  const { setStep, file, setEmailContent, blueprint, startProofGeneration } = useProofStore();
+  const store = useCreateBlueprintStore();
+  const { getParsedDecomposedRegexes, setToExistingBlueprint, reset } = store;
+
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
-  const [fetchedEmails, setFetchedEmails] = useState<RawEmailResponse[]>([]);
+  const [fetchedEmails, setFetchedEmails] = useState<Email[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const { googleAuthToken } = useGoogleAuth();
+
+  useEffect(() => {
+    if (id !== 'new') {
+      setToExistingBlueprint(id);
+    }
+
+    return () => {
+      reset();
+    };
+  }, [id]);
+
+  const handleValidateEmail = async (content: string) => {
+    try {
+      const parsed = getParsedDecomposedRegexes();
+      const output = await Promise.all(
+        parsed.map((dcr: DecomposedRegex) => testDecomposedRegex(content, dcr, false))
+      );
+      // Create array of name-value pairs
+      const mappedOutput = parsed
+        .map((dcr: DecomposedRegex, index: number) => ({
+          name: dcr.name,
+          value: output[index],
+        }))
+        .filter((item: { value: string }) => item.value.length > 0); // Filter out items with no value
+
+      console.log('mappedOutput: ', output);
+
+      return mappedOutput.length > 0;
+    } catch (err) {
+      console.error('Failed to test decomposed regex on eml: ', err);
+    }
+  };
+
+  useEffect(() => {
+    const checkFileValidity = async (file) => {
+      if (file) {
+        const valid = await handleValidateEmail(file);
+
+        const subject = file.match(/Subject: (.*)/)?.[1] || 'No Subject';
+
+        const selectedEmail = {
+          emailMessageId: 'uploadedFile',
+          subject,
+          internalDate: new Date(file.match(/Date: (.*)/)?.[1]).toISOString(),
+          decodedContents: file,
+          valid: valid,
+        };
+
+        setFetchedEmails([selectedEmail]);
+      }
+    };
+
+    checkFileValidity(file);
+  }, []);
 
   console.log('selectedEmail: ', fetchedEmails);
 
@@ -31,7 +96,19 @@ const SelectEmails = () => {
         const emailIds = emailResponseMessages.map((message) => message.id);
         const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
 
-        setFetchedEmails([...fetchedEmails, ...emails]);
+        const validatedEmails: Email[] = await Promise.all(
+          emails.map(async (email) => {
+            console.log('email', email);
+            return {
+              ...email,
+              valid: await handleValidateEmail(email.decodedContents),
+            };
+          })
+        );
+
+        console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
+        setFetchedEmails([...fetchedEmails, ...validatedEmails]);
+
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
         setFetchedEmails([]);
@@ -44,6 +121,9 @@ const SelectEmails = () => {
   };
 
   useEffect(() => {
+    if (file) {
+      return;
+    }
     if (googleAuthToken?.access_token) {
       handleFetchEmails();
     }
@@ -80,7 +160,13 @@ const SelectEmails = () => {
           </div>
 
           {/* Rows */}
-          <RadioGroup onValueChange={(value) => setEmailContent(value)}>
+          <RadioGroup
+            onValueChange={(value) => {
+              setSelectedEmail(fetchedEmails.find((email) => email.decodedContents === value));
+
+              setEmailContent(value);
+            }}
+          >
             <AnimatePresence initial={false}>
               {fetchedEmails.map((email, index) => (
                 <motion.div
@@ -91,12 +177,23 @@ const SelectEmails = () => {
                   className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
                   style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
                 >
-                  <RadioGroupItem value={email.decodedContents} id={email.emailMessageId} />
+                  <RadioGroupItem
+                    value={email.decodedContents}
+                    id={email.emailMessageId}
+                    disabled={!email.valid}
+                  />
 
                   <div className="flex items-center justify-center">
-                    <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
+                    {email.valid ? (
+                      <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
+                    ) : (
+                      <Image src="/assets/WarningCircle.svg" alt="status" width={20} height={20} />
+                    )}
                   </div>
-                  <div>{formatDate(email.internalDate)}</div>
+                  <div>
+                    <div>{formatDate(email.internalDate).split(',')[0]}</div>
+                    <div>{formatDate(email.internalDate).split(',')[1]}</div>
+                  </div>
                   <div className="overflow-hidden text-ellipsis">{email.subject}</div>
                   <div>
                     <button className="flex items-center gap-1 underline hover:underline">
@@ -129,6 +226,7 @@ const SelectEmails = () => {
 
           <Button
             className="flex w-max items-center gap-2"
+            disabled={selectedEmail === null}
             onClick={() => {
               if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
                 setStep('2');

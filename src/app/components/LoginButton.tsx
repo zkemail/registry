@@ -27,7 +27,7 @@ export default function LoginButton() {
           Login
         </Button>
       ) : (
-        <Button className="rounded-xl" onClick={clearAuth}>
+        <Button variant="secondary" className="rounded-xl" onClick={clearAuth}>
           Logout
         </Button>
       )}

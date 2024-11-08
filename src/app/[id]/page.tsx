@@ -12,6 +12,7 @@ import { useSearchParams } from 'next/navigation';
 import sdk from '@/lib/sdk';
 import Link from 'next/link';
 import AddInputs from './AddInputs';
+import Loader from '@/components/ui/loader';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -35,7 +36,13 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       });
   }, []);
 
-  if (!blueprint) return <div>Loading...</div>;
+  if (!blueprint) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">
@@ -114,7 +121,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           }}
         />
         {step === '0' && <ConnectEmails />}
-        {step === '1' && <SelectEmails />}
+        {step === '1' && <SelectEmails id={id} />}
         {step === '2' && <AddInputs />}
         {step === '3' && <ViewProof />}
       </div>
