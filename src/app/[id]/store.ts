@@ -4,9 +4,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
 
-type Step = '0' | '1' | '2' | '3';
+export type Step = '0' | '1' | '2' | '3';
 
-type ExternalInputState = {
+export type ExternalInputState = {
   name: string;
   value: string;
 };

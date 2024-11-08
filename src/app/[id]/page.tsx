@@ -1,5 +1,5 @@
 'use client';
-import { use, useEffect, Suspense } from 'react';
+import { use, useEffect } from 'react';
 import Image from 'next/image';
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Button } from '@/components/ui/button';
@@ -7,7 +7,7 @@ import Stepper from '../components/Stepper';
 import ConnectEmails from './ConnectEmails';
 import SelectEmails from './SelectEmails';
 import ViewProof from './ViewProof';
-import { useProofStore } from './store';
+import { Step, useProofStore } from './store';
 import { useSearchParams } from 'next/navigation';
 import sdk from '@/lib/sdk';
 import Link from 'next/link';
@@ -16,35 +16,14 @@ import Loader from '@/components/ui/loader';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-  const { reset, blueprint, setBlueprint } = useProofStore();
+  const { reset, blueprint, setBlueprint, setStep, step: storeStep } = useProofStore();
+  const searchParams = useSearchParams();
 
-  const getSteps = (blueprint: any) => 
-    blueprint?.props.externalInputs
-      ? ['Connect emails', 'Select emails', 'Add inputs', 'View and verify']
-      : ['Connect emails', 'Select emails', 'View and verify'];
+  let steps = blueprint?.props.externalInputs
+    ? ['Connect emails', 'Select emails', 'Add inputs', 'View and verify']
+    : ['Connect emails', 'Select emails', 'View and verify'];
 
-  const StepContent = () => {
-    const searchParams = useSearchParams();
-    const step = searchParams.get('step') || '0';
-    const steps = getSteps(blueprint);
-
-    return (
-      <>
-        <Stepper steps={steps} currentStep={step} />
-        <div
-          style={{
-            height: '2px',
-            marginTop: '24px',
-            backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
-          }}
-        />
-        {step === '0' && <ConnectEmails />}
-        {step === '1' && <SelectEmails id={id} />}
-        {step === '2' && <AddInputs />}
-        {step === '3' && <ViewProof />}
-      </>
-    );
-  };
+  let step = searchParams.get('step') || '0';
 
   useEffect(() => {
     reset();
@@ -113,7 +92,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
               </span>
             </span>
           </div>
-          <div>
+          <div className="flex flex-row gap-2 w-auto">
             <Link href={`/${id}/versions`}>
               <Button
                 variant="secondary"
@@ -127,15 +106,48 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
                 View all versions
               </Button>
             </Link>
+            <Link href={`/${id}/proofs`}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white"
+                onClick={() => {}}
+                startIcon={
+                  <Image src="/assets/Files.svg" alt="commit" width={16} height={16} />
+                }
+              >
+                Past proofs
+              </Button>
+            </Link>
           </div>
         </div>
       </>
 
       <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
         <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
-        <Suspense fallback={<Loader />}>
-          <StepContent />
-        </Suspense>
+        <Stepper steps={steps} currentStep={step} />
+        <div
+          style={{
+            height: '2px',
+            marginTop: '24px',
+            backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
+          }}
+        />
+        {step !== '0' && (
+          <div className="flex w-auto">
+            <Button
+              variant="ghost"
+              startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
+              onClick={() => setStep((parseInt(step) - 1).toString() as Step)}
+            >
+              {steps[parseInt(step) - 1]}
+            </Button>
+          </div>
+        )}
+        {step === '0' && <ConnectEmails />}
+        {step === '1' && <SelectEmails id={id} />}
+        {step === '2' && <AddInputs />}
+        {step === '3' && <ViewProof />}
       </div>
     </div>
   );
