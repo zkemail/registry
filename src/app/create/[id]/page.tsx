@@ -46,6 +46,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setToExistingBlueprint,
     decomposedRegexes,
     reset,
+    compile,
   } = store;
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
@@ -142,7 +143,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return (
         <div className="flex items-center gap-2 text-green-300">
           <Image src="/assets/CheckCircle.svg" alt="check" width={20} height={20} />
-          <span className="text-base font-medium">All test passed. Ready to compile</span>
+          <span className="text-base font-medium">All tests passed. Ready to compile</span>
         </div>
       );
     }
@@ -474,7 +475,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               Save as Draft
             </Button>
             <Button
-              onClick={handleSaveDraft}
+              onClick={compile}
               disabled={!file || !!errors.length || generatedOutput.length === 0}
               startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
             >

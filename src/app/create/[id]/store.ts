@@ -14,7 +14,7 @@ type CreateBlueprintState = BlueprintProps & {
   setField: (field: keyof BlueprintProps, value: any) => void;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => void;
-  compile: () => Promise<string>;
+  compile: () => Promise<void>;
   saveDraft: () => Promise<string>;
   reset: () => void;
 };
@@ -88,21 +88,26 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         try {
           // Create a new blueprint
           if (!state.id || state.id === 'new') {
+            console.log('creating blueprint');
             const blueprint = sdk.createBlueprint(data);
+            console.log('created a blueprint');
             await blueprint.submitDraft();
+            console.log('submitting draft');
             set({ blueprint });
             return blueprint.props.id!;
           }
 
           // Update an existing blueprint
           if (state.blueprint && state.blueprint.canUpdate()) {
-            await state.blueprint.update(state);
+            console.log('updating');
+            await state.blueprint.update(data);
             return state.blueprint.props.id!;
           }
 
           // Create a new version of an blueprint
           if (state.blueprint && !state.blueprint.canUpdate()) {
-            await state.blueprint.submitNewVersionDraft(state);
+            console.log('create');
+            await state.blueprint.submitNewVersionDraft(data);
             return state.blueprint.props.id!;
           }
 
@@ -125,7 +130,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           throw err;
         }
       },
-      compile: async (): Promise<string> => {
+      compile: async (): Promise<void> => {
         const state = get();
         // In theory we could also save before compiling here if we want, caling createBlueprint first
         if (!state.blueprint) {
@@ -140,7 +145,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
 
         // const status = await state.blueprint.checkStatus()
 
-        return state.blueprint.props.id!;
+        window.history.replaceState(null, '', '/');
       },
       reset: () => set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps) }),
     }),
