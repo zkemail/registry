@@ -14,7 +14,7 @@ import { formatDate } from '@/app/utils';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
-  const { getUpdatingStatus, data, getProofIdsForBlueprint } = useProofEmailStore();
+  const { getUpdatingStatus, data, getProofIdsForBlueprint, getProof } = useProofEmailStore();
 
   const { id, proofId } = use(params);
 
@@ -28,15 +28,40 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     getProofIdsForBlueprint(id);
   }
 
+  const handleGetStatusChip = (status: ProofStatus) => {
+    let statusText = '';
+    switch (status) {
+      case ProofStatus.InProgress:
+        statusText = 'In Progress';
+        break;
+      case ProofStatus.Done:
+        statusText = 'Completed';
+        break;
+      case ProofStatus.Failed:
+        statusText = 'Failed';
+        break;
+      default:
+        statusText = 'Unknown';
+    }
+
+    return (
+      <div className="flex flex-row gap-2">
+        {handleGetStatusIcon(status)}
+        <p className="text-base font-medium text-grey-800">{statusText}</p>
+      </div>
+    );
+  };
+
   useEffect(() => {
-    if (!data[id!]) {
+    if (!data[id!] || !data[id!]?.[proofId]) {
       return;
     }
+
     const statusPromise = getUpdatingStatus(data[id!]?.[proofId]);
     statusPromise.then(setStatus);
 
     // @ts-ignore
-    return () => statusPromise.abort();
+    // return () => statusPromise?.abort();
   }, [data[id!]?.[proofId]]);
 
   useEffect(() => {
@@ -48,6 +73,8 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
       });
+
+    getProof(proofId);
   }, []);
 
   useEffect(() => {
@@ -59,8 +86,18 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-      <div>
+      <div className="flex flex-row items-center justify-between">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
+        <Button
+          className="flex flex-row gap-2"
+          onClick={() => {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success('Link successfully copied to clipboard');
+          }}
+        >
+          <Image src="/assets/Share.svg" alt="Share proof" width={16} height={16} />
+          Share Proof
+        </Button>
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex flex-row justify-between">
@@ -89,7 +126,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-row justify-between">
           <div className="text-base font-medium text-grey-700">Outputs</div>
-          <div className="text-base font-medium text-grey-800">{'-'}</div>
+          <div className="text-base font-medium text-grey-800">
+            {emailProof?.public
+              ? Object.entries(emailProof.public)
+                  .map(([key, value]) => `{"${key}": "${value}"}`)
+                  .join('\n')
+              : '-'}
+          </div>
         </div>
         <div className="flex flex-row justify-between">
           <div className="text-base font-medium text-grey-700">Sent on</div>
@@ -111,7 +154,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-row justify-between">
           <div className="text-base font-medium text-grey-700">Status</div>
-          <div className="text-base font-medium text-grey-800">{handleGetStatusIcon(status)}</div>
+          <div className="text-base font-medium text-grey-800">{handleGetStatusChip(status)}</div>
         </div>
       </div>
       {parsedEmail?.html ? (

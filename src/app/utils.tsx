@@ -61,7 +61,8 @@ const getDateToNowStr = (date?: Date) => {
 };
 
 const formatDate = (timestamp: string) => {
-  return new Date(Number(timestamp)).toLocaleString('en-US', {
+  console.log(timestamp, 'timestamp');
+  return new Date(Number(new Date(timestamp).getTime())).toLocaleString('en-US', {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',

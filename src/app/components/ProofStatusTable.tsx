@@ -2,10 +2,11 @@ import ProofRow from '@/app/[id]/ProofRow';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import { useProofStore } from '@/app/[id]/store';
 
-const ProofStatusTable = () => {
+const ProofStatusTable = ({ proofs }: { proofs: string[] }) => {
   const { blueprint } = useProofStore();
-  const { getProofIdsForBlueprint } = useProofEmailStore();
 
+  console.log(proofs);
+  
   return (
     <div className="w-full">
       <div
@@ -24,8 +25,7 @@ const ProofStatusTable = () => {
         style={{ gridTemplateColumns: '1.5fr 5fr 1fr 1fr 1fr' }}
       >
         {blueprint &&
-          blueprint.props.id &&
-          getProofIdsForBlueprint(blueprint.props.id).map((proofId, index) => (
+          proofs.map((proofId, index) => (
             <ProofRow key={proofId} proofId={proofId} index={index} blueprint={blueprint} />
           ))}
       </div>

@@ -10,6 +10,7 @@ import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
 import { DecomposedRegex, testDecomposedRegex } from '@zk-email/sdk';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -19,7 +20,11 @@ const SelectEmails = ({ id }: { id: string }) => {
   const { setStep, file, setEmailContent, blueprint, startProofGeneration } = useProofStore();
   const store = useCreateBlueprintStore();
   const { getParsedDecomposedRegexes, setToExistingBlueprint, reset } = store;
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const searchParams = useSearchParams();
 
+  const [isCreateProofLoading, setIsCreateProofLoading] = useState(false);
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<Email[]>([]);
@@ -55,6 +60,23 @@ const SelectEmails = ({ id }: { id: string }) => {
       return mappedOutput.length > 0;
     } catch (err) {
       console.error('Failed to test decomposed regex on eml: ', err);
+    }
+  };
+
+  const handleStartProofGeneration = async () => {
+    setIsCreateProofLoading(true);
+    try {
+      const proofId = await startProofGeneration();
+      // setStep('3');
+      const params = new URLSearchParams(searchParams);
+      params.set('proofId', proofId);
+      params.set('step', '3');
+      console.log(pathname, params.toString());
+      await replace(`${pathname}?${params.toString()}`);
+    } catch (error) {
+      console.error('Error in starting proof generation: ', error);
+    } finally {
+      setIsCreateProofLoading(false);
     }
   };
 
@@ -182,7 +204,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                   <RadioGroupItem
                     value={email.decodedContents}
                     id={email.emailMessageId}
-                    disabled={!email.valid}
+                    // disabled={!email.valid}
                   />
 
                   <div className="flex items-center justify-center">
@@ -229,12 +251,12 @@ const SelectEmails = ({ id }: { id: string }) => {
           <Button
             className="flex w-max items-center gap-2"
             disabled={selectedEmail === null}
+            loading={isCreateProofLoading}
             onClick={() => {
               if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
                 setStep('2');
               } else {
-                startProofGeneration();
-                setStep('3');
+                handleStartProofGeneration();
               }
             }}
           >

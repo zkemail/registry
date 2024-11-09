@@ -24,7 +24,7 @@ interface ProofState {
   setFile: (file: File) => Promise<void>;
   setExternalInputs: (inputs: ExternalInputState[]) => void;
   setBlueprint: (blueprint: Blueprint) => void;
-  startProofGeneration: () => void;
+  startProofGeneration: () => string;
   reset: () => void;
 }
 
@@ -111,6 +111,8 @@ export const useProofStore = create<ProofState>()(
           email: file,
         });
         console.log('added proof');
+
+        return proof.props.id;
       },
       reset: () => set(initialState),
     }),

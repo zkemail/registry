@@ -7,7 +7,6 @@ import GoogleAuthProvider from './contexts/GoogleAuthProvider';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ToastProvider from './contexts/ToastProvider';
 import { Suspense } from 'react';
-import Loader from '@/components/ui/loader';
 
 const fustat = Fustat({ subsets: ['latin'] });
 

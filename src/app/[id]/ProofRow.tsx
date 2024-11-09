@@ -45,7 +45,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
     statusPromise.then(setStatus);
 
     // @ts-ignore
-    return () => statusPromise.abort();
+    return () => statusPromise?.abort();
   }, []);
 
   // TODO: Add blueprint information?

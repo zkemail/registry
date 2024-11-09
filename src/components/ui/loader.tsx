@@ -3,10 +3,11 @@ import lottie from 'lottie-web';
 
 export default function Loader() {
   const animationContainer = useRef(null);
+  const animationInstance = useRef<lottie.AnimationItem | null>(null);
 
   useEffect(() => {
-    if (animationContainer.current) {
-      lottie.loadAnimation({
+    if (animationContainer.current && !animationInstance.current) {
+      animationInstance.current = lottie.loadAnimation({
         container: animationContainer.current as Element,
         renderer: 'svg',
         loop: true,
@@ -14,6 +15,13 @@ export default function Loader() {
         path: '/assets/loader.json',
       });
     }
+
+    return () => {
+      if (animationInstance.current) {
+        animationInstance.current.destroy();
+        animationInstance.current = null;
+      }
+    };
   }, []);
 
   return <div ref={animationContainer} className="h-16 w-16"></div>;
