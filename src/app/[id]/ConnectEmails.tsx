@@ -23,7 +23,13 @@ const ConnectEmails = () => {
           locally and never sent out to any of our servers.
         </p>
       </div>
-      <Button className="flex w-max items-center gap-2" onClick={googleLogIn(() => setStep('1'))}>
+      <Button
+        className="flex w-max items-center gap-2"
+        onClick={googleLogIn(() => {
+          setFile(null);
+          setStep('1');
+        })}
+      >
         <Image src="/assets/GoogleLogo.svg" alt="Google Logo" width={16} height={16} />
         Connect Gmail Account
       </Button>

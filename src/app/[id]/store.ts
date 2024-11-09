@@ -21,7 +21,7 @@ interface ProofState {
   // Actions
   setEmailContent: (content: string | null) => void;
   setStep: (step: Step) => void;
-  setFile: (file: File) => Promise<void>;
+  setFile: (file: File | null) => Promise<void>;
   setExternalInputs: (inputs: ExternalInputState[]) => void;
   setBlueprint: (blueprint: Blueprint) => void;
   startProofGeneration: () => Promise<string>;
@@ -61,7 +61,11 @@ export const useProofStore = create<ProofState>()(
         window.history.pushState(null, '', `?${params.toString()}`);
         set({ step });
       },
-      setFile: async (file: File) => {
+      setFile: async (file: File | null) => {
+        if (!file) {
+          set({ file: null });
+          return;
+        }
         let content = '';
         try {
           content = await getFileContent(file);
