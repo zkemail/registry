@@ -56,8 +56,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [aiPrompt, setAiPrompt] = useState<string>('');
   const [isGeneratingFieldsLoading, setIsGeneratingFieldsLoading] = useState(false);
 
-  console.log(file, file?.size);
-
   // Load data if an id is provided
   useEffect(() => {
     reset();
@@ -192,6 +190,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       handleTestEmail();
     }
   };
+  console.log('verifierContract', store, store.verifierContract);
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
@@ -295,6 +294,20 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
             value={store.emailBodyMaxLength}
             onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
+          />
+          <Select
+            label="Verifier Contract"
+            value={store.verifierContract?.chain?.toString()}
+            onChange={(value: string) => {
+              setField('verifierContract', {
+                address: parseInt(value),
+                chainId: parseInt(value),
+              });
+            }}
+            options={[
+              { label: 'Base Sepolia', value: '84532' },
+              { label: 'Sepolia', value: '11155111' },
+            ]}
           />
 
           <Label>AI auto extraction</Label>
