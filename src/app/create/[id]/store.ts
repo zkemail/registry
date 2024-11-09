@@ -1,4 +1,5 @@
 import sdk from '@/lib/sdk';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 import {
   Blueprint,
   BlueprintProps,
@@ -77,6 +78,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     data.decomposedRegexes.forEach((dcr) => {
       dcr.parts = JSON.parse((dcr.parts as unknown as string).trim());
     });
+
+    const githubUserName = useAuthStore.getState().username;
+    data.githubUsername = githubUserName ?? '';
+    data.slug = `${data.githubUsername}/${data.circuitName}`;
 
     console.log('Cleaned decomposed regex: ', data);
 
