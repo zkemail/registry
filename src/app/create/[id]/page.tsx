@@ -300,8 +300,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             value={store.verifierContract?.chain?.toString()}
             onChange={(value: string) => {
               setField('verifierContract', {
-                address: value,
-                chainId: value,
+                chain: value,
               });
             }}
             options={[
