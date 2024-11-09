@@ -25,7 +25,7 @@ interface ProofEmailState {
     };
   };
   getProofIdsForBlueprint: (blueprintId: string) => string[];
-  getUpdatingStatus: (proofEmail: ProofEmail) => Promise<ProofStatus>;
+  getUpdatingStatus: (proofEmail: ProofEmail, abortController: AbortController) => Promise<ProofStatus>;
   // getProofEmailsForBlueprint: (blueprintId: string) => ProofEmailStatusUpdate[];
   addProof: (blueprintId: string, proofId: string, data: ProofEmail) => void;
   getProof: (proofId: string) => Promise<ProofProps>;
@@ -61,7 +61,7 @@ export const useProofEmailStore = create<ProofEmailState>()(
           return proof.props;
         });
       },
-      getUpdatingStatus(proofEmail: ProofEmail): Promise<ProofStatus> {
+      getUpdatingStatus(proofEmail: ProofEmail, abortController: AbortController): Promise<ProofStatus> {
         if (!proofEmail || !proofEmail.status) {
           throw new Error('Unknown error, proofProps have no status');
         }
@@ -70,9 +70,6 @@ export const useProofEmailStore = create<ProofEmailState>()(
           return Promise.resolve(proofEmail.status);
         }
 
-        // Create an AbortController to handle cleanup
-        const abortController = new AbortController();
-
         // Get the proof first to then track the status async and wait for completion
         // After completion updates the store
         const statusPromise = new Promise<ProofStatus>(async (resolve, reject) => {
@@ -80,11 +77,11 @@ export const useProofEmailStore = create<ProofEmailState>()(
             let status = proofEmail.status;
             const proof = await sdk.getProof(proofEmail.id);
             console.log('got new proof: ', proof);
-
+            
             while (status === ProofStatus.InProgress && !abortController.signal.aborted) {
               status = await proof.checkStatus();
               console.log('current status: ', status);
-
+              
               if (status === ProofStatus.InProgress) {
                 await new Promise((resolve) => {
                   const timeoutId = setTimeout(resolve, 5000);
@@ -95,9 +92,11 @@ export const useProofEmailStore = create<ProofEmailState>()(
                   });
                 });
               } else {
+                const proofDetails = await sdk.getProof(proofEmail.id);
+
                 set((state: ProofEmailState) => {
                   state.data[proofEmail.blueprintId][proof.props.id] = {
-                    ...proof.props,
+                    ...proofDetails.props,
                     email: proofEmail.email,
                   };
                 });

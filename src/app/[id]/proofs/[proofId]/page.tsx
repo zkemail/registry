@@ -11,6 +11,7 @@ import PostalMime, { Email } from 'postal-mime';
 import { ProofStatus } from '@zk-email/sdk';
 import { handleGetStatusIcon } from '../../ProofRow';
 import { formatDate } from '@/app/utils';
+import Loader from '@/components/ui/loader';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -21,6 +22,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const emailProof = useProofEmailStore((state) => state.data[id!]?.[proofId]);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
+  const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
 
   console.log('emailProof', data);
 
@@ -30,48 +32,60 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   const handleGetStatusChip = (status: ProofStatus) => {
     let statusText = '';
+    let statusColor = '';
+
     switch (status) {
       case ProofStatus.InProgress:
         statusText = 'In Progress';
+        statusColor = '#007AFF';
         break;
       case ProofStatus.Done:
         statusText = 'Completed';
+        statusColor = '#34C759';
         break;
       case ProofStatus.Failed:
         statusText = 'Failed';
+        statusColor = '#C72C22';
         break;
       default:
         statusText = 'Unknown';
+        statusColor = 'text-grey-800';
     }
 
     return (
-      <div className="flex flex-row gap-2">
+      <div
+        className={`flex flex-row items-center gap-2 rounded-full px-3 py-1.5 text-xs text-[${statusColor}] border border-[${statusColor}]`}
+      >
         {handleGetStatusIcon(status)}
-        <p className="text-base font-medium text-grey-800">{statusText}</p>
+        <p className="font-semibold">{statusText}</p>
       </div>
     );
   };
 
   useEffect(() => {
-    if (!data[id!] || !data[id!]?.[proofId]) {
+    if (!data[id!]?.[proofId]) {
       return;
     }
 
-    const statusPromise = getUpdatingStatus(data[id!]?.[proofId]);
+    const abortController = new AbortController();
+    const statusPromise = getUpdatingStatus(data[id!]?.[proofId], abortController);
     statusPromise.then(setStatus);
 
-    // @ts-ignore
-    // return () => statusPromise?.abort();
+    return () => abortController.abort();
   }, [data[id!]?.[proofId]]);
 
   useEffect(() => {
     reset();
 
+    setIsFetchBlueprintLoading(true);
     sdk
       .getBlueprint(id)
       .then(setBlueprint)
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
+      })
+      .finally(() => {
+        setIsFetchBlueprintLoading(false);
       });
 
     getProof(proofId);
@@ -83,6 +97,14 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       setParsedEmail(email);
     });
   }, [data]);
+
+  if (isFetchBlueprintLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
@@ -133,10 +155,6 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
                   .join('\n')
               : '-'}
           </div>
-        </div>
-        <div className="flex flex-row justify-between">
-          <div className="text-base font-medium text-grey-700">Sent on</div>
-          <div className="text-base font-medium text-grey-800">{'-'}</div>
         </div>
         <div className="flex flex-row justify-between">
           <div className="text-base font-medium text-grey-700">Date created</div>

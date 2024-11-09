@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import lottie from 'lottie-web';
+import lottie, { AnimationItem } from 'lottie-web';
 
 export default function Loader() {
   const animationContainer = useRef(null);
-  const animationInstance = useRef<lottie.AnimationItem | null>(null);
+  const animationInstance = useRef<AnimationItem | null>(null);
 
   useEffect(() => {
     if (animationContainer.current && !animationInstance.current) {

@@ -138,7 +138,14 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
             <Button
               variant="ghost"
               startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
-              onClick={() => setStep((parseInt(step) - 1).toString() as Step)}
+              onClick={() => {
+                const newStep = parseInt(step) - 1;
+                if (steps.length === 3 && newStep === 2) {
+                  setStep('1' as Step);
+                } else {
+                  setStep((newStep + steps.length) % steps.length as unknown as Step);
+                }
+              }}
             >
               {steps[parseInt(step) - 1]}
             </Button>

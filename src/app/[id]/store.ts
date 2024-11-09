@@ -24,7 +24,7 @@ interface ProofState {
   setFile: (file: File) => Promise<void>;
   setExternalInputs: (inputs: ExternalInputState[]) => void;
   setBlueprint: (blueprint: Blueprint) => void;
-  startProofGeneration: () => string;
+  startProofGeneration: () => Promise<string>;
   reset: () => void;
 }
 

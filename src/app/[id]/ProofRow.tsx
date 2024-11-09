@@ -41,11 +41,11 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   const [status, setStatus] = useState<ProofStatus>(emailProof.status!);
 
   useEffect(() => {
-    const statusPromise = getUpdatingStatus(emailProof);
+    const abortController = new AbortController();
+    const statusPromise = getUpdatingStatus(emailProof, abortController);
     statusPromise.then(setStatus);
 
-    // @ts-ignore
-    return () => statusPromise?.abort();
+    return () => abortController.abort();
   }, []);
 
   // TODO: Add blueprint information?
@@ -76,7 +76,13 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
         <span>View</span>
       </Link>
       <div className="flex items-center justify-center">
-        <pre className="whitespace-pre-wrap text-left">{emailProof.public}</pre>
+        <pre className="whitespace-pre-wrap text-left">
+          {emailProof?.public
+            ? Object.entries(emailProof.public)
+                .map(([key, value]) => `{"${key}": "${value}"}`)
+                .join('\n')
+            : '-'}
+        </pre>
       </div>
       <div className="flex items-center justify-center">{handleGetStatusIcon(status)}</div>
       <div className="flex items-center justify-center">

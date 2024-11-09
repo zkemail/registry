@@ -4,16 +4,23 @@ import Loader from '@/components/ui/loader';
 import ProofStatusTable from '../components/ProofStatusTable';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import { ProofStatus } from '@zk-email/sdk';
-import { useEffect } from 'react';
+import { use, useEffect } from 'react';
 import { useState } from 'react';
 import { useProofStore } from './store';
+import { useSearchParams } from 'next/navigation';
 
-const ViewProof = ({ params }: { params: { proofId: string } }) => {
-  const proofId = params?.proofId;
-  const { getUpdatingStatus, data } = useProofEmailStore();
+const ViewProof = () => {
+  const searchParams = useSearchParams();
+
+  const proofId = searchParams.get('proofId');
+  // TODO: handle case where proofId is not provided
+
+  const { getUpdatingStatus, data, getProof } = useProofEmailStore();
   const blueprint = useProofStore((state) => state.blueprint);
 
-  const emailProof = useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId]);
+  const emailProof = blueprint
+    ? useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId!])
+    : undefined;
 
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status ?? ProofStatus.None);
 
@@ -22,11 +29,14 @@ const ViewProof = ({ params }: { params: { proofId: string } }) => {
   useEffect(() => {
     if (!emailProof) return;
 
-    const statusPromise = getUpdatingStatus(emailProof);
+    const abortController = new AbortController();
+
+    console.log('getProof', proofId, emailProof);
+    const statusPromise = getUpdatingStatus(emailProof, abortController);
     statusPromise.then(setStatus);
 
-    // return () => statusPromise.abort();
-  }, [emailProof]);
+    return () => abortController.abort();
+  }, [emailProof, proofId]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -38,7 +48,7 @@ const ViewProof = ({ params }: { params: { proofId: string } }) => {
       </div>
 
       {status === ProofStatus.Done ? (
-        <ProofStatusTable proofs={[proofId]} />
+        <ProofStatusTable proofs={[proofId!]} />
       ) : (
         <div>
           <Loader />

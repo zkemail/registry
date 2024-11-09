@@ -1,12 +1,33 @@
+'use client';
+
 import { Input } from '@/components/ui/input';
 import { useProofStore } from './store';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 const AddInputs = () => {
+  const pathname = usePathname();
+  const { replace } = useRouter();
+  const searchParams = useSearchParams();
   const { blueprint, externalInputs, setExternalInputs, setStep, startProofGeneration } =
     useProofStore();
+  const [isCreateProofLoading, setIsCreateProofLoading] = useState(false);
 
-  console.log(blueprint);
+  const handleStartProofGeneration = async () => {
+    setIsCreateProofLoading(true);
+    try {
+      const proofId = await startProofGeneration();
+      const params = new URLSearchParams(searchParams);
+      params.set('proofId', proofId);
+      params.set('step', '3');
+      replace(`${pathname}?${params.toString()}`);
+    } catch (error) {
+      console.error('Error in starting proof generation: ', error);
+    } finally {
+      setIsCreateProofLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -30,10 +51,9 @@ const AddInputs = () => {
 
         <div className="flex justify-center">
           <Button
-            onClick={() => {
-              startProofGeneration();
-              setStep('3');
-            }}
+            onClick={handleStartProofGeneration}
+            disabled={isCreateProofLoading}
+            loading={isCreateProofLoading}
           >
             Create Proof Remotely
           </Button>
