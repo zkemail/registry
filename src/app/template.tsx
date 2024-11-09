@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  localStorage.setItem('theme', 'light');
+
   return (
     <>
       <Navbar />
@@ -24,7 +26,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           <Image
             src="/assets/HomepageBanner.png"
             alt="homepage-banner"
-            className="object-cover h-[200px]"
+            className="h-[200px] object-cover"
             width={1920}
             height={200}
             priority
