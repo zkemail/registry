@@ -247,7 +247,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             helpText="Enable to ignore the contents on the email and only extract data from the headers"
             checked={store.ignoreBodyHashCheck}
             onCheckedChange={(checked) => {
-              setField('ignoreBodyHashCheck', checked);
+              setField('ignoreBodyHashCheck', !checked);
               setField('removeSoftLinebreaks', checked);
             }}
           />
@@ -300,8 +300,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             value={store.verifierContract?.chain?.toString()}
             onChange={(value: string) => {
               setField('verifierContract', {
-                address: parseInt(value),
-                chainId: parseInt(value),
+                address: value,
+                chainId: value,
               });
             }}
             options={[
