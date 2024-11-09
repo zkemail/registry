@@ -7,7 +7,7 @@ import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 
 const ConnectEmails = () => {
-  const { setFile, setStep, blueprint, startProofGeneration } = useProofStore();
+  const { setFile, setStep } = useProofStore();
 
   const { googleLogIn } = useGoogleAuth();
 
@@ -70,12 +70,7 @@ const ConnectEmails = () => {
               const file = e.target.files?.[0];
               if (file) {
                 setFile(file).then(() => {
-                  if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
-                    setStep('1');
-                  } else {
-                    startProofGeneration();
-                    setStep('1');
-                  }
+                  setStep('1');
                 });
               }
             }}

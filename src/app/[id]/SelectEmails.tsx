@@ -1,15 +1,13 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { use, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import { formatDate } from '../utils';
-import { Checkbox } from '@/components/ui/checkbox';
 import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { getFileContent } from '@/lib/utils';
 import { useCreateBlueprintStore } from '../create/[id]/store';
 import { DecomposedRegex, testDecomposedRegex } from '@zk-email/sdk';
 
