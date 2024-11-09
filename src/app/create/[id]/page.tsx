@@ -33,6 +33,7 @@ import { useRouter } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { Switch } from '@/components/ui/switch';
+import { InputTags } from '@/components/ui/inputTags';
 
 const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -228,6 +229,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               console.log('setting the file');
               setFile(e);
             }}
+          />
+          <InputTags
+            title="Tags"
+            value={store.tags || []}
+            onChange={(e) => setField('tags', e)}
           />
           <Textarea
             title="Description"
