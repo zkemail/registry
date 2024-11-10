@@ -5,13 +5,14 @@ import Image from 'next/image';
 import { Blueprint, Status } from '@zk-email/sdk';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface VersionCardProps {
   blueprint: Blueprint;
 }
 
 const VersionCard = ({ blueprint }: VersionCardProps) => {
-  console.log(blueprint);
+  const router = useRouter();
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between">
@@ -50,6 +51,8 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
             variant="secondary"
             startIcon={<Image src="/assets/Download.svg" alt="Download" width={16} height={16} />}
             size="sm"
+            disabled={blueprint.props.status !== Status.Done}
+            onClick={() => router.push(`/${blueprint.props.id}/download`)}
           >
             Download
           </Button>
