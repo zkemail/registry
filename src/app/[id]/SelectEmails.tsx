@@ -172,13 +172,13 @@ const SelectEmails = ({ id }: { id: string }) => {
           {/* Header */}
           <div
             className="mb-2 grid gap-6 text-left font-semibold"
-            style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
+            style={{ gridTemplateColumns: '1fr 1fr 2fr 6fr' }}
           >
             <div className="text-left">Select</div>
             <div>Validity</div>
             <div>Sent on</div>
             <div>Subject</div>
-            <div className="text-right">Generated Input</div>
+            {/* <div className="text-right">Generated Input</div> */}
           </div>
 
           {/* Rows */}
@@ -199,7 +199,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
                   className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
-                  style={{ gridTemplateColumns: '1fr 1fr 2fr 4fr 2fr' }}
+                  style={{ gridTemplateColumns: '1fr 1fr 2fr 6fr' }}
                 >
                   <RadioGroupItem
                     value={email.decodedContents}
@@ -219,12 +219,12 @@ const SelectEmails = ({ id }: { id: string }) => {
                     <div>{formatDate(email.internalDate).split(',')[1]}</div>
                   </div>
                   <div className="overflow-hidden text-ellipsis">{email.subject}</div>
-                  <div>
+                  {/* <div>
                     <button className="flex items-center gap-1 underline hover:underline">
                       <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
                       View Input
                     </button>
-                  </div>
+                  </div> */}
                 </motion.div>
               ))}
             </AnimatePresence>
@@ -236,7 +236,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             variant="ghost"
             className="gap-2 text-grey-700"
             onClick={handleFetchEmails}
-            loading={isFetchEmailLoading}
+            disabled={isFetchEmailLoading}
           >
             <Image
               src="/assets/ArrowsClockwise.svg"

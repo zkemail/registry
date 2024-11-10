@@ -16,7 +16,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
       {pathname === '/' && (
         <div className="relative h-[200px]">
           <div className="absolute left-1/2 top-1/2 mx-auto flex w-full flex-grow -translate-x-1/2 -translate-y-1/2 transform flex-col gap-4 px-4 md:w-[768px]">
-            <p className="w-full md:w-[550px] text-2xl font-medium text-neutral-100">
+            <p className="w-full text-2xl font-medium text-neutral-100 md:w-[550px]">
               List of community submitted ZK Email blueprints that can be dropped into your project
             </p>
             <div>
@@ -33,7 +33,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           />
         </div>
       )}
-      <div className="mx-auto w-full flex-grow md:w-[768px]">{children}</div>
+      <div className="mx-auto w-full flex-grow md:w-[768px] px-4 md:px-0">{children}</div>
       <div className="mt-auto">
         <Footer />
       </div>

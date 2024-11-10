@@ -76,7 +76,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
           <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col gap-4 items-start justify-between md:flex-row">
           <div className="flex flex-row items-center justify-between gap-3">
             <span className="text-xl font-bold leading-6 underline">{blueprint.props.version}</span>
             <span>
@@ -92,7 +92,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
               </span>
             </span>
           </div>
-          <div className="flex flex-row gap-2 w-auto">
+          <div className="flex w-auto flex-row gap-2">
             <Link href={`/${id}/versions`}>
               <Button
                 variant="secondary"
@@ -112,9 +112,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
                 size="sm"
                 className="bg-white"
                 onClick={() => {}}
-                startIcon={
-                  <Image src="/assets/Files.svg" alt="commit" width={16} height={16} />
-                }
+                startIcon={<Image src="/assets/Files.svg" alt="commit" width={16} height={16} />}
               >
                 Past proofs
               </Button>
@@ -143,7 +141,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
                 if (steps.length === 3 && newStep === 2) {
                   setStep('1' as Step);
                 } else {
-                  setStep((newStep + steps.length) % steps.length as unknown as Step);
+                  setStep(((newStep + steps.length) % steps.length) as unknown as Step);
                 }
               }}
             >
