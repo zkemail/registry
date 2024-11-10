@@ -30,7 +30,7 @@ const initialState: BlueprintProps = {
   shaPrecomputeSelector: '',
   emailBodyMaxLength: 0,
   emailHeaderMaxLength: 0,
-  removeSoftLinebreaks: false,
+  removeSoftLinebreaks: true,
   githubUsername: '',
   senderDomain: '',
   enableHeaderMasking: false,
