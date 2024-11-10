@@ -175,9 +175,17 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <div className="text-base font-medium text-grey-800">{handleGetStatusChip(status)}</div>
         </div>
       </div>
+      {emailProof ? (
+        <div>
+          <h4 className="text-base rounded font-medium text-grey-900">Generated proof</h4>
+          <div className="border border-grey-500 bg-neutral-100 overflow-x-auto px-3 py-2 text-grey-600">
+            <pre>{JSON.stringify(emailProof.proof, null, 2)}</pre>
+          </div>
+        </div>
+      ) : null}
       {parsedEmail?.html ? (
         <div>
-          <h4 className="text-xl font-bold text-grey-900">Email Render</h4>
+          <h4 className="text-base rounded font-medium text-grey-900">Email Render</h4>
           <p className="text-base font-medium text-grey-700">
             This email is always stored on your local browser and never sent to our server
           </p>
