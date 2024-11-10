@@ -23,15 +23,18 @@ const config: Config = {
           '900': '#161819',
           '950': '#111314',
         },
+        warning: '#D7AE0B',
         neutral: {
           '100': '#F5F3EF',
         },
+        success: '#34C759',
         green: {
           '300': '#278266',
         },
         brand: {
           '400': '#68A3E9',
         },
+        info: '#007AFF',
         red: {
           '100': '#FDC8C5',
           '400': '#C72C22',

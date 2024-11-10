@@ -3,22 +3,26 @@ import { Status } from '@zk-email/sdk';
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
     case Status.Done:
-      return 'bg-[#34C759] text-neutral-100';
+      return 'border border-success text-success';
     case Status.InProgress:
-      return 'bg-blue-100 text-blue-800';
+      return 'border border-info text-info';
+    case Status.Draft:
+      return 'border border-warning text-warning';
     case Status.Failed:
-      return 'bg-red-100 text-red-800';
+      return 'border border-red-400 text-red-400';
     default:
-      return 'bg-grey-100 text-grey-800';
+      return 'border border-grey-100 text-grey-800';
   }
 };
 
 const getStatusIcon = (status?: Status) => {
   switch (status) {
     case Status.Done:
-      return '/assets/CompiledIcon.svg';
+      return '/assets/Checks.svg';
     case Status.InProgress:
-      return '/assets/InProgressIcon.svg';
+      return '/assets/Hourglass.svg';
+    case Status.Draft:
+      return '/assets/FileDashed.svg';
     case Status.Failed:
       return '/assets/FailedIcon.svg';
     default:
