@@ -230,11 +230,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               setFile(e);
             }}
           />
-          <InputTags
-            title="Tags"
-            value={store.tags || []}
-            onChange={(e) => setField('tags', e)}
-          />
+          <InputTags title="Tags" value={store.tags || []} onChange={(e) => setField('tags', e)} />
           <Textarea
             title="Description"
             value={store.description}
@@ -344,15 +340,17 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <Label>Fields to extract</Label>
-              <Button
-                variant="default"
-                startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
-                onClick={() => {
-                  setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
-                }}
-              >
-                Add values to extract
-              </Button>
+              {store.decomposedRegexes.length === 0 ? (
+                <Button
+                  variant="default"
+                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
+                  onClick={() => {
+                    setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
+                  }}
+                >
+                  Add values to extract
+                </Button>
+              ) : null}
             </div>
 
             {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => (
@@ -424,22 +422,39 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 />
               </div>
             ))}
+            {store.decomposedRegexes.length !== 0 ? (
+              <div className="flex items-center justify-center">
+                <Button
+                  variant="default"
+                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
+                  onClick={() => {
+                    setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
+                  }}
+                >
+                  Add values to extract
+                </Button>
+              </div>
+            ) : null}
           </div>
 
           {/* External Inputs */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <Label>External Inputs</Label>
-              <Button
-                variant="default"
-                startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
-                onClick={() => {
-                  const updatedInputs = store.externalInputs ? [...store.externalInputs, {}] : [{}];
-                  setField('externalInputs', updatedInputs);
-                }}
-              >
-                Add values to extract
-              </Button>
+              {store.externalInputs?.length === 0 ? (
+                <Button
+                  variant="default"
+                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
+                  onClick={() => {
+                    const updatedInputs = store.externalInputs
+                      ? [...store.externalInputs, {}]
+                      : [{}];
+                    setField('externalInputs', updatedInputs);
+                  }}
+                >
+                  Add values to extract
+                </Button>
+              ) : null}
             </div>
             {store.externalInputs?.map((input: ExternalInput, index: number) => (
               <div key={index} className="flex flex-col gap-3 pl-2">
@@ -480,6 +495,22 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 />
               </div>
             ))}
+            {store.externalInputs?.length !== 0 ? (
+              <div className="flex items-center justify-center">
+                <Button
+                  variant="default"
+                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
+                  onClick={() => {
+                    const updatedInputs = store.externalInputs
+                      ? [...store.externalInputs, {}]
+                      : [{}];
+                    setField('externalInputs', updatedInputs);
+                  }}
+                >
+                  Add values to extract
+                </Button>
+              </div>
+            ) : null}
           </div>
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
