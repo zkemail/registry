@@ -145,7 +145,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
 
     // const status = await state.blueprint.checkStatus()
 
-    window.history.replaceState(null, '', '/');
+    window.location.href = '/';
   },
   reset: () => set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps) }),
 }));
