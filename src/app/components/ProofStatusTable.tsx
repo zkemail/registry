@@ -8,9 +8,9 @@ const ProofStatusTable = ({ proofs }: { proofs: string[] }) => {
   console.log(proofs);
   
   return (
-    <div className="w-full">
+    <div className="overflow-x-auto w-full">
       <div
-        className="mb-2 grid gap-4 text-center font-medium text-grey-850"
+        className="mb-2 grid gap-4 text-center font-medium text-grey-850 w-[720px]"
         style={{ gridTemplateColumns: '1.5fr 5fr 1fr 1fr 1fr' }}
       >
         <div className="text-left">Proof ID</div>
@@ -21,7 +21,7 @@ const ProofStatusTable = ({ proofs }: { proofs: string[] }) => {
       </div>
 
       <div
-        className="grid items-center gap-4 border-t py-2 text-grey-700"
+        className="grid items-center gap-4 border-t py-2 text-grey-700 w-[720px]"
         style={{ gridTemplateColumns: '1.5fr 5fr 1fr 1fr 1fr' }}
       >
         {blueprint &&

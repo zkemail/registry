@@ -54,7 +54,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
     return (
       <div
-        className={`flex flex-row items-center gap-2 rounded-full px-3 py-1.5 text-xs text-[${statusColor}] border border-[${statusColor}]`}
+        className={`flex w-fit flex-row items-center gap-2 rounded-full px-3 py-1.5 text-xs text-[${statusColor}] border border-[${statusColor}]`}
       >
         {handleGetStatusIcon(status)}
         <p className="font-semibold">{statusText}</p>
@@ -122,7 +122,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </Button>
       </div>
       <div className="flex flex-col gap-4">
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Job Id</div>
           <div className="gap-1 text-base font-medium text-grey-800">
             {proofId}
@@ -140,13 +140,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             </span>
           </div>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Blueprint</div>
           <div className="text-base font-medium text-grey-800">
             {blueprint?.props.title} (v{blueprint?.props.version})
           </div>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Outputs</div>
           <div className="text-base font-medium text-grey-800">
             {emailProof?.public
@@ -156,13 +156,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
               : '-'}
           </div>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Date created</div>
           <div className="text-base font-medium text-grey-800">
             {emailProof?.startedAt ? formatDateAndTime(emailProof.startedAt) : '-'}
           </div>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Time taken</div>
           <div className="text-base font-medium text-grey-800">
             {emailProof?.provedAt && emailProof?.startedAt
@@ -170,7 +170,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
               : '-'}
           </div>
         </div>
-        <div className="flex flex-row justify-between">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Status</div>
           <div className="text-base font-medium text-grey-800">{handleGetStatusChip(status)}</div>
         </div>
