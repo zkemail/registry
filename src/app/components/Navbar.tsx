@@ -19,7 +19,7 @@ const Navbar = () => {
       </Link>
       <div className="flex items-center gap-4">
         {token && !pathname.includes('/create') ? (
-          <Link href="/create/new">
+          <Link className="hidden md:block" href="/create/new">
             <Button className="rounded-xl">Create Blueprint</Button>
           </Link>
         ) : null}

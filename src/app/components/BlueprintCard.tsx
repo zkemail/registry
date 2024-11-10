@@ -11,7 +11,7 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
   return (
     <div className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="mb-2 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-row flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           <span
             className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
@@ -52,13 +52,13 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
       </p>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
 
-      <div className="mt-4 flex flex-row items-center justify-between">
+      <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-center">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-md font-medium text-grey-800">Extractable values:</p>
           {blueprint.props.decomposedRegexes?.map((dr, index) => (
             <div
               key={index}
-              className="h-fit rounded-md border border-grey-500 text-grey-900 px-2 py-[1px] text-sm font-light leading-[18px]"
+              className="h-fit rounded-md border border-grey-500 px-2 py-[1px] text-sm font-light leading-[18px] text-grey-900"
             >
               {dr.name}
             </div>
