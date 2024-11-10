@@ -15,7 +15,7 @@ const Navbar = () => {
     <nav className="flex items-center justify-between border-b bg-white px-6 py-3 dark:border-grey-800 dark:bg-black">
       <Link href="/" className="flex items-center gap-2">
         <Image src={'/assets/ZKEmailLogoDark.svg'} alt="zkemail-logo" height={24} width={24} />
-        <span className="text-xl font-semibold dark:text-white">Registry</span>
+        <span className="text-xl font-semibold dark:text-white">registry</span>
       </Link>
       <div className="flex items-center gap-4">
         {token && !pathname.includes('/create') ? (

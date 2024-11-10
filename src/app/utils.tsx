@@ -65,8 +65,44 @@ const getDateToNowStr = (date?: Date) => {
 };
 
 const formatDate = (timestamp: string) => {
-  console.log(timestamp, 'timestamp');
-  return new Date(Number(new Date(timestamp).getTime())).toLocaleString('en-US', {
+  try {
+    let date: Date;
+    console.log('Input timestamp:', timestamp, typeof timestamp);
+    
+    // Try parsing as milliseconds first
+    const msTimestamp = parseInt(timestamp);
+    console.log('Parsed msTimestamp:', msTimestamp);
+    
+    if (!isNaN(msTimestamp) && msTimestamp.toString().length > 4) {
+      date = new Date(msTimestamp);
+    } else {
+      date = new Date(timestamp);
+    }
+    
+    console.log('Resulting date object:', date);
+    
+    if (date.toString() === 'Invalid Date') {
+      throw new Error('Invalid date format');
+    }
+
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid date';
+  }
+};
+
+const formatDateAndTime = (date: Date) => {
+  console.log(date, 'date');
+  return new Date(Number(new Date(date).getTime())).toLocaleString('en-US', {
     year: 'numeric',
     month: 'numeric',
     day: 'numeric',
@@ -77,4 +113,4 @@ const formatDate = (timestamp: string) => {
   });
 };
 
-export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate };
+export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate, formatDateAndTime };

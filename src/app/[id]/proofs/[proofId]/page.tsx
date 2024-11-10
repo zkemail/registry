@@ -10,7 +10,7 @@ import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import PostalMime, { Email } from 'postal-mime';
 import { ProofStatus } from '@zk-email/sdk';
 import { handleGetStatusIcon } from '../../ProofRow';
-import { formatDate } from '@/app/utils';
+import { formatDate, formatDateAndTime } from '@/app/utils';
 import Loader from '@/components/ui/loader';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
@@ -159,7 +159,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         <div className="flex flex-row justify-between">
           <div className="text-base font-medium text-grey-700">Date created</div>
           <div className="text-base font-medium text-grey-800">
-            {formatDate(emailProof?.startedAt?.toString() || '')}
+            {emailProof?.startedAt ? formatDateAndTime(emailProof.startedAt) : '-'}
           </div>
         </div>
         <div className="flex flex-row justify-between">
