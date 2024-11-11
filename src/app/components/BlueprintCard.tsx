@@ -14,7 +14,7 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
         <div className="flex flex-row flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           <span
-            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
+            className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
               blueprint.props.status
             )}`}
           >
@@ -36,20 +36,22 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
           </span>
         </div> */}
       </div>
-      <p className="text-md mb-2 inline-flex items-center font-medium text-grey-800">
-        {blueprint.props.slug}
-        <span
+      <div className="inline-flex mb-2 w-full flex-row items-center">
+        <p className="text-md  overflow-hidden text-ellipsis font-medium text-grey-800">
+          {blueprint.props.slug}
+        </p>
+        <div
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
             navigator.clipboard.writeText(blueprint?.props?.slug || '');
             toast.success('Copied to clipboard');
           }}
-          className="ml-2 cursor-pointer rounded-sm border border-grey-500 bg-neutral-100 p-1 py-0.5"
+          className="ml-2 cursor-pointer rounded-sm border border-grey-500 bg-neutral-100 p-1 py-0.5 md:flex"
         >
           <Image src="/assets/LinkIcon.svg" alt="copy" width={16} height={16} />
-        </span>
-      </p>
+        </div>
+      </div>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
 
       <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-center">
@@ -64,9 +66,24 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
             </div>
           ))}
         </div>
-        <p className="text-sm text-grey-700" title={blueprint.props.updatedAt?.toLocaleString()}>
-          Updated {getDateToNowStr(blueprint.props.updatedAt)}
-        </p>
+        <div className="mt-2 flex w-full flex-row items-center justify-between gap-2 md:mt-0 md:w-auto">
+          <span
+            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:hidden ${getStatusColorLight(
+              blueprint.props.status
+            )}`}
+          >
+            <Image
+              width={12}
+              height={12}
+              src={getStatusIcon(blueprint.props.status)}
+              alt={blueprint.props.status?.toString() || 'Draft'}
+            />
+            {getStatusName(blueprint.props.status)}
+          </span>
+          <p className="text-sm text-grey-700" title={blueprint.props.updatedAt?.toLocaleString()}>
+            Updated {getDateToNowStr(blueprint.props.updatedAt)}
+          </p>
+        </div>
       </div>
     </div>
   );
