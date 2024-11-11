@@ -189,7 +189,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         </p>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 w-full">
         <div className="grid w-full">
           {/* Header */}
           <div
@@ -217,6 +217,7 @@ const SelectEmails = ({ id }: { id: string }) => {
               {fetchedEmails.map((email, index) => (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
+                  key={email.emailMessageId}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
