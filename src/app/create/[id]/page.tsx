@@ -21,12 +21,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import {
-  DecomposedRegex,
-  DecomposedRegexPart,
-  ExternalInput,
-  testDecomposedRegex,
-} from '@zk-email/sdk';
+import { DecomposedRegex, DecomposedRegexPart, ExternalInput, testBlueprint } from '@zk-email/sdk';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useRouter } from 'next/navigation';
@@ -45,7 +40,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     saveDraft,
     getParsedDecomposedRegexes,
     setToExistingBlueprint,
-    decomposedRegexes,
+    blueprint,
     reset,
     compile,
   } = store;
@@ -100,11 +95,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     try {
       const parsed = getParsedDecomposedRegexes();
-      console.log('parsed: ', parsed);
-      const output = await Promise.all(
-        parsed.map((dcr: DecomposedRegex) => testDecomposedRegex(content, dcr, revealPrivateFields))
-      );
-      // Create array of name-value pairs
+
+      const output = await testBlueprint(content, blueprint!.props, revealPrivateFields);
+
       const mappedOutput = parsed
         .map((dcr: DecomposedRegex, index: number) => ({
           name: dcr.name,

@@ -72,7 +72,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       params.set('proofId', proofId);
       params.set('step', '3');
       console.log(pathname, params.toString());
-      await replace(`${pathname}?${params.toString()}`);
+      replace(`${pathname}?${params.toString()}`);
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
     } finally {

@@ -50,7 +50,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
 
   // TODO: Add blueprint information?
   const handleProofDownload = () => {
-    const proofData = { public: emailProof.public, proof: emailProof.public };
+    const proofData = { public: emailProof.public, proof: emailProof.proof };
     startJsonFileDownload(JSON.stringify(proofData), emailProof.id);
   };
 
