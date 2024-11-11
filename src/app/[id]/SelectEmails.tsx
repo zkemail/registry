@@ -9,7 +9,13 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import { DecomposedRegex, testDecomposedRegex } from '@zk-email/sdk';
+import {
+  DecomposedRegex,
+  generateProofInputs,
+  GenerateProofInputsParams,
+  testDecomposedRegex,
+  testBlueprint,
+} from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 type Email = RawEmailResponse & {
@@ -43,23 +49,39 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   const handleValidateEmail = async (content: string) => {
     try {
-      const parsed = getParsedDecomposedRegexes();
-      const output = await Promise.all(
-        parsed.map((dcr: DecomposedRegex) => testDecomposedRegex(content, dcr, false))
+      console.log('blueprint: ', blueprint);
+      // const params: GenerateProofInputsParams = {
+      //   emailHeaderMaxLength: blueprint!.props.emailHeaderMaxLength || 256,
+      //   emailBodyMaxLength: blueprint!.props.emailBodyMaxLength || 2560,
+      //   ignoreBodyHashCheck: blueprint!.props.ignoreBodyHashCheck || false,
+      //   removeSoftLinebreaks: blueprint!.props.removeSoftLinebreaks || true,
+      //   shaPrecomputeSelector: blueprint!.props.shaPrecomputeSelector,
+      // };
+
+      // const inputFile = await generateProofInputs(
+      //   content,
+      //   blueprint?.props.decomposedRegexes || [],
+      //   blueprint?.props.externalInputs || [],
+      //   params
+      // );
+
+      // console.log('inputFile: ', inputFile);
+
+      const output = await testBlueprint(
+        content,
+        // {
+        //   blueprint,
+        //   decomposedRegexes: getParsedDecomposedRegexes(),
+        // },
+        blueprint?.props!,
+        false
       );
-      // Create array of name-value pairs
-      const mappedOutput = parsed
-        .map((dcr: DecomposedRegex, index: number) => ({
-          name: dcr.name,
-          value: output[index],
-        }))
-        .filter((item: { value: string[] }) => item.value.length > 0); // Filter out items with no value
+      console.log('output: ', output);
 
-      console.log('mappedOutput: ', output);
-
-      return mappedOutput.length > 0;
+      return true;
     } catch (err) {
       console.error('Failed to test decomposed regex on eml: ', err);
+      return false;
     }
   };
 
@@ -231,7 +253,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           </RadioGroup>
         </div>
 
-        <div className="mt-6 flex flex-col items-center gap-4">
+        <div className="mt-6 flex w-full flex-col items-center gap-4">
           <Button
             variant="ghost"
             className="gap-2 text-grey-700"

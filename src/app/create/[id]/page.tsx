@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from './store';
 
 import DragAndDropFile from '@/app/components/DragAndDropFile';
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useState, useCallback } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -35,13 +35,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
+  const blueprint = useCreateBlueprintStore((state) => state.blueprint);
+
   const {
     setField,
     saveDraft,
     getParsedDecomposedRegexes,
     setToExistingBlueprint,
     reset,
-    blueprint,
     compile,
   } = store;
 
@@ -109,8 +110,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           name: dcr.name,
           value: output[index],
         }))
-        .filter((item: { value: string[] }) => item.value.length > 0); // Filter out items with no value
-      // Format output as "name: value" pairs
+        .filter((item: { value: string[] }) => item.value?.length > 0);
       const formattedOutput = mappedOutput
         .map((item: { name: string; value: string[] }) => `${item.name}: ${item.value}`)
         .join('\n');

@@ -68,13 +68,15 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
           </Link>
         </div>
         <div>
-          <Button
-            variant="destructive"
-            startIcon={<Image src="/assets/LinkBreak.svg" alt="Report" width={16} height={16} />}
-            size="sm"
-          >
-            Report
-          </Button>
+          <Link href={'https://t.me/zkemail'} target="_blank">
+            <Button
+              variant="destructive"
+              startIcon={<Image src="/assets/LinkBreak.svg" alt="Report" width={16} height={16} />}
+              size="sm"
+            >
+              Report
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
