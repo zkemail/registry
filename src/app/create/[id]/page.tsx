@@ -40,10 +40,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     saveDraft,
     getParsedDecomposedRegexes,
     setToExistingBlueprint,
-    blueprint,
     reset,
+    blueprint,
     compile,
   } = store;
+
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   // TODO: Add a checkbox in UI. This will reveal the isPublic: false fields if set to true
@@ -78,7 +79,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   const handleTestEmail = async () => {
-    console.log('testing email');
     if (!file) {
       console.error('Add email first');
       return;
@@ -91,12 +91,18 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       console.error('Failed to get content from email');
       return;
     }
-    console.log('got email content');
 
     try {
       const parsed = getParsedDecomposedRegexes();
 
-      const output = await testBlueprint(content, blueprint!.props, revealPrivateFields);
+      const output = await testBlueprint(
+        content,
+        {
+          ...store,
+          decomposedRegexes: getParsedDecomposedRegexes(),
+        },
+        revealPrivateFields
+      );
 
       const mappedOutput = parsed
         .map((dcr: DecomposedRegex, index: number) => ({

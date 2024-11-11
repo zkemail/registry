@@ -119,6 +119,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
   },
   setToExistingBlueprint: async (id: string) => {
     try {
+      console.log('setting existing blueprint');
       const blueprint = await sdk.getBlueprint(id);
       console.log('blueprint: ', blueprint);
       blueprint.props.decomposedRegexes.forEach((dcr) => {
