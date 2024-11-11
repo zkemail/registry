@@ -86,7 +86,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
                   }}
                 />
               </div>
-              <div
+              {/* <div
                 className="mx-3 my-2"
                 style={{
                   height: '1px',
@@ -115,7 +115,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
                     handleSort('most-recent', checked);
                   }}
                 />
-              </div>
+              </div> */}
             </div>
           </>
         ) : (

@@ -35,8 +35,8 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         search: search || '',
         skip,
         limit: PAGINATION_LIMIT,
-        status: filters.length > 0 ? (filters[0] as Status) : undefined,
-        sort: sort === 'most-recent' ? 1 : sort === 'most-used' ? -1 : undefined,
+        status: filters.length > 0 ? filters : undefined,
+        // sort: sort === 'most-recent' ? 1 : -1,
       });
 
       setBlueprints((prev) => {
