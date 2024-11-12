@@ -15,7 +15,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
 
   useEffect(() => {
     sdk
-      .getBlueprint(id)
+      .getBlueprintById(id)
       .then(setMainBlueprint)
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
@@ -46,7 +46,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 {mainBlueprint?.props.title}
               </Button>
             </Link>
-            <div className="flex w-full flex-col gap-4 md:flex-row justify-between">
+            <div className="flex w-full flex-col justify-between gap-4 md:flex-row">
               <h2 className="text-xl font-bold">Version History</h2>
               <div className="flex flex-row gap-3">
                 <Button

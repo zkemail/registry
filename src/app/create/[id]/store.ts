@@ -120,7 +120,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
   setToExistingBlueprint: async (id: string) => {
     try {
       console.log('setting existing blueprint');
-      const blueprint = await sdk.getBlueprint(id);
+      const blueprint = await sdk.getBlueprintById(id);
       console.log('blueprint: ', blueprint);
       blueprint.props.decomposedRegexes.forEach((dcr) => {
         dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];

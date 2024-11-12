@@ -29,7 +29,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
     reset();
 
     sdk
-      .getBlueprint(id)
+      .getBlueprintById(id)
       .then(setBlueprint)
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
@@ -76,7 +76,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
           <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
         </div>
-        <div className="flex flex-col gap-4 items-start justify-between md:flex-row">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
           <div className="flex flex-row items-center justify-between gap-3">
             <span className="text-xl font-bold leading-6 underline">{blueprint.props.version}</span>
             <span>

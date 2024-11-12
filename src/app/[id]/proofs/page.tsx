@@ -19,7 +19,7 @@ const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
     reset();
 
     sdk
-      .getBlueprint(id)
+      .getBlueprintById(id)
       .then(setBlueprint)
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);

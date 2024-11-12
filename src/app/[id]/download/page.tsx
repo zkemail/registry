@@ -21,7 +21,7 @@ const DownloadLinks = ({ params }: { params: Promise<{ id: string }> }) => {
 
   useEffect(() => {
     sdk
-      .getBlueprint(id)
+      .getBlueprintById(id)
       .then((bp) => {
         return bp.getZKeyDownloadLink();
       })
