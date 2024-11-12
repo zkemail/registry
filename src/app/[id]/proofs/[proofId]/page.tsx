@@ -149,8 +149,8 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Outputs</div>
           <div className="text-base font-medium text-grey-800">
-            {emailProof?.public
-              ? Object.entries(emailProof.public)
+            {emailProof?.publicData
+              ? Object.entries(emailProof.publicData)
                   .map(([key, value]) => `{"${key}": "${value}"}`)
                   .join('\n')
               : '-'}
@@ -179,7 +179,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         <div>
           <h4 className="rounded text-base font-medium text-grey-900">Generated proof</h4>
           <div className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-grey-600">
-            <pre>{JSON.stringify(emailProof.proof, null, 2)}</pre>
+            <pre>{JSON.stringify(emailProof.proofData, null, 2)}</pre>
           </div>
         </div>
       ) : null}

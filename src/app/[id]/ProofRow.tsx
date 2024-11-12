@@ -50,7 +50,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
 
   // TODO: Add blueprint information?
   const handleProofDownload = () => {
-    const proofData = { public: emailProof.public, proof: emailProof.proof };
+    const proofData = { public: emailProof.publicData, proof: emailProof.proofData };
     startJsonFileDownload(JSON.stringify(proofData), emailProof.id);
   };
 
@@ -77,8 +77,8 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
       </Link>
       <div className="flex items-center justify-center">
         <pre className="whitespace-pre-wrap text-left">
-          {emailProof?.public
-            ? Object.entries(emailProof.public)
+          {emailProof?.publicData
+            ? Object.entries(emailProof.publicData)
                 .map(([key, value]) => `{"${key}": "${value}"}`)
                 .join('\n')
             : '-'}
@@ -90,7 +90,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
           variant="ghost"
           size="icon"
           onClick={handleProofDownload}
-          disabled={!emailProof.public}
+          disabled={!emailProof.publicData}
         >
           <Image src="/assets/Download.svg" alt="download" width={20} height={20} />
         </Button>
