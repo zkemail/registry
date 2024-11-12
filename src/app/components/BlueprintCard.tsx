@@ -36,15 +36,17 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
           </span>
         </div> */}
       </div>
-      <div className="inline-flex mb-2 w-full flex-row items-center">
-        <p className="text-md  overflow-hidden text-ellipsis font-medium text-grey-800">
+      <div className="mb-2 inline-flex w-full flex-row items-center">
+        <p className="text-md overflow-hidden text-ellipsis font-medium text-grey-800">
           {blueprint.props.slug}
         </p>
         <div
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            navigator.clipboard.writeText(blueprint?.props?.slug || '');
+            navigator.clipboard.writeText(
+              (blueprint?.props?.slug || '') + ':v' + (blueprint?.props?.version || '')
+            );
             toast.success('Copied to clipboard');
           }}
           className="ml-2 cursor-pointer rounded-sm border border-grey-500 bg-neutral-100 p-1 py-0.5 md:flex"
