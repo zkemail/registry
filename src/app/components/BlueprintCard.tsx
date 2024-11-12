@@ -45,7 +45,7 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
             e.stopPropagation();
             e.preventDefault();
             navigator.clipboard.writeText(
-              (blueprint?.props?.slug || '') + ':v' + (blueprint?.props?.version || '')
+              (blueprint?.props?.slug || '') + '@v' + (blueprint?.props?.version || '')
             );
             toast.success('Copied to clipboard');
           }}
