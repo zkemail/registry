@@ -13,6 +13,7 @@ import sdk from '@/lib/sdk';
 import Link from 'next/link';
 import AddInputs from './AddInputs';
 import Loader from '@/components/ui/loader';
+import StepperMobile from '../components/StepperMobile';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -123,14 +124,21 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
 
       <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
         <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
-        <Stepper steps={steps} currentStep={step} />
-        <div
-          style={{
-            height: '2px',
-            marginTop: '24px',
-            backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
-          }}
-        />
+        <div className="flex flex-col items-center gap-6 md:hidden">
+          <StepperMobile steps={steps} currentStep={step} />
+        </div>
+        {/* desktop stepper */}
+        <div className="hidden flex-col items-center gap-6 md:flex">
+          <Stepper steps={steps} currentStep={step} />
+          <div
+            style={{
+              width: '100%',
+              height: '2px',
+              marginTop: '24px',
+              backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
+            }}
+          />
+        </div>
         {step !== '0' && (
           <div className="flex w-auto">
             <Button

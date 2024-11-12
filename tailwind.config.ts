@@ -29,6 +29,7 @@ const config: Config = {
         },
         success: '#34C759',
         green: {
+          '100': '#EDFFF1',
           '300': '#278266',
         },
         brand: {
