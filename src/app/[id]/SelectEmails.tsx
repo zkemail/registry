@@ -112,6 +112,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       setIsFetchEmailLoading(true);
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
         pageToken: pageToken,
+        q: blueprint?.props.emailQuery
       });
 
       const emailResponseMessages = emailListResponse.messages;
