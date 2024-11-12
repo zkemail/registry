@@ -9,13 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import {
-  DecomposedRegex,
-  generateProofInputs,
-  GenerateProofInputsParams,
-  testDecomposedRegex,
-  testBlueprint,
-} from '@zk-email/sdk';
+import { testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 type Email = RawEmailResponse & {
@@ -49,23 +43,8 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   const handleValidateEmail = async (content: string) => {
     try {
-      console.log('blueprint: ', blueprint);
-      // const params: GenerateProofInputsParams = {
-      //   emailHeaderMaxLength: blueprint!.props.emailHeaderMaxLength || 256,
-      //   emailBodyMaxLength: blueprint!.props.emailBodyMaxLength || 2560,
-      //   ignoreBodyHashCheck: blueprint!.props.ignoreBodyHashCheck || false,
-      //   removeSoftLinebreaks: blueprint!.props.removeSoftLinebreaks || true,
-      //   shaPrecomputeSelector: blueprint!.props.shaPrecomputeSelector,
-      // };
-
-      // const inputFile = await generateProofInputs(
-      //   content,
-      //   blueprint?.props.decomposedRegexes || [],
-      //   blueprint?.props.externalInputs || [],
-      //   params
-      // );
-
-      // console.log('inputFile: ', inputFile);
+      console.log('validating email: ', content);
+      console.log('blueprint: ', blueprint!.props);
 
       const output = await testBlueprint(
         content,
@@ -73,8 +52,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         //   blueprint,
         //   decomposedRegexes: getParsedDecomposedRegexes(),
         // },
-        blueprint?.props!,
-        false
+        blueprint?.props!
       );
       console.log('output: ', output);
 
