@@ -10,12 +10,23 @@ import { Suspense } from 'react';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
-// TODO: Adjust to zk email registry
 export const metadata: Metadata = {
-  title: 'ZK Email Registry',
-  description: 'Create email blueprints to create proofs about emails.',
+  title: "ZK Email Registry",
+  description:
+    "Create email blueprints to create proofs about emails.",
+  icons: {
+    icon: [
+      {
+        media: "(prefers-color-scheme: light)",
+        url: "/favicon-dark.svg",
+      },
+      {
+        media: "(prefers-color-scheme: dark)",
+        url: "/favicon-light.svg",
+      },
+    ],
+  },
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
