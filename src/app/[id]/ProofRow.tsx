@@ -95,12 +95,11 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
           <Image src="/assets/Download.svg" alt="download" width={20} height={20} />
         </Button>
       </div>
-      <div className="flex items-center justify-center">
-        {/* // TODO: Add disabled logic} */}
+      {/* <div className="flex items-center justify-center">
         <Button variant="outline" size="sm" disabled={false} onClick={handleOnVerify}>
           Verify
         </Button>
-      </div>
+      </div> */}
     </>
   );
 };

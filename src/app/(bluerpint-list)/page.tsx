@@ -17,6 +17,19 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="mb-8 rounded-lg bg-white p-4 text-grey-800">
+        <p>
+          Looking for a pattern from the old registry?{' '}
+          <a
+            target="_blank"
+            href="https://registry-dev.zkregex.com"
+            className="font-medium underline hover:text-blue-900"
+          >
+            Click here
+          </a>
+        </p>
+      </div>
+
       <Suspense>
         <BlueprintListWrapper />
       </Suspense>
