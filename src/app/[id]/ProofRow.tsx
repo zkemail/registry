@@ -75,7 +75,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
         <span className="text-grey-500">|</span>
         <span>View</span>
       </Link>
-      <div className="flex items-center justify-center">
+      <div className="flex items-center">
         <pre className="whitespace-pre-wrap text-left">
           {emailProof?.publicData
             ? Object.entries(emailProof.publicData)
