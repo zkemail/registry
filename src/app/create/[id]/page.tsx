@@ -543,7 +543,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             </Button>
             <Button
               onClick={compile}
-              // disabled={!file || !!errors.length || generatedOutput.length === 0}
+              disabled={!file || !!errors.length || generatedOutput.length === 0}
               startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
             >
               Submit Blueprint
