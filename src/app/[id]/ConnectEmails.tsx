@@ -2,9 +2,9 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { parseEmail } from '@zk-email/sdk';
 import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
+import { toast } from 'react-toastify';
 
 const ConnectEmails = () => {
   const { setFile, setStep } = useProofStore();
@@ -52,7 +52,9 @@ const ConnectEmails = () => {
           e.stopPropagation();
           const files = e.dataTransfer.files;
           if (files?.[0]) {
-            setFile(files[0]).then(() => setStep('1'));
+            setFile(files[0])
+              .then(() => setStep('1'))
+              .catch((err) => toast.error(err.message ?? err));
           }
         }}
         style={{
@@ -74,10 +76,13 @@ const ConnectEmails = () => {
             className="hidden"
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const file = e.target.files?.[0];
+
               if (file) {
-                setFile(file).then(() => {
-                  setStep('1');
-                });
+                setFile(file)
+                  .then(() => setStep('1'))
+                  .catch((err) => {
+                    toast.error(err.message ?? err);
+                  });
               }
             }}
           />

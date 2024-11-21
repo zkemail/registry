@@ -70,6 +70,11 @@ export const useProofStore = create<ProofState>()(
         try {
           content = await getFileContent(file);
           console.log('content: ', content);
+
+          if (content.includes('mail.protonmail.ch')) {
+            console.log('Protonmail email detected');
+            throw new Error('Protonmail emails are not supported yet');
+          }
         } catch (err) {
           console.error('Failed to get file contents: ', err);
           throw err;
