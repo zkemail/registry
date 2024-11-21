@@ -29,8 +29,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
           <Image
             src="/assets/HomepageBanner.webp"
             alt="homepage-banner"
-            className="h-[200px] object-cover"
-            width={1920}
+            className="h-[200px] object-cover w-full"
+            width={4000}
             height={200}
             priority
           />
