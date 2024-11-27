@@ -29,6 +29,7 @@ import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { Switch } from '@/components/ui/switch';
 import { InputTags } from '@/components/ui/inputTags';
+import { ValidationErrors } from './store';
 
 const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -36,6 +37,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
   const blueprint = useCreateBlueprintStore((state) => state.blueprint);
+  const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
 
   const {
     setField,
@@ -72,7 +74,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         toast.success('Successfully saved draft');
       }
     } catch (err) {
-      console.log('Failed to submit blueprint');
+      console.log('Failed to submit blueprint', err);
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
       setErrors(['Unknown error while submitting blueprint']);
@@ -123,6 +125,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   };
 
+  console.log(validationErrors)
+
   useEffect(() => {
     console.log('handleTestEmail effect');
     if (file) {
@@ -132,6 +136,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   // TODO: Handle local decomposed regex checks
   const Status = () => {
+    // if (Object.keys(validationErrors).length > 0) {
+    //   return Object.entries(validationErrors).map(([field, error]) => (
+    //     <div key={field} className="flex items-center gap-2 text-red-400">
+    //       <Image src="/assets/WarningCircle.svg" alt="fail" width={20} height={20} />
+    //       <span className="text-base font-medium">{error}</span>
+    //     </div>
+    //   ));
+    // }
+    
     if (errors.length) {
       return errors.map((error) => (
         <div key={error} className="flex items-center gap-2 text-red-400">
@@ -190,7 +203,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       handleTestEmail();
     }
   };
-  console.log('verifierContract', store, store.verifierContract);
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
@@ -209,6 +221,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             disabled={id !== 'new'}
             value={store.title}
             onChange={(e) => setField('title', e.target.value)}
+            error={!!validationErrors.title}
+            errorMessage={validationErrors.title}
           />
           <Input
             title="Circuit Name"
@@ -216,6 +230,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             placeholder="e.g CircuitName (without the .circom extension)"
             value={store.circuitName}
             onChange={(e) => setField('circuitName', e.target.value)}
+            error={!!validationErrors.circuitName}
+            errorMessage={validationErrors.circuitName}
           />
           <Input title="Slug" disabled value={`${githubUserName}/${store.circuitName}`} />
           {/* TODO: Add check for email body max length */}
@@ -229,12 +245,18 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               setFile(e);
             }}
           />
-          <InputTags title="Tags" value={store.tags || []} onChange={(e) => setField('tags', e)} />
+          <InputTags 
+            title="Tags" 
+            value={store.tags || []} 
+            onChange={(e) => setField('tags', e)} 
+            errorMessage={validationErrors.tags}
+          />
           <Textarea
             title="Description"
             value={store.description}
             rows={3}
             onChange={(e) => setField('description', e.target.value)}
+            errorMessage={validationErrors.description}
           />
           <Input
             title="Email Query"
@@ -242,6 +264,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             onChange={(e) => setField('emailQuery', e.target.value)}
             placeholder="Password request from: contact@x.com"
             helpText="As if you were searching for the email in your Gmail inbox. Only emails matching this query will be shown to the user to prove when they sign in with Gmail"
+            error={!!validationErrors.emailQuery}
+            errorMessage={validationErrors.emailQuery}
           />
           <Checkbox
             title="Skip body hash check"
@@ -264,6 +288,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
             value={store.senderDomain}
             onChange={(e) => setField('senderDomain', e.target.value)}
+            error={!!validationErrors.senderDomain}
+            errorMessage={validationErrors.senderDomain}
           />
           <Input
             title="Email Body Cutoff Value (optional)"
@@ -279,7 +305,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             placeholder="1024"
             type="number"
             min={0}
-            error={!!(store.emailHeaderMaxLength && store.emailHeaderMaxLength % 64 !== 0)}
+            error={!!validationErrors.emailHeaderMaxLength}
+            errorMessage={validationErrors.emailHeaderMaxLength}
             helpText="Must be a multiple of 64"
             value={store.emailHeaderMaxLength || ''}
             onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
@@ -288,7 +315,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             title="Max Email Body Length"
             disabled={store.ignoreBodyHashCheck}
             placeholder="4032"
-            error={!!(store.emailBodyMaxLength && store.emailBodyMaxLength % 64 !== 0)}
+            error={!!validationErrors.emailBodyMaxLength}
+            errorMessage={validationErrors.emailBodyMaxLength}
             max={8192}
             min={0}
             type="number"
@@ -339,7 +367,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <Label>Fields to extract</Label>
-              {store.decomposedRegexes.length === 0 ? (
+              {store?.decomposedRegexes?.length === 0 ? (
                 <Button
                   variant="default"
                   startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
@@ -421,7 +449,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 />
               </div>
             ))}
-            {store.decomposedRegexes.length !== 0 ? (
+            {store?.decomposedRegexes?.length !== 0 ? (
               <div className="flex items-center justify-center">
                 <Button
                   variant="default"
@@ -537,6 +565,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             <Button
               variant="outline"
               onClick={handleSaveDraft}
+              disabled={!store.circuitName || !store.title}
               startIcon={<Image src="/assets/Archive.svg" alt="save" width={16} height={16} />}
             >
               Save as Draft

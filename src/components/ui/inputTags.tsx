@@ -7,10 +7,12 @@ import { XIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Label } from './label';
 
-type InputTagsProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & {
+interface InputTagsProps {
+  title?: string;
   value: string[];
-  onChange: React.Dispatch<React.SetStateAction<string[]>>;
-};
+  onChange: (value: string[]) => void;
+  errorMessage?: string;
+}
 
 const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
   ({ className, value, onChange, ...props }, ref) => {
