@@ -9,6 +9,8 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   error?: boolean;
   errorMessage?: string;
   helpText?: string;
+  variant?: 'default' | 'sm' | 'lg';
+  startIcon?: React.ReactNode;
 }
 
 const inputVariants = cva(
@@ -28,7 +30,7 @@ const inputVariants = cva(
 );
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, helpText, errorMessage, startIcon, error, size, ...props }, ref) => {
+  ({ className, type, helpText, errorMessage, startIcon, error, variant, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
@@ -38,14 +40,16 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         ) : null}
         <input
           type={type}
-          className={cn(inputVariants({ size, className }))}
+          className={cn(inputVariants({ size: variant, className }))}
           ref={ref}
           onWheel={(e) => (e.target as HTMLElement).blur()}
           {...props}
         />
         {startIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{startIcon}</span>}
         {errorMessage || helpText ? (
-          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>{errorMessage || helpText}</p>
+          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>
+            {errorMessage || helpText}
+          </p>
         ) : null}
       </div>
     );

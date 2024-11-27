@@ -6,7 +6,8 @@
     "dev": "bunx --bun next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "bunx --bun next lint"
+    "lint": "bunx --bun next lint",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
@@ -41,6 +42,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.49.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

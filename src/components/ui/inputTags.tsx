@@ -12,6 +12,7 @@ interface InputTagsProps {
   value: string[];
   onChange: (value: string[]) => void;
   errorMessage?: string;
+  className?: string;
 }
 
 const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(

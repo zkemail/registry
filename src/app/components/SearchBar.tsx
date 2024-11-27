@@ -23,7 +23,7 @@ export default function SearchBar() {
     <div className="relative w-full max-w-md">
       <Input
         type="text"
-        size='sm'
+        variant='sm'
         placeholder="Search blueprints.."
         className="w-full rounded-lg border px-4 py-2 pl-10"
         onChange={(e) => {
