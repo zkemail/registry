@@ -4,11 +4,11 @@ import { cn } from '@/lib/utils';
 import { Label } from './label';
 import { cva } from 'class-variance-authority';
 
-export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
-  helpText?: string;
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  title?: string;
   error?: boolean;
-  startIcon?: React.ReactNode;
-  size?: 'default' | 'sm' | 'lg';
+  errorMessage?: string;
+  helpText?: string;
 }
 
 const inputVariants = cva(
@@ -28,7 +28,7 @@ const inputVariants = cva(
 );
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, helpText, startIcon, error, size, ...props }, ref) => {
+  ({ className, type, helpText, errorMessage, startIcon, error, size, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
@@ -44,8 +44,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {...props}
         />
         {startIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{startIcon}</span>}
-        {helpText ? (
-          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>{helpText}</p>
+        {errorMessage || helpText ? (
+          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>{errorMessage || helpText}</p>
         ) : null}
       </div>
     );

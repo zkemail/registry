@@ -5,11 +5,12 @@ import { Label } from '@radix-ui/react-label';
 
 export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   title?: string;
+  errorMessage?: string;
   helpText?: string;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, errorMessage, helpText, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
@@ -25,7 +26,11 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           {...props}
         />
-        {props.helpText ? <p className="text-base text-grey-600">{props.helpText}</p> : null}
+        {errorMessage || helpText ? (
+          <p className={cn('text-base text-grey-600', errorMessage ? 'text-red-500' : '')}>
+            {errorMessage || helpText}
+          </p>
+        ) : null}
       </div>
     );
   }

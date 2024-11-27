@@ -8,10 +8,15 @@ import {
   Status,
 } from '@zk-email/sdk';
 import { create } from 'zustand';
+import { z } from 'zod';
+import { blueprintFormSchema } from './blueprintFormSchema';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
+  validationErrors: ValidationErrors;
   setField: (field: keyof BlueprintProps, value: any) => void;
+  validateField: (field: keyof BlueprintProps) => void;
+  validateAll: () => boolean;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => void;
   compile: () => Promise<void>;
@@ -40,12 +45,68 @@ const initialState: BlueprintProps = {
   decomposedRegexes: [],
 };
 
+export type ValidationErrors = {
+  [K in keyof z.infer<typeof blueprintFormSchema>]?: string;
+};
+
 export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get) => ({
   ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps),
 
   blueprint: null,
+  validationErrors: {},
 
-  setField: (field: keyof BlueprintProps, value: any) => set({ [field]: value }),
+  setField: (field: keyof BlueprintProps, value: any) => {
+    set({ [field]: value });
+    console.log(field, value);
+    get().validateField(field);
+  },
+
+  validateField: (field: keyof BlueprintProps) => {
+    console.log(field);
+    const state = get();
+    console.log(state, field);
+    try {
+      const fieldSchema = blueprintFormSchema.shape[field];
+      if (fieldSchema) {
+        fieldSchema.parse(state[field]);
+        set((prev) => ({
+          validationErrors: {
+            ...prev.validationErrors,
+            [field]: undefined,
+          },
+        }));
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        set((prev) => ({
+          validationErrors: {
+            ...prev.validationErrors,
+            [field]: error.errors[0].message,
+          },
+        }));
+      }
+    }
+  },
+
+  validateAll: () => {
+    const state = get();
+    try {
+      blueprintFormSchema.parse(state);
+      set({ validationErrors: {} });
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: ValidationErrors = {};
+        error.errors.forEach((err) => {
+          const path = err.path[0] as keyof BlueprintProps;
+          errors[path] = err.message;
+        });
+        set({ validationErrors: errors });
+      }
+      return false;
+    }
+  },
+
   getParsedDecomposedRegexes: (): DecomposedRegex[] => {
     console.log('parsing decomposed regex');
     const decomposedRegexes = get().decomposedRegexes;
@@ -122,7 +183,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
       console.log('setting existing blueprint');
       const blueprint = await sdk.getBlueprintById(id);
       console.log('blueprint: ', blueprint);
-      blueprint.props.decomposedRegexes.forEach((dcr) => {
+      blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
         dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
       });
       set({ ...blueprint.props, blueprint });
@@ -133,6 +194,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
   },
   compile: async (): Promise<void> => {
     const state = get();
+
+    if (!state.validateAll()) {
+      throw new Error('Validation failed');
+    }
     // In theory we could also save before compiling here if we want, caling createBlueprint first
     if (!state.blueprint) {
       throw new Error('Blueprint must be saved first');
