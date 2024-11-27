@@ -47,6 +47,13 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">
+      <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-lg bg-warning px-4 py-2 text-white shadow-lg">
+        <p className="text-sm font-medium">
+          🚧 This feature is currently in beta. Some functionality may be limited or subject to
+          change.
+        </p>
+      </div>
+
       <>
         <div>
           <div className="mb-2 flex items-center justify-between">
