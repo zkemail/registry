@@ -206,6 +206,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+      <div className="rounded-lg bg-blue-100 p-3 text-blue-800">
+        <p className="text-sm font-medium">
+          🚧 This feature is currently in beta. Some functionality may be limited or subject to change.
+        </p>
+      </div>
+
       <div>
         <h4 className="text-xl font-bold text-grey-900">Submit Blueprint</h4>
         <p className="text-base font-medium text-grey-700">
