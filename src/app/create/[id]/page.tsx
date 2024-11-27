@@ -145,7 +145,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     //   ));
     // }
     
-    if (errors.length) {
+    if (errors.length || !file) {
       return errors.map((error) => (
         <div key={error} className="flex items-center gap-2 text-red-400">
           <Image src="/assets/WarningCircle.svg" alt="fail" width={20} height={20} />
@@ -245,12 +245,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               setFile(e);
             }}
           />
-          <InputTags 
+          {/* <InputTags 
             title="Tags" 
             value={store.tags || []} 
             onChange={(e) => setField('tags', e)} 
             errorMessage={validationErrors.tags}
-          />
+          /> */}
           <Textarea
             title="Description"
             value={store.description}
