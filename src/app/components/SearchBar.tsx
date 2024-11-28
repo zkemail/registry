@@ -31,6 +31,7 @@ export default function SearchBar() {
         }}
         defaultValue={searchParams.get('search')?.toString()}
         startIcon={<Image src="/assets/SearchIcon.svg" alt="search" width={16} height={16} />}
+        data-testid="search-bar"
       />
     </div>
   );

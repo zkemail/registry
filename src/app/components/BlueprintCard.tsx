@@ -9,11 +9,15 @@ interface BlueprintCardProps {
 
 const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
   return (
-    <div className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
+    <div
+      className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md"
+      data-testid="blueprint-card"
+    >
       <div className="mb-2 flex items-center justify-between">
         <div className="flex flex-row flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           <span
+            data-testid={`blueprint-status-${blueprint.props.status}`}
             className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
               blueprint.props.status
             )}`}

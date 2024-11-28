@@ -124,7 +124,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       <div className="flex flex-col gap-4">
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Job Id</div>
-          <div className="gap-1 text-base font-medium text-grey-800">
+          <div className="gap-1 text-base font-medium text-grey-800" id="job-id">
             {proofId}
             <span className="ml-1">
               <Button
@@ -142,13 +142,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Blueprint</div>
-          <div className="text-base font-medium text-grey-800">
+          <div className="text-base font-medium text-grey-800" id="blueprint-title">
             {blueprint?.props.title} (v{blueprint?.props.version})
           </div>
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Outputs</div>
-          <div className="text-base font-medium text-grey-800">
+          <div className="text-base font-medium text-grey-800" id="outputs">
             {emailProof?.publicData
               ? Object.entries(emailProof.publicData)
                   .map(([key, value]) => `{"${key}": "${value}"}`)
@@ -158,13 +158,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Date created</div>
-          <div className="text-base font-medium text-grey-800">
+          <div className="text-base font-medium text-grey-800" id="date-created">
             {emailProof?.startedAt ? formatDateAndTime(emailProof.startedAt) : '-'}
           </div>
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Time taken</div>
-          <div className="text-base font-medium text-grey-800">
+          <div className="text-base font-medium text-grey-800" id="time-taken">
             {emailProof?.provedAt && emailProof?.startedAt
               ? `${((new Date(emailProof.provedAt).getTime() - new Date(emailProof.startedAt).getTime()) / 1000).toString()} seconds`
               : '-'}
@@ -172,13 +172,18 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Status</div>
-          <div className="text-base font-medium text-grey-800">{handleGetStatusChip(status)}</div>
+          <div className="text-base font-medium text-grey-800" id="status">
+            {handleGetStatusChip(status)}
+          </div>
         </div>
       </div>
       {emailProof ? (
         <div>
           <h4 className="rounded text-base font-medium text-grey-900">Generated proof</h4>
-          <div className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-grey-600">
+          <div
+            className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-grey-600"
+            id="generated-proof"
+          >
             <pre>{JSON.stringify(emailProof.proofData, null, 2)}</pre>
           </div>
         </div>
@@ -194,6 +199,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             dangerouslySetInnerHTML={{
               __html: parsedEmail.html!,
             }}
+            id="email-render"
           />
         </div>
       ) : null}
