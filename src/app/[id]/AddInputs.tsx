@@ -10,14 +10,13 @@ const AddInputs = () => {
   const pathname = usePathname();
   const { replace } = useRouter();
   const searchParams = useSearchParams();
-  const { blueprint, externalInputs, setExternalInputs, setStep, startProofGeneration } =
-    useProofStore();
+  const { blueprint, externalInputs, setExternalInputs, startProofGeneration } = useProofStore();
   const [isCreateProofLoading, setIsCreateProofLoading] = useState(false);
 
   const handleStartProofGeneration = async () => {
     setIsCreateProofLoading(true);
     try {
-      const proofId = await startProofGeneration();
+      const proofId = await startProofGeneration(externalInputs);
       const params = new URLSearchParams(searchParams);
       params.set('proofId', proofId);
       params.set('step', '3');
@@ -43,7 +42,11 @@ const AddInputs = () => {
             key={index}
             onChange={(e) => {
               const newInputs = externalInputs ? [...externalInputs] : [];
-              newInputs[index] = { name: input.name, value: e.target.value };
+              newInputs[index] = {
+                name: input.name,
+                value: e.target.value,
+                maxLength: input.maxLength,
+              };
               setExternalInputs(newInputs);
             }}
           />
