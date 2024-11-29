@@ -1,15 +1,10 @@
 import { getFileContent } from '@/lib/utils';
-import { Blueprint, ExternalInput, parseEmail, Proof } from '@zk-email/sdk';
+import { Blueprint, ExternalInputInput, parseEmail, Proof } from '@zk-email/sdk';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
 
 export type Step = '0' | '1' | '2' | '3';
-
-export type ExternalInputState = {
-  name: string;
-  value: string;
-};
 
 interface ProofState {
   step: Step;
@@ -17,14 +12,14 @@ interface ProofState {
   // The actual text of the email file
   file: string | null;
   blueprint: Blueprint | null;
-  externalInputs: ExternalInputState[] | null;
+  externalInputs: ExternalInputInput[] | null;
   // Actions
   setEmailContent: (content: string | null) => void;
   setStep: (step: Step) => void;
   setFile: (file: File | null) => Promise<void>;
-  setExternalInputs: (inputs: ExternalInputState[]) => void;
+  setExternalInputs: (inputs: ExternalInputInput[]) => void;
   setBlueprint: (blueprint: Blueprint) => void;
-  startProofGeneration: () => Promise<string>;
+  startProofGeneration: (externalInputs: ExternalInputInput[] | null) => Promise<string>;
   reset: () => void;
 }
 
@@ -54,7 +49,7 @@ export const useProofStore = create<ProofState>()(
     (set, get) => ({
       ...initialState,
       setEmailContent: (content: string | null) => set({ file: content }),
-      setExternalInputs: (inputs: ExternalInputState[]) => set({ externalInputs: inputs }),
+      setExternalInputs: (inputs: ExternalInputInput[]) => set({ externalInputs: inputs }),
       setStep: (step: Step) => {
         const params = new URLSearchParams();
         params.set('step', step.toString());
@@ -93,7 +88,7 @@ export const useProofStore = create<ProofState>()(
       },
       setBlueprint: (blueprint: Blueprint) => set({ blueprint }),
       // Starts the proof generation, waits for initial response and saves eml and proof to emailProofStrore
-      startProofGeneration: async () => {
+      startProofGeneration: async (externalInputs: ExternalInputInput[] | null) => {
         console.log('starting proof generation');
         const { blueprint, file } = get();
         if (!blueprint) {
@@ -107,7 +102,7 @@ export const useProofStore = create<ProofState>()(
         const prover = blueprint.createProver();
         let proof: Proof;
         try {
-          proof = await prover.generateProofRequest(file);
+          proof = await prover.generateProofRequest(file, externalInputs || []);
           // save proof.props with blueprint.props.id as proof on useProofEmailStore here
         } catch (err) {
           console.error('Failed to generate a proof request');
