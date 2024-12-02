@@ -12,6 +12,7 @@ import { ProofStatus } from '@zk-email/sdk';
 import { handleGetStatusIcon } from '../../ProofRow';
 import { formatDate, formatDateAndTime } from '@/app/utils';
 import Loader from '@/components/ui/loader';
+import Link from 'next/link';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -142,9 +143,12 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Blueprint</div>
-          <div className="text-base font-medium text-grey-800">
+          <Link
+            href={`/${id}`}
+            className="text-base font-medium underline text-grey-800"
+          >
             {blueprint?.props.title} (v{blueprint?.props.version})
-          </div>
+          </Link>
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Outputs</div>
