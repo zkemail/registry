@@ -106,6 +106,22 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     );
   }
 
+  const ExternalInputs = () => {
+    if (emailProof && emailProof.externalInputs && emailProof.externalInputs.length) {
+      let externalInputsStr = '';
+      for (const externalInput of JSON.parse(emailProof.externalInputs)) {
+        externalInputsStr += `{"${externalInput.name}": "${externalInput.value}"}`;
+      }
+      return (
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
+          <div className="text-base font-medium text-grey-700">External Inputs</div>
+          <div className="text-base font-medium text-grey-800">{externalInputsStr}</div>
+        </div>
+      );
+    }
+    return <></>;
+  };
+
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <div className="flex flex-row items-center justify-between">
@@ -156,6 +172,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
               : '-'}
           </div>
         </div>
+        <ExternalInputs />
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Date created</div>
           <div className="text-base font-medium text-grey-800">
