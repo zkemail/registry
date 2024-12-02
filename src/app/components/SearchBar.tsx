@@ -23,7 +23,7 @@ export default function SearchBar() {
     <div className="relative w-full max-w-md">
       <Input
         type="text"
-        size='sm'
+        variant='sm'
         placeholder="Search blueprints.."
         className="w-full rounded-lg border px-4 py-2 pl-10"
         onChange={(e) => {
@@ -31,6 +31,7 @@ export default function SearchBar() {
         }}
         defaultValue={searchParams.get('search')?.toString()}
         startIcon={<Image src="/assets/SearchIcon.svg" alt="search" width={16} height={16} />}
+        data-testid="search-bar"
       />
     </div>
   );

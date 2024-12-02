@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  compiler: {
+    reactRemoveProperties: process.env.NODE_ENV === 'production'
+  }
 };
 
 export default nextConfig;

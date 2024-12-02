@@ -24,5 +24,5 @@ export default function Loader() {
     };
   }, []);
 
-  return <div ref={animationContainer} className="h-16 w-16"></div>;
+  return <div ref={animationContainer} className="h-16 w-16" id="loader" />;
 }

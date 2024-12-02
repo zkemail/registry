@@ -46,7 +46,7 @@ const initialState: BlueprintProps = {
 };
 
 export type ValidationErrors = {
-  [K in keyof z.infer<typeof blueprintFormSchema>]?: string;
+  [K in keyof BlueprintProps]?: string;
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get) => ({
@@ -66,7 +66,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     const state = get();
     console.log(state, field);
     try {
-      const fieldSchema = blueprintFormSchema.shape[field];
+      const fieldSchema = blueprintFormSchema.shape[field as keyof typeof blueprintFormSchema.shape];
       if (fieldSchema) {
         fieldSchema.parse(state[field]);
         set((prev) => ({

@@ -12,6 +12,7 @@ interface InputTagsProps {
   value: string[];
   onChange: (value: string[]) => void;
   errorMessage?: string;
+  className?: string;
 }
 
 const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
@@ -38,7 +39,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
     };
 
     return (
-      <div className="flex flex-col gap-2">
+      <div data-testid="input-tags" className="flex flex-col gap-2">
         {props.title ? (
           <Label className="text-base text-grey-900" htmlFor={props.title}>
             {props.title}
