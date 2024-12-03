@@ -2,17 +2,22 @@
 
 import ProofStatusTable from '@/app/components/ProofStatusTable';
 import { use, useEffect } from 'react';
-import Image from 'next/image';
-import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../../utils';
-import { Button } from '@/components/ui/button';
 import { useProofStore } from '../store';
 import sdk from '@/lib/sdk';
-import Link from 'next/link';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
+import { BlueprintTitle } from '@/app/components/BlueprintTitle';
 
 const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-  const { reset, blueprint, setBlueprint } = useProofStore();
+  const {
+    reset,
+    blueprint,
+    setBlueprint,
+    isUserStarred,
+    starBlueprint,
+    unStarBlueprint,
+    setIsUserStarred,
+  } = useProofStore();
   const { getProofIdsForBlueprint } = useProofEmailStore();
 
   useEffect(() => {
@@ -20,7 +25,11 @@ const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
 
     sdk
       .getBlueprintById(id)
-      .then(setBlueprint)
+      .then(async (bp) => {
+        await bp.getStars();
+        setBlueprint(bp);
+        await setIsUserStarred();
+      })
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
       });
@@ -32,37 +41,12 @@ const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">
-      <>
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
-              <span
-                className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
-                  blueprint.props.status
-                )}`}
-              >
-                <Image
-                  width={12}
-                  height={12}
-                  src={getStatusIcon(blueprint.props.status)}
-                  alt={getStatusName(blueprint.props.status)}
-                />
-                {getStatusName(blueprint.props.status)}
-              </span>
-            </div>
-            {/* <div className="flex items-center gap-4 text-sm text-grey-600">
-                <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1 font-medium text-grey-800">
-                  <Image width={16} height={16} src="assets/Users.svg" alt="views" /> 0
-                </span>
-                <span className="flex flex-row gap-1 rounded border border-grey-500 bg-white px-2 py-1 font-semibold text-grey-800">
-                  <Image width={16} height={16} src="assets/Star.svg" alt="stars" /> Stars | 0
-                </span>
-              </div> */}
-          </div>
-          <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
-        </div>
-      </>
+      <BlueprintTitle
+        blueprint={blueprint}
+        isUserStarred={isUserStarred}
+        unStarBlueprint={unStarBlueprint}
+        starBlueprint={starBlueprint}
+      />
 
       <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
         <div className="flex flex-col items-center justify-center gap-6">

@@ -2,12 +2,27 @@ import Image from 'next/image';
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Blueprint } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
+import { useState } from 'react';
 
 interface BlueprintCardProps {
   blueprint: Blueprint;
+  setStarred: () => Promise<void>;
+  setUnStarred: () => Promise<void>;
+  starred: boolean;
 }
 
-const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
+const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: BlueprintCardProps) => {
+  let [stars, setStars] = useState(blueprint.stars);
+  const onStar = async (e) => {
+    e.preventDefault();
+    if (starred) {
+      await setUnStarred();
+    } else {
+      await setStarred();
+    }
+    setStars(blueprint.stars);
+  };
+
   return (
     <div className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="mb-2 flex items-center justify-between">
@@ -27,14 +42,20 @@ const BlueprintCard = ({ blueprint }: BlueprintCardProps) => {
             {getStatusName(blueprint.props.status)}
           </span>
         </div>
-        {/* <div className="flex items-center gap-4 text-sm text-grey-600">
-          <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1">
-            <Image width={16} height={16} src="assets/Users.svg" alt="views" /> {stats.views}
-          </span>
-          <span className="flex flex-row gap-1 rounded border border-grey-500 bg-grey-100 px-2 py-1 text-grey-800">
-            <Image width={16} height={16} src="assets/Star.svg" alt="stars" /> Stars | {stats.stars}
-          </span>
-        </div> */}
+        <div className="flex items-center gap-4 text-sm text-grey-600">
+          <button
+            onClick={onStar}
+            className="flex flex-row gap-1 rounded border border-grey-500 bg-grey-100 px-2 py-1 text-grey-800"
+          >
+            <Image
+              width={16}
+              height={16}
+              src={starred ? 'assets/StarFilled.svg' : 'assets/Star.svg'}
+              alt="stars"
+            />{' '}
+            Stars | {stars}
+          </button>
+        </div>
       </div>
       <div className="mb-2 inline-flex w-full flex-row items-center">
         <p className="text-md overflow-hidden text-ellipsis font-medium text-grey-800">

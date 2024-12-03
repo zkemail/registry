@@ -6,6 +6,8 @@ import { Blueprint, Status } from '@zk-email/sdk';
 import sdk from '@/lib/sdk';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Loader from '@/components/ui/loader';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { toast } from 'react-toastify';
 
 const PAGINATION_LIMIT = 30;
 
@@ -17,6 +19,8 @@ interface BlueprintListProps {
 
 export default function BlueprintList({ search, filters, sort }: BlueprintListProps) {
   const [blueprints, setBlueprints] = useState<Blueprint[]>([]);
+  const [userStarredSlugs, setUserStarredSlugs] = useState<string[]>([]);
+  const token = useAuthStore((state) => state.token);
   const [skip, setSkip] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -96,6 +100,19 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     };
   }, [blueprints]);
 
+  useEffect(() => {
+    if (token) {
+      sdk
+        .getStarredBlueprints()
+        .then(setUserStarredSlugs)
+        .catch((err) => {
+          console.error('Failed to get starred blueprints: ', err);
+        });
+    } else {
+      setUserStarredSlugs([]);
+    }
+  }, [token]);
+
   if (error) {
     return (
       <div className="rounded-md bg-red-50 p-4 text-red-600">
@@ -104,12 +121,45 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     );
   }
 
+  const onStar = async (blueprint: Blueprint) => {
+    if (!token) {
+      toast.info('Login to star a blueprint');
+      return;
+    }
+    try {
+      await blueprint.addStar();
+      const slugs = await sdk.getStarredBlueprints();
+      setUserStarredSlugs(slugs);
+    } catch (err) {
+      console.warn('Failed to star blueprint: ', err);
+    }
+  };
+
+  const onUnStar = async (blueprint: Blueprint) => {
+    if (!token) {
+      toast.info('Login to star a blueprint');
+      return;
+    }
+    try {
+      await blueprint.removeStar();
+      const slugs = await sdk.getStarredBlueprints();
+      setUserStarredSlugs(slugs);
+    } catch (err) {
+      console.warn('Failed to unstar blueprint: ', err);
+    }
+  };
+
   return (
     <>
       {blueprints.map((blueprint) => (
         <div className="mb-3" key={blueprint.props.id}>
           <Link href={`/${encodeURIComponent(blueprint.props.id!)}`}>
-            <BlueprintCard blueprint={blueprint} />
+            <BlueprintCard
+              blueprint={blueprint}
+              setStarred={() => onStar(blueprint)}
+              setUnStarred={() => onUnStar(blueprint)}
+              starred={userStarredSlugs && userStarredSlugs.includes(blueprint.props.slug!)}
+            />
           </Link>
         </div>
       ))}

@@ -14,10 +14,21 @@ import Link from 'next/link';
 import AddInputs from './AddInputs';
 import Loader from '@/components/ui/loader';
 import StepperMobile from '../components/StepperMobile';
+import { BlueprintTitle } from '../components/BlueprintTitle';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
-  const { reset, blueprint, setBlueprint, setStep, step: storeStep } = useProofStore();
+  const {
+    reset,
+    setBlueprint,
+    setStep,
+    step: storeStep,
+    isUserStarred,
+    starBlueprint,
+    unStarBlueprint,
+    setIsUserStarred,
+  } = useProofStore();
+  const blueprint = useProofStore((state) => state.blueprint);
   const searchParams = useSearchParams();
 
   let steps = blueprint?.props.externalInputs
@@ -31,9 +42,13 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
 
     sdk
       .getBlueprintById(id)
-      .then(setBlueprint)
+      .then(async (bp) => {
+        await bp.getStars();
+        setBlueprint(bp);
+        await setIsUserStarred();
+      })
       .catch((err) => {
-        console.error(`Failed to blueprint with id ${id}: `, err);
+        console.error(`Failed to get blueprint with id ${id}: `, err);
       });
   }, []);
 
@@ -55,35 +70,12 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
 
       <>
-        <div>
-          <div className="mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
-              <span
-                className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
-                  blueprint.props.status
-                )}`}
-              >
-                <Image
-                  width={12}
-                  height={12}
-                  src={getStatusIcon(blueprint.props.status)}
-                  alt={getStatusName(blueprint.props.status)}
-                />
-                {getStatusName(blueprint.props.status)}
-              </span>
-            </div>
-            {/* <div className="flex items-center gap-4 text-sm text-grey-600">
-                <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1 font-medium text-grey-800">
-                  <Image width={16} height={16} src="assets/Users.svg" alt="views" /> 0
-                </span>
-                <span className="flex flex-row gap-1 rounded border border-grey-500 bg-white px-2 py-1 font-semibold text-grey-800">
-                  <Image width={16} height={16} src="assets/Star.svg" alt="stars" /> Stars | 0
-                </span>
-              </div> */}
-          </div>
-          <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
-        </div>
+        <BlueprintTitle
+          blueprint={blueprint}
+          isUserStarred={isUserStarred}
+          unStarBlueprint={unStarBlueprint}
+          starBlueprint={starBlueprint}
+        />
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
           <div className="flex flex-row items-center justify-between gap-3">
             <span className="text-xl font-bold leading-6 underline">{blueprint.props.version}</span>
