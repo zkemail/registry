@@ -59,6 +59,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
     if (!blueprint) return;
     try {
       await blueprint.cancelCompilation();
+      router.push(`/create/${id}`);
     } catch (err) {
       console.error('Failed to cancel blueprint compilation: ', err);
       toast.error('Failed to cancel blueprint compilation');
