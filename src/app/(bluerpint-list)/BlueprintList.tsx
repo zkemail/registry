@@ -179,7 +179,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
           search ? (
             <div>No blueprints found for "{search}"</div>
           ) : (
-            <Loader />
+            <div>No blueprints found</div>
           )
         ) : null}
       </div>
