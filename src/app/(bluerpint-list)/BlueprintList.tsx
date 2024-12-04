@@ -153,8 +153,14 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     <>
       {blueprints.map((blueprint) => (
         <div className="mb-3" key={blueprint.props.id}>
-          <Link href={`/${encodeURIComponent(blueprint.props.id!)}`}>
-            <BlueprintCard
+          <Link
+            href={
+              blueprint.props.status === Status.Draft
+                ? `/${encodeURIComponent(blueprint.props.id!)}/versions`
+                : `/${encodeURIComponent(blueprint.props.id!)}`
+            }
+          >
+           <BlueprintCard
               blueprint={blueprint}
               setStarred={() => onStar(blueprint)}
               setUnStarred={() => onUnStar(blueprint)}
@@ -168,7 +174,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         {isLoading ? (
           <Loader />
         ) : !hasMore && blueprints.length > 0 ? (
-          <div className="text-gray-500">No more blueprints to load</div>
+          <div className="text-grey-500">No more blueprints to load</div>
         ) : blueprints.length === 0 && !isLoading ? (
           search ? (
             <div>No blueprints found for "{search}"</div>

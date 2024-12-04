@@ -113,4 +113,44 @@ const formatDateAndTime = (date: Date) => {
   });
 };
 
-export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate, formatDateAndTime };
+function extractEMLDetails(emlContent: string) {
+  const headers: Record<string, string> = {};
+  const lines = emlContent.split("\n");
+
+  let headerPart = true;
+  let headerLines = [];
+
+  // Parse headers
+  for (let line of lines) {
+      if (headerPart) {
+          if (line.trim() === "") {
+              headerPart = false; // End of headers
+          } else {
+              headerLines.push(line);
+          }
+      }
+  }
+
+  // Join multi-line headers and split into key-value pairs
+  const joinedHeaders = headerLines
+      .map(line => line.startsWith(" ") || line.startsWith("\t") ? line.trim() : `\n${line.trim()}`)
+      .join("")
+      .split("\n");
+
+  joinedHeaders.forEach(line => {
+      const [key, ...value] = line.split(":");
+      if (key) headers[key.trim()] = value.join(":").trim();
+  });
+
+  // Extract details
+  const senderDomain = headers["Return-Path"]?.match(/@([^\s>]+)/)?.[1]
+    ?.split('.')
+    .slice(-2)
+    .join('.') || null;
+  const headerLength = headerLines.join("\n").length;
+  const emailQuery = `from:${senderDomain}`;
+
+  return { senderDomain, headerLength, emailQuery };
+}
+
+export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate, formatDateAndTime, extractEMLDetails };

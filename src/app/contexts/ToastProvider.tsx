@@ -14,10 +14,10 @@ export default function ToastProvider({ children }: ToastProviderProps) {
   const contextClass = {
     success: 'text-green-300',
     error: 'text-red-400',
-    info: 'text-gray-600',
+    info: 'text-grey-600',
     warning: 'text-orange-400',
     default: 'text-indigo-600',
-    dark: 'text-white-600 font-gray-300',
+    dark: 'text-white-600 font-grey-300',
   };
 
   return (

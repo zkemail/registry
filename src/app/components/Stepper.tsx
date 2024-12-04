@@ -17,7 +17,7 @@ const Stepper = ({ steps, currentStep }: StepperProps) => {
               <div className="relative flex w-fit flex-col items-center">
                 <div
                   className={`h-4 w-4 rounded-full border-2 ${
-                    index <= parseInt(currentStep) ? 'border-green-500' : 'border-gray-300'
+                    index <= parseInt(currentStep) ? 'border-green-500' : 'border-grey-300'
                   } ${index <= parseInt(currentStep) - 1 ? 'bg-green-500' : ''} transition-colors duration-500`}
                 />
                 <span className="absolute top-6 w-max text-sm text-grey-800">{step}</span>
@@ -26,7 +26,7 @@ const Stepper = ({ steps, currentStep }: StepperProps) => {
               {index < steps.length - 1 && (
                 <div className="h-[2px] w-auto flex-1">
                   <div
-                    className="h-full bg-gray-300 transition-all duration-500"
+                    className="h-full bg-grey-300 transition-all duration-500"
                     style={{
                       background: `linear-gradient(to right, ${
                         index < parseInt(currentStep) ? '#22C55E' : '#D1D5DB'

@@ -6,7 +6,7 @@ import VersionCard from './VersionCard';
 import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
 import sdk from '@/lib/sdk';
-import { Blueprint } from '@zk-email/sdk';
+import { Blueprint, Status } from '@zk-email/sdk';
 
 const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -38,7 +38,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex w-full flex-col items-start gap-2">
-            <Link href={`/${id}`}>
+            <Link href={mainBlueprint?.props.status === Status.Draft ? `/` : `/${id}`}>
               <Button
                 variant="ghost"
                 startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
