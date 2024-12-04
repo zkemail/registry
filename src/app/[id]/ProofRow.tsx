@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
 
 interface ProofProps {
   // emailProof: ProofEmailStatusUpdate;
@@ -35,10 +36,11 @@ export const handleGetStatusIcon = (status: ProofStatus) => {
 };
 
 const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
-  const { getUpdatingStatus } = useProofEmailStore();
+  const { getUpdatingStatus, getProof } = useProofEmailStore();
   const emailProof = useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId]);
 
   const [status, setStatus] = useState<ProofStatus>(emailProof.status!);
+  const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -54,14 +56,28 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
     startJsonFileDownload(JSON.stringify(proofData), emailProof.id);
   };
 
-  // Verify function still empty in SDK
-  const handleOnVerify = async () => {
-    const proof = new Proof(blueprint, emailProof);
+  const onVerifyProof = async () => {
+    setIsVerifyingProofLoading(true);
+    let proof: Proof;
     try {
-      await proof.verifyOnChain();
+      proof = await getProof(proofId);
+      console.log('proof: ', proof);
     } catch (err) {
-      console.error('Failed to verify proof on chain');
+      console.error(`Failed to get proof for id: ${proofId}: `, err);
+      toast.error('Failed to get proof');
+      setIsVerifyingProofLoading(false);
+      return;
     }
+
+    try {
+      console.log('verifying proof on chain');
+      await proof.verifyOnChain();
+      toast.success('Proof verified successfully on chain');
+    } catch (err) {
+      console.error(`Failed to verify proof with id: ${proofId}: `, err);
+      toast.error('Failed to verify proof');
+    }
+    setIsVerifyingProofLoading(false);
   };
 
   return (
@@ -96,7 +112,12 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
         </Button>
       </div>
       <div className="flex items-center justify-center">
-        <Button variant="default" size="sm" disabled={false} onClick={handleOnVerify}>
+        <Button
+          variant="default"
+          size="sm"
+          loading={isVerifyingProofLoading}
+          onClick={onVerifyProof}
+        >
           Verify
         </Button>
       </div>
