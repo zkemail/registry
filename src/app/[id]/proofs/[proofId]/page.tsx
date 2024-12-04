@@ -143,11 +143,18 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Blueprint</div>
-          <Link
-            href={`/${id}`}
-            className="text-base font-medium underline text-grey-800"
-          >
+          <Link href={`/${id}`} className="text-base font-medium text-grey-800 underline">
             {blueprint?.props.title} (v{blueprint?.props.version})
+          </Link>
+        </div>
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
+          <div className="text-base font-medium text-grey-700">Verifier Address</div>
+          <Link
+            target="_blank"
+            href={`https://sepolia.basescan.org/address/${blueprint?.props.verifierContract?.address}`}
+            className="text-base font-medium text-grey-800 underline"
+          >
+            {blueprint?.props.verifierContract?.address || '-'}
           </Link>
         </div>
         <div className="flex flex-col justify-between gap-1 md:flex-row">
