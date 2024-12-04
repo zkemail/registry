@@ -17,9 +17,9 @@ export const blueprintFormSchema = z.object({
   title: z.string().min(1, {
     message: 'Title must be at least 1 characters.',
   }),
-  slug: z.string().regex(/[\w\-\_\@]+\/[\w\-\_\@)]+/, {
-    message: "Needs to match this pattern 'xxxx/yyyy'",
-  }),
+  // slug: z.string().regex(/[\w\-\_\@]+\/[\w\-\_\@)]+/, {
+  //   message: "Needs to match this pattern 'xxxx/yyyy'",
+  // }),
   circuitName: z
     .string()
     .min(1)
@@ -28,17 +28,16 @@ export const blueprintFormSchema = z.object({
       'Invalid name, must start with a letter, digit, or underscore, and can only contain letters, digits or underscores.'
     ),
   description: z.string().min(1),
-  tags: z.string().transform((str, ctx) => {
-    try {
-      return str.split(',');
-    } catch (e) {
-      ctx.addIssue({ code: 'custom', message: 'Invalid tags' });
-      return z.NEVER;
-    }
-  }),
+  // tags: z.string().transform((str, ctx) => {
+  //   try {
+  //     return str.split(',');
+  //   } catch (e) {
+  //     ctx.addIssue({ code: 'custom', message: 'Invalid tags' });
+  //     return z.NEVER;
+  //   }
+  // }),
   emailQuery: z.string(),
   ignoreBodyHashCheck: z.boolean(),
-  enableMasking: z.boolean(),
   shaPrecomputeSelector: z.string().transform((value) => value.replace(/(?<!\\)"/g, '\\"')),
   senderDomain: z.string().refine((value) => !value.includes('@'), {
     message: "Sender domain should not contain '@' symbol, only the domain",

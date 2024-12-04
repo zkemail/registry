@@ -96,6 +96,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
       set({ validationErrors: {} });
       return true;
     } catch (error) {
+      console.log('error: ', error);
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
         error.errors.forEach((err) => {
