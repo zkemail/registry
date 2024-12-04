@@ -8,11 +8,12 @@ import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import PostalMime, { Email } from 'postal-mime';
-import { ProofStatus } from '@zk-email/sdk';
+import { Proof, ProofStatus } from '@zk-email/sdk';
 import { handleGetStatusIcon } from '../../ProofRow';
 import { formatDate, formatDateAndTime } from '@/app/utils';
 import Loader from '@/components/ui/loader';
 import Link from 'next/link';
+import { log } from 'console';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -24,8 +25,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
   const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
-
-  console.log('emailProof', data);
+  const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
 
   if (!data[id!]) {
     getProofIdsForBlueprint(id);
@@ -107,19 +107,41 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     );
   }
 
+  const onVerifyProof = async () => {
+    setIsVerifyingProofLoading(true);
+    let proof: Proof;
+    try {
+      proof = await getProof(proofId);
+      console.log('proof: ', proof);
+    } catch (err) {
+      console.error(`Failed to get proof for id: ${proofId}: `, err);
+      toast.error('Failed to get proof');
+      setIsVerifyingProofLoading(false);
+      return;
+    }
+
+    try {
+      console.log('verifying proof on chain');
+      await proof.verifyOnChain();
+      toast.success('Proof verified successfully on chain');
+    } catch (err) {
+      console.error(`Failed to verify proof with id: ${proofId}: `, err);
+      toast.error('Failed to verify proof');
+    }
+    setIsVerifyingProofLoading(false);
+  };
+
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <div className="flex flex-row items-center justify-between">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
         <div className="flex flex-row gap-2">
           <Button
+            loading={isVerifyingProofLoading}
             variant="secondary"
             size="sm"
             className="flex flex-row gap-2"
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              toast.success('Link successfully copied to clipboard');
-            }}
+            onClick={onVerifyProof}
             startIcon={
               <Image src="/assets/VerifyOnChain.svg" alt="Share proof" width={16} height={16} />
             }

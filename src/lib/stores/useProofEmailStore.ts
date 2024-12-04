@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { set, get } from 'idb-keyval';
-import { ProofProps, ProofStatus } from '@zk-email/sdk';
+import { Proof, ProofProps, ProofStatus } from '@zk-email/sdk';
 import sdk from '../sdk';
 
 type Email = {
@@ -31,7 +31,7 @@ interface ProofEmailState {
   ) => Promise<ProofStatus>;
   // getProofEmailsForBlueprint: (blueprintId: string) => ProofEmailStatusUpdate[];
   addProof: (blueprintId: string, proofId: string, data: ProofEmail) => void;
-  getProof: (proofId: string) => Promise<ProofProps>;
+  getProof: (proofId: string) => Promise<Proof>;
 }
 
 export const useProofEmailStore = create<ProofEmailState>()(
@@ -49,9 +49,8 @@ export const useProofEmailStore = create<ProofEmailState>()(
           .sort((a, b) => new Date(a.startedAt!).getTime() - new Date(b.startedAt!).getTime())
           .map((p) => p.id);
       },
-      getProof(proofId: string): Promise<ProofProps> {
+      async getProof(proofId: string): Promise<Proof> {
         const state = get();
-        console.log(state, 'state');
         return sdk.getProof(proofId).then((proof) => {
           set((state: ProofEmailState) => {
             // Ensure the blueprintId exists first
@@ -64,7 +63,7 @@ export const useProofEmailStore = create<ProofEmailState>()(
             };
           });
 
-          return proof.props;
+          return proof;
         });
       },
       getUpdatingStatus(
@@ -85,7 +84,6 @@ export const useProofEmailStore = create<ProofEmailState>()(
           try {
             let status = proofEmail.status;
             const proof = await sdk.getProof(proofEmail.id);
-            console.log('got new proof: ', proof);
 
             while (status === ProofStatus.InProgress && !abortController.signal.aborted) {
               status = await proof.checkStatus();

@@ -15,7 +15,7 @@ const ViewProof = () => {
   const proofId = searchParams.get('proofId');
   // TODO: handle case where proofId is not provided
 
-  const { getUpdatingStatus, data, getProof } = useProofEmailStore();
+  const { getUpdatingStatus } = useProofEmailStore();
   const blueprint = useProofStore((state) => state.blueprint);
 
   const emailProof = blueprint
@@ -24,14 +24,11 @@ const ViewProof = () => {
 
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status ?? ProofStatus.None);
 
-  console.log(emailProof, data, proofId);
-
   useEffect(() => {
     if (!emailProof) return;
 
     const abortController = new AbortController();
 
-    console.log('getProof', proofId, emailProof);
     const statusPromise = getUpdatingStatus(emailProof, abortController);
     statusPromise.then(setStatus);
 
