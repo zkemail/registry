@@ -76,7 +76,7 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
             </Button>
           </Link>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
           <Link href={'https://t.me/zkemail'} target="_blank">
             <Button
               variant="destructive"
@@ -86,6 +86,15 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
               Report
             </Button>
           </Link>
+          {blueprint.props.status === Status.Draft && (
+            <Button
+              variant="destructive"
+              startIcon={<Image src="/assets/Trash.svg" alt="Delete" width={16} height={16} />}
+              size="sm"
+            >
+              Delete
+            </Button>
+          )}
         </div>
       </div>
     </div>
