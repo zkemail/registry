@@ -108,7 +108,13 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     <>
       {blueprints.map((blueprint) => (
         <div className="mb-3" key={blueprint.props.id}>
-          <Link href={`/${encodeURIComponent(blueprint.props.id!)}`}>
+          <Link
+            href={
+              blueprint.props.status === Status.Draft
+                ? `/${encodeURIComponent(blueprint.props.id!)}/versions`
+                : `/${encodeURIComponent(blueprint.props.id!)}`
+            }
+          >
             <BlueprintCard blueprint={blueprint} />
           </Link>
         </div>
