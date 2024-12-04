@@ -16,6 +16,7 @@ import Loader from '@/components/ui/loader';
 import StepperMobile from '../components/StepperMobile';
 import { BlueprintTitle } from '../components/BlueprintTitle';
 import { Blueprint, Status } from '@zk-email/sdk';
+import { toast } from 'react-toastify';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -53,6 +54,16 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
         console.error(`Failed to get blueprint with id ${id}: `, err);
       });
   }, []);
+
+  const onCancelCompilation = async () => {
+    if (!blueprint) return;
+    try {
+      await blueprint.cancelCompilation();
+    } catch (err) {
+      console.error('Failed to cancel blueprint compilation: ', err);
+      toast.error('Failed to cancel blueprint compilation');
+    }
+  };
 
   if (!blueprint) {
     return (
@@ -93,6 +104,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
             }
             variant="destructive"
             className="mx-auto w-max"
+            onClick={onCancelCompilation}
           >
             Cancel Compilation
           </Button>
