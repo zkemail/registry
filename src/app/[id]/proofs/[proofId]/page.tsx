@@ -111,16 +111,33 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <div className="flex flex-row items-center justify-between">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
-        <Button
-          className="flex flex-row gap-2"
-          onClick={() => {
-            navigator.clipboard.writeText(window.location.href);
-            toast.success('Link successfully copied to clipboard');
-          }}
-        >
-          <Image src="/assets/Share.svg" alt="Share proof" width={16} height={16} />
-          Share Proof
-        </Button>
+        <div className="flex flex-row gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="flex flex-row gap-2"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success('Link successfully copied to clipboard');
+            }}
+            startIcon={
+              <Image src="/assets/VerifyOnChain.svg" alt="Share proof" width={16} height={16} />
+            }
+          >
+            Verify On-chain
+          </Button>
+          <Button
+            className="flex flex-row gap-2"
+            size="sm"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast.success('Link successfully copied to clipboard');
+            }}
+            startIcon={<Image src="/assets/Share.svg" alt="Share proof" width={16} height={16} />}
+          >
+            Share Proof
+          </Button>
+        </div>
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col justify-between gap-1 md:flex-row">
