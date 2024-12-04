@@ -66,6 +66,15 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
               Edit
             </Button>
           </Link>
+          <Link className="hidden md:block" href={`/${blueprint.props.id}/parameters`}>
+            <Button
+              variant="secondary"
+              startIcon={<Image src="/assets/Parameters.svg" alt="Edit" width={16} height={16} />}
+              size="sm"
+            >
+              Parameters
+            </Button>
+          </Link>
         </div>
         <div>
           <Link href={'https://t.me/zkemail'} target="_blank">
