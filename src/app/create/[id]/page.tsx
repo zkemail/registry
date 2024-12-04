@@ -11,50 +11,49 @@
 
 */
 
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from './store';
 
-import DragAndDropFile from '@/app/components/DragAndDropFile';
-import { use, useEffect, useState, useCallback } from 'react';
-import { Select } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
+import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { DecomposedRegex, DecomposedRegexPart, ExternalInput, testBlueprint } from '@zk-email/sdk';
-import { Textarea } from '@/components/ui/textarea';
-import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { DecomposedRegex, testBlueprint } from '@zk-email/sdk';
 import { useRouter } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
-import { Switch } from '@/components/ui/switch';
-import { InputTags } from '@/components/ui/inputTags';
-import { ValidationErrors } from './store';
+import StepperMobile from '@/app/components/StepperMobile';
+import Stepper from '@/app/components/Stepper';
+import PatternDetails from './createBlueprintSteps/PatternDetails';
+import ExtractFields from './createBlueprintSteps/ExtractFields';
+import EmailDetails from './createBlueprintSteps/EmailDetails';
+import { extractEMLDetails } from '@/app/utils';
+import PostalMime from 'postal-mime';
+import { Email } from 'postal-mime';
 
 const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
-  const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
-  const blueprint = useCreateBlueprintStore((state) => state.blueprint);
-  const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
 
-  const {
-    setField,
-    saveDraft,
-    getParsedDecomposedRegexes,
-    setToExistingBlueprint,
-    reset,
-    compile,
-  } = store;
+  const { saveDraft, getParsedDecomposedRegexes, setToExistingBlueprint, reset, compile } = store;
 
   const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
-  // TODO: Add a checkbox in UI. This will reveal the isPublic: false fields if set to true
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
-  const [aiPrompt, setAiPrompt] = useState<string>('');
-  const [isGeneratingFieldsLoading, setIsGeneratingFieldsLoading] = useState(false);
+  const steps = ['Pattern Details', 'Email Details', 'Extract Fields'];
+  const [step, setStep] = useState(0);
+  const [showSampleEMLPreview, setShowSampleEMLPreview] = useState(false);
+  const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
+  const [isDKIMMissing, setIsDKIMMissing] = useState(false);
+
+  useEffect(() => {
+    if (file) {
+      const parser = new PostalMime();
+      parser.parse(file!).then((email) => {
+        setParsedEmail(email);
+      });
+    }
+  }, [file]);
 
   // Load data if an id is provided
   useEffect(() => {
@@ -90,6 +89,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
+      console.log('content', content);
+      const { senderDomain, emailQuery } = extractEMLDetails(content);
+      store.setField('senderDomain', senderDomain);
+      // store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 2) * 64);
+      store.setField('emailQuery', emailQuery);
     } catch (err) {
       console.error('Failed to get content from email');
       return;
@@ -125,467 +129,118 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   };
 
-  console.log(validationErrors)
-
   useEffect(() => {
-    console.log('handleTestEmail effect');
     if (file) {
       handleTestEmail();
     }
   }, [file, revealPrivateFields]);
 
-  // TODO: Handle local decomposed regex checks
-  const Status = () => {
-    // if (Object.keys(validationErrors).length > 0) {
-    //   return Object.entries(validationErrors).map(([field, error]) => (
-    //     <div key={field} className="flex items-center gap-2 text-red-400">
-    //       <Image src="/assets/WarningCircle.svg" alt="fail" width={20} height={20} />
-    //       <span className="text-base font-medium">{error}</span>
-    //     </div>
-    //   ));
-    // }
-    
-    if (errors.length || !file) {
-      return errors.map((error) => (
-        <div key={error} className="flex items-center gap-2 text-red-400">
-          <Image src="/assets/WarningCircle.svg" alt="fail" width={20} height={20} />
-          <span className="text-base font-medium">{error}</span>
-        </div>
-      ));
-    } else {
-      return (
-        <div className="flex items-center gap-2 text-green-300">
-          <Image src="/assets/CheckCircle.svg" alt="check" width={20} height={20} />
-          <span className="text-base font-medium">All tests passed. Ready to compile</span>
-        </div>
-      );
-    }
-  };
-
-  const handleGenerateFields = async () => {
-    setIsGeneratingFieldsLoading(true);
-    if (!file || !aiPrompt) {
-      toast.error('Please provide both an email file and extraction goals');
-      setIsGeneratingFieldsLoading(false);
-      return;
-    }
-
-    try {
-      const formData = new FormData();
-      formData.append('emlFile', file);
-      formData.append('extractionGoals', aiPrompt);
-
-      const response = await fetch('/api/generateBlueprintFields', {
-        method: 'POST',
-        body: formData,
+  useEffect(() => {
+    fetch(`https://archive.prove.email/api/key?domain=${store.senderDomain}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setIsDKIMMissing(!data.length);
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate fields');
-      }
-
-      const data = await response.json();
-
-      // Convert the API response format to match your store's format
-      const convertedRegexes = data.map((item: any) => ({
-        name: item.name,
-        location: item.location === 'body' ? 'body' : 'header',
-        parts: JSON.stringify(item.parts, null, 2),
-      }));
-
-      setField('decomposedRegexes', convertedRegexes);
-      toast.success('Successfully generated fields');
-    } catch (error) {
-      console.error('Error generating fields:', error);
-      toast.error('Failed to generate fields');
-    } finally {
-      setIsGeneratingFieldsLoading(false);
-      handleTestEmail();
-    }
-  };
+  }, [store.senderDomain]);
 
   return (
-    <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-      <div className="rounded-lg bg-blue-100 p-3 text-blue-800">
-        <p className="text-sm font-medium">
-          🚧 This feature is currently in beta. Some functionality may be limited or subject to change.
-        </p>
+    <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+      <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
+      <div className="flex flex-col items-center gap-6 md:hidden">
+        <StepperMobile steps={steps} currentStep={step.toString()} />
       </div>
-
+      {/* desktop stepper */}
+      <div className="hidden flex-col items-center gap-6 md:flex">
+        <Stepper steps={steps} currentStep={step.toString()} />
+        <div
+          style={{
+            width: '100%',
+            height: '2px',
+            marginTop: '24px',
+            backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
+          }}
+        />
+      </div>
+      {step !== 0 && (
+        <div className="flex w-auto">
+          <Button
+            variant="ghost"
+            startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
+            onClick={() => {
+              const newStep = step - 1;
+              if (steps.length === 3 && newStep === 2) {
+                setStep(1);
+              } else {
+                setStep((newStep + steps.length) % steps.length);
+              }
+            }}
+          >
+            {steps[step - 1]}
+          </Button>
+        </div>
+      )}
+      {step === 0 && <PatternDetails id={id} file={file} setFile={setFile} />}
+      {step === 1 && <EmailDetails isDKIMMissing={isDKIMMissing} />}
+      {step === 2 && <ExtractFields file={file} />}
+      <div
+        style={{
+          width: '100%',
+          height: '2px',
+          marginTop: '24px',
+          backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
+        }}
+      />
       <div>
-        <h4 className="text-xl font-bold text-grey-900">Submit Blueprint</h4>
-        <p className="text-base font-medium text-grey-700">
-          Create, compile and share blueprints easily by filling the following details
-        </p>
-      </div>
-      {!githubUserName ? (
-        <div>Please login first to create a new blueprint.</div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          <Input
-            title="Pattern Name"
-            disabled={id !== 'new'}
-            value={store.title}
-            onChange={(e) => setField('title', e.target.value)}
-            error={!!validationErrors.title}
-            errorMessage={validationErrors.title}
-          />
-          <Input
-            title="Circuit Name"
-            disabled={id !== 'new'}
-            placeholder="e.g CircuitName (without the .circom extension)"
-            value={store.circuitName}
-            onChange={(e) => setField('circuitName', e.target.value)}
-            error={!!validationErrors.circuitName}
-            errorMessage={validationErrors.circuitName}
-          />
-          <Input title="Slug" disabled value={`${githubUserName}/${store.circuitName}`} />
-          {/* TODO: Add check for email body max length */}
-          <DragAndDropFile
-            accept=".eml"
-            file={file}
-            title="Upload test .eml"
-            helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
-            setFile={(e) => {
-              console.log('setting the file');
-              setFile(e);
+        {showSampleEMLPreview && parsedEmail && (
+          <div
+            className="m-6"
+            dangerouslySetInnerHTML={{
+              __html: parsedEmail?.html!,
             }}
           />
-          {/* <InputTags 
-            title="Tags" 
-            value={store.tags || []} 
-            onChange={(e) => setField('tags', e)} 
-            errorMessage={validationErrors.tags}
-          /> */}
-          <Textarea
-            title="Description"
-            value={store.description}
-            rows={3}
-            onChange={(e) => setField('description', e.target.value)}
-            errorMessage={validationErrors.description}
-          />
-          <Input
-            title="Email Query"
-            value={store.emailQuery}
-            onChange={(e) => setField('emailQuery', e.target.value)}
-            placeholder="Password request from: contact@x.com"
-            helpText="As if you were searching for the email in your Gmail inbox. Only emails matching this query will be shown to the user to prove when they sign in with Gmail"
-            error={!!validationErrors.emailQuery}
-            errorMessage={validationErrors.emailQuery}
-          />
-          <Checkbox
-            title="Skip body hash check"
-            helpText="Enable to ignore the contents on the email and only extract data from the headers"
-            checked={store.ignoreBodyHashCheck}
-            onCheckedChange={(checked) => {
-              setField('ignoreBodyHashCheck', checked);
-              setField('removeSoftLinebreaks', !checked);
-            }}
-          />
-          {/* <Checkbox
-            title="Enable email masking"
-            helpText="Enable and send a mask to return a masked email in the public output. We recommend to disable this for most patterns"
-            checked={store.enableBodyMasking}
-            onCheckedChange={(checked) => setField('enableBodyMasking', checked)}
-          /> */}
-          <Input
-            title="Sender domain"
-            placeholder="twitter.com"
-            helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
-            value={store.senderDomain}
-            onChange={(e) => setField('senderDomain', e.target.value)}
-            error={!!validationErrors.senderDomain}
-            errorMessage={validationErrors.senderDomain}
-          />
-          <Input
-            title="Email Body Cutoff Value (optional)"
-            placeholder=">Not my Account<"
-            type="text"
-            disabled={store.ignoreBodyHashCheck}
-            helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
-            value={store.shaPrecomputeSelector}
-            onChange={(e) => setField('shaPrecomputeSelector', e.target.value)}
-          />
-          <Input
-            title="Max Email Header Length"
-            placeholder="1024"
-            type="number"
-            min={0}
-            error={!!validationErrors.emailHeaderMaxLength}
-            errorMessage={validationErrors.emailHeaderMaxLength}
-            helpText="Must be a multiple of 64"
-            value={store.emailHeaderMaxLength || ''}
-            onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
-          />
-          <Input
-            title="Max Email Body Length"
-            disabled={store.ignoreBodyHashCheck}
-            placeholder="4032"
-            error={!!validationErrors.emailBodyMaxLength}
-            errorMessage={validationErrors.emailBodyMaxLength}
-            max={8192}
-            min={0}
-            type="number"
-            helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
-            value={store.emailBodyMaxLength}
-            onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
-          />
-          <Select
-            label="Verifier Contract"
-            value={store.verifierContract?.chain?.toString()}
-            onChange={(value: string) => {
-              setField('verifierContract', {
-                chain: parseInt(value),
-              });
-            }}
-            options={[
-              { label: 'Base Sepolia', value: '84532' },
-              { label: 'Sepolia', value: '11155111' },
-            ]}
-          />
-
-          <Label>AI auto extraction</Label>
-          <div className="rounded-lg border border-[#EDCEF8] p-3 shadow-[0px_0px_10px_0px_#EDCEF8]">
-            <div className="flex items-center justify-between">
-              <span className="w-full text-base font-medium">
-                <Input
-                  className="w-full border-0 hover:border-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-                  placeholder="Use our AI to magically extract the fields you want"
-                  value={aiPrompt}
-                  onChange={(e) => setAiPrompt(e.target.value)}
-                />
-              </span>
+        )}
+        <div className={`flex w-full flex-row ${file ? 'justify-between' : 'justify-center'}`}>
+          {file && (
+            <div>
               <Button
-                className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
                 variant="secondary"
-                size="sm"
-                disabled={!file || aiPrompt.length === 0 || isGeneratingFieldsLoading}
-                loading={isGeneratingFieldsLoading}
-                startIcon={<Image src="/assets/Sparkle.svg" alt="sparkle" width={16} height={16} />}
-                onClick={handleGenerateFields}
+                onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
               >
-                {isGeneratingFieldsLoading ? 'Generating...' : 'Generate Fields'}
+                {showSampleEMLPreview ? '- Hide sample .eml' : '+ View sample .eml'}
               </Button>
             </div>
-          </div>
-
-          {/* Decomposed Regexes */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <Label>Fields to extract</Label>
-              {store?.decomposedRegexes?.length === 0 ? (
-                <Button
-                  variant="default"
-                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
-                  onClick={() => {
-                    setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
-                  }}
-                >
-                  Add values to extract
-                </Button>
-              ) : null}
-            </div>
-
-            {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => (
-              <div key={index} className="flex flex-col gap-3 pl-2">
-                <div className="flex items-center justify-between">
-                  <Label>Field #{(index + 1).toString().padStart(2, '0')}</Label>
-                  <Button
-                    variant="destructive"
-                    startIcon={<Image src="/assets/Trash.svg" alt="trash" width={16} height={16} />}
-                    onClick={() => {
-                      const updatedRegexes = [...store.decomposedRegexes];
-                      updatedRegexes.splice(index, 1);
-                      setField('decomposedRegexes', updatedRegexes);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-                <Input
-                  title="Field Name"
-                  placeholder="receiverName"
-                  value={regex.name}
-                  onChange={(e) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = { ...regex, name: e.target.value };
-                    setField('decomposedRegexes', updatedRegexes);
-                  }}
-                />
-                <Select
-                  label="Data Location"
-                  value={regex.location}
-                  onChange={(value: string) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = { ...regex, location: value as 'body' | 'header' };
-                    setField('decomposedRegexes', updatedRegexes);
-                  }}
-                  options={[
-                    { label: 'Email Body', value: 'body' },
-                    { label: 'Email Headers', value: 'header' },
-                  ]}
-                />
-                <Input
-                  title="Max Length"
-                  placeholder="64"
-                  type="number"
-                  value={regex.maxLength}
-                  onChange={(e) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = { ...regex, maxLength: parseInt(e.target.value) };
-                    setField('decomposedRegexes', updatedRegexes);
-                  }}
-                />
-
-                <Textarea
-                  title="Parts JSON"
-                  rows={3}
-                  placeholder="[]"
-                  value={regex.parts as unknown as string}
-                  onChange={(e) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = {
-                      ...regex,
-                      parts: e.target.value as unknown as DecomposedRegexPart[],
-                    };
-                    setField('decomposedRegexes', updatedRegexes);
-
-                    handleTestEmail();
-                  }}
-                />
-              </div>
-            ))}
-            {store?.decomposedRegexes?.length !== 0 ? (
-              <div className="flex items-center justify-center">
-                <Button
-                  variant="default"
-                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
-                  onClick={() => {
-                    setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
-                  }}
-                >
-                  Add values to extract
-                </Button>
-              </div>
-            ) : null}
-          </div>
-
-          {/* External Inputs */}
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <Label>External Inputs</Label>
-              {store.externalInputs?.length === 0 ? (
-                <Button
-                  variant="default"
-                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
-                  onClick={() => {
-                    const updatedInputs = store.externalInputs
-                      ? [...store.externalInputs, {}]
-                      : [{}];
-                    setField('externalInputs', updatedInputs);
-                  }}
-                >
-                  Add values to extract
-                </Button>
-              ) : null}
-            </div>
-            {store.externalInputs?.map((input: ExternalInput, index: number) => (
-              <div key={index} className="flex flex-col gap-3 pl-2">
-                <div className="flex items-center justify-between">
-                  <Label>Field #{(index + 1).toString().padStart(2, '0')}</Label>
-                  <Button
-                    variant="destructive"
-                    startIcon={<Image src="/assets/Trash.svg" alt="trash" width={16} height={16} />}
-                    onClick={() => {
-                      const updatedInputs = store.externalInputs ? [...store.externalInputs] : [];
-                      updatedInputs.splice(index, 1);
-                      setField('externalInputs', updatedInputs);
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </div>
-                <Input
-                  title="Field Name"
-                  placeholder="receiverName"
-                  value={input.name}
-                  onChange={(e) => {
-                    const updatedInputs = store.externalInputs ? [...store.externalInputs] : [];
-                    updatedInputs[index] = { ...input, name: e.target.value };
-                    setField('externalInputs', updatedInputs);
-                  }}
-                />
-                <Input
-                  title="Max Length of Input"
-                  type="number"
-                  placeholder="64"
-                  value={input.maxLength}
-                  onChange={(e) => {
-                    const updatedInputs = store.externalInputs ? [...store.externalInputs] : [];
-                    updatedInputs[index] = { ...input, maxLength: parseInt(e.target.value) };
-                    setField('externalInputs', updatedInputs);
-                  }}
-                />
-              </div>
-            ))}
-            {store.externalInputs?.length !== 0 ? (
-              <div className="flex items-center justify-center">
-                <Button
-                  variant="default"
-                  startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
-                  onClick={() => {
-                    const updatedInputs = store.externalInputs
-                      ? [...store.externalInputs, {}]
-                      : [{}];
-                    setField('externalInputs', updatedInputs);
-                  }}
-                >
-                  Add values to extract
-                </Button>
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <Label>Generated output</Label>
-              <div className="flex items-center gap-2">
-                <Switch
-                  title="Private output"
-                  checked={revealPrivateFields}
-                  onCheckedChange={(checked) => setRevealPrivateFields(checked)}
-                />
-                <Label>Private output</Label>
-              </div>
-            </div>
-            <Textarea
-              disabled
-              rows={3}
-              className="border-grey-500 bg-neutral-100"
-              value={generatedOutput}
-            />
-          </div>
-
-          <Status />
-
+          )}
           <div className="flex justify-center gap-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={handleSaveDraft}
               disabled={!store.circuitName || !store.title}
               startIcon={<Image src="/assets/Archive.svg" alt="save" width={16} height={16} />}
             >
               Save as Draft
             </Button>
-            <Button
-              onClick={compile}
-              disabled={!file || !!errors.length || generatedOutput.length === 0}
-              startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
-            >
-              Submit Blueprint
-            </Button>
+            {step < 2 ? (
+              <Button
+                onClick={() => setStep(step + 1)}
+                endIcon={
+                  <Image src="/assets/ArrowRight.svg" alt="arrow right" width={16} height={16} />
+                }
+                disabled={!file}
+              >
+                Next
+              </Button>
+            ) : (
+              <Button
+                onClick={compile}
+                disabled={!file || !!errors.length || generatedOutput.length === 0 || isDKIMMissing}
+                startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
+              >
+                Submit Blueprint
+              </Button>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
