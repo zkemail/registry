@@ -233,7 +233,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             ) : (
               <Button
                 onClick={compile}
-                disabled={!file || !!errors.length || generatedOutput.length === 0 || isDKIMMissing}
+                disabled={!file || !!errors.length || isDKIMMissing}
                 startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
               >
                 Submit Blueprint

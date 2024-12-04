@@ -118,6 +118,14 @@ const ExtractFields = ({ file }: { file: File | null }) => {
           <span className="text-base font-medium">{error}</span>
         </div>
       ));
+    }
+    if (!generatedOutput) {
+      return errors.map((error) => (
+        <div key={error} className="flex items-center gap-2 text-red-400">
+          <Image src="/assets/WarningCircle.svg" alt="fail" width={20} height={20} />
+          <span className="text-base font-medium">No generated output</span>
+        </div>
+      ));
     } else {
       return (
         <div className="flex items-center gap-2 text-green-300">
