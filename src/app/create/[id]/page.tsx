@@ -44,6 +44,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [step, setStep] = useState(0);
   const [showSampleEMLPreview, setShowSampleEMLPreview] = useState(false);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
+  const [isDKIMMissing, setIsDKIMMissing] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -134,6 +135,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [file, revealPrivateFields]);
 
+  useEffect(() => {
+    fetch(`https://archive.prove.email/api/key?domain=${store.senderDomain}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setIsDKIMMissing(!data.length);
+      });
+  }, [store.senderDomain]);
+
   return (
     <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
@@ -171,7 +180,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
       )}
       {step === 0 && <PatternDetails id={id} file={file} setFile={setFile} />}
-      {step === 1 && <EmailDetails />}
+      {step === 1 && <EmailDetails isDKIMMissing={isDKIMMissing} />}
       {step === 2 && <ExtractFields file={file} />}
       <div
         style={{
@@ -223,7 +232,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             ) : (
               <Button
                 onClick={compile}
-                disabled={!file || !!errors.length || generatedOutput.length === 0}
+                disabled={!file || !!errors.length || generatedOutput.length === 0 || isDKIMMissing}
                 startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
               >
                 Submit Blueprint
