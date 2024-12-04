@@ -12,11 +12,12 @@ import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const EmailDetails = () => {
+const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
   const [showOptionalDetails, setShowOptionalDetails] = useState(false);
+
   return (
     <div className="flex flex-col gap-6">
       <Input
@@ -28,20 +29,18 @@ const EmailDetails = () => {
         error={!!validationErrors.emailQuery}
         errorMessage={validationErrors.emailQuery}
       />
-      {/* <Checkbox
-  title="Enable email masking"
-  helpText="Enable and send a mask to return a masked email in the public output. We recommend to disable this for most patterns"
-  checked={store.enableBodyMasking}
-  onCheckedChange={(checked) => setField('enableBodyMasking', checked)}
-/> */}
       <Input
         title="Sender domain"
         placeholder="twitter.com"
         helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
         value={store.senderDomain}
         onChange={(e) => setField('senderDomain', e.target.value)}
-        error={!!validationErrors.senderDomain}
-        errorMessage={validationErrors.senderDomain}
+        error={!!validationErrors.senderDomain || isDKIMMissing}
+        errorMessage={
+          isDKIMMissing
+            ? 'DKIM is missing. Please add a DKIM record at https://archive.prove.email'
+            : validationErrors.senderDomain
+        }
       />
       <Input
         title="Max Email Header Length"
@@ -99,14 +98,6 @@ const EmailDetails = () => {
               />
             </div>
           )}
-          {/* <Checkbox
-            title="Enable email masking"
-            helpText="Enable and send a mask to return a masked email in the public output. We recommend to disable this for most patterns"
-            checked={store.enableBodyMasking}
-            onCheckedChange={(checked) => {
-              setField('enableBodyMasking', checked);
-            }}
-          /> */}
         </>
       )}
     </div>
