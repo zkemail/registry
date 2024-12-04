@@ -3,6 +3,8 @@ import { Blueprint, ExternalInputInput, parseEmail, Proof } from '@zk-email/sdk'
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
+import { useAuthStore } from '@/lib/stores/useAuthStore';
+import sdk from '@/lib/sdk';
 
 export type Step = '0' | '1' | '2' | '3';
 
@@ -21,6 +23,10 @@ interface ProofState {
   setBlueprint: (blueprint: Blueprint) => void;
   startProofGeneration: (externalInputs: ExternalInputInput[] | null) => Promise<string>;
   reset: () => void;
+  setIsUserStarred: () => Promise<void>;
+  isUserStarred: boolean;
+  starBlueprint: () => Promise<void>;
+  unStarBlueprint: () => Promise<void>;
 }
 
 const initialState = {
@@ -29,6 +35,7 @@ const initialState = {
   file: null,
   blueprint: null,
   externalInputs: null,
+  isUserStarred: false,
 };
 
 // seperate store
@@ -87,9 +94,40 @@ export const useProofStore = create<ProofState>()(
         set({ file: content });
       },
       setBlueprint: (blueprint: Blueprint) => set({ blueprint }),
+      setIsUserStarred: async () => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          return;
+        }
+        const { blueprint } = get();
+        const userStarredSlugs = await sdk.getStarredBlueprints();
+        const isStared = userStarredSlugs.includes(blueprint!.props.slug!);
+        set({ isUserStarred: isStared });
+      },
+      starBlueprint: async () => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          return;
+        }
+        const { blueprint } = get();
+        await blueprint!.addStar();
+        const userStarredSlugs = await sdk.getStarredBlueprints();
+        const isStared = userStarredSlugs.includes(blueprint!.props.slug!);
+        set({ isUserStarred: isStared });
+      },
+      unStarBlueprint: async () => {
+        const token = useAuthStore.getState().token;
+        if (!token) {
+          return;
+        }
+        const { blueprint } = get();
+        await blueprint!.removeStar();
+        const userStarredSlugs = await sdk.getStarredBlueprints();
+        const isStared = userStarredSlugs.includes(blueprint!.props.slug!);
+        set({ isUserStarred: isStared });
+      },
       // Starts the proof generation, waits for initial response and saves eml and proof to emailProofStrore
       startProofGeneration: async (externalInputs: ExternalInputInput[] | null) => {
-        console.log('starting proof generation');
         const { blueprint, file } = get();
         if (!blueprint) {
           throw new Error('Proof store not initialized yet, blueprint is not set');
@@ -114,7 +152,6 @@ export const useProofStore = create<ProofState>()(
           ...proof.props,
           email: file,
         });
-        console.log('added proof');
 
         return proof.props.id;
       },
