@@ -61,7 +61,7 @@ export const BlueprintTitle = ({
             <Image
               width={16}
               height={16}
-              src={isUserStarred ? 'assets/StarFilled.svg' : 'assets/Star.svg'}
+              src={isUserStarred ? '/assets/StarFilled.svg' : '/assets/Star.svg'}
               alt="⭐"
             />{' '}
             Stars | {blueprint.stars || 0}
