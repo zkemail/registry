@@ -21,8 +21,8 @@ const Footer = () => {
   };
 
   return (
-    <footer className="w-full border-t border-grey-100 py-4 bg-white">
-      <div className="container mx-auto px-4 flex justify-between items-center">
+    <footer className="w-full border-t border-grey-100 bg-white py-4">
+      <div className="container mx-auto flex items-center justify-between px-4">
         {/* Left side - Links */}
         <div className="flex items-center gap-4">
           <Link
@@ -33,7 +33,11 @@ const Footer = () => {
             Documentation
           </Link>
           <span className="text-grey-300">•</span>
-          <Link href="/privacy" className="text-grey-800 hover:text-grey-900">
+          <Link
+            href="https://zk.email/privacy-policy"
+            target="_blank"
+            className="text-grey-800 hover:text-grey-900"
+          >
             Privacy Policy
           </Link>
         </div>
