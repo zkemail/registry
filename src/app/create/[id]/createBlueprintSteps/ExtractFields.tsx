@@ -172,6 +172,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
           {store?.decomposedRegexes?.length === 0 ? (
             <Button
               variant="default"
+              size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
                 setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
