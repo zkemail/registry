@@ -6,17 +6,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useCreateBlueprintStore } from '../store';
 
-const PatternDetails = ({ id, file, setFile }: { id: string, file: File | null, setFile: (file: File | null) => void }) => {
+const PatternDetails = ({
+  id,
+  file,
+  setFile,
+}: {
+  id: string;
+  file: File | null;
+  setFile: (file: File | null) => void;
+}) => {
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
 
-  const {
-    setField,
-  } = store;
+  const { setField } = store;
 
   return (
-    <div className='flex flex-col gap-6'>
+    <div className="flex flex-col gap-6">
       <Input
         title="Pattern Name"
         disabled={id !== 'new'}
@@ -30,7 +36,10 @@ const PatternDetails = ({ id, file, setFile }: { id: string, file: File | null, 
         disabled={id !== 'new'}
         placeholder="e.g CircuitName (without the .circom extension)"
         value={store.circuitName}
-        onChange={(e) => setField('circuitName', e.target.value)}
+        onChange={(e) => {
+          setField('circuitName', e.target.value);
+          setField('slug', `${githubUserName}/${e.target.value}`);
+        }}
         error={!!validationErrors.circuitName}
         errorMessage={validationErrors.circuitName}
       />
