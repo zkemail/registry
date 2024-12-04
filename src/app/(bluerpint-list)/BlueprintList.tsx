@@ -118,7 +118,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         {isLoading ? (
           <Loader />
         ) : !hasMore && blueprints.length > 0 ? (
-          <div className="text-gray-500">No more blueprints to load</div>
+          <div className="text-grey-500">No more blueprints to load</div>
         ) : blueprints.length === 0 && !isLoading ? (
           search ? (
             <div>No blueprints found for "{search}"</div>
