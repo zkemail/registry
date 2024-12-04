@@ -90,10 +90,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     try {
       content = await getFileContent(file);
       console.log('content', content);
-      const { senderDomain, emailQuery } = extractEMLDetails(content);
+      const { senderDomain, emailQuery, emailBodyMaxLength } = extractEMLDetails(content);
       store.setField('senderDomain', senderDomain);
       // store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 2) * 64);
       store.setField('emailQuery', emailQuery);
+      store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 2) * 64);
     } catch (err) {
       console.error('Failed to get content from email');
       return;

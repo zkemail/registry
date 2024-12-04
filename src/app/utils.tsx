@@ -149,8 +149,9 @@ function extractEMLDetails(emlContent: string) {
     .join('.') || null;
   const headerLength = headerLines.join("\n").length;
   const emailQuery = `from:${senderDomain}`;
+  const emailBodyMaxLength = lines.slice(headerLines.length).join("\n").length;
 
-  return { senderDomain, headerLength, emailQuery };
+  return { senderDomain, headerLength, emailQuery, emailBodyMaxLength };
 }
 
 export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate, formatDateAndTime, extractEMLDetails };

@@ -252,7 +252,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         updatedRegexes[index] = {
                           ...regex,
                           // @ts-ignore
-                          parts: JSON.stringify(parts),
+                          parts: parts,
                         };
                         setField('decomposedRegexes', updatedRegexes);
                         handleTestEmail();
@@ -273,7 +273,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         updatedRegexes[index] = {
                           ...regex,
                           // @ts-ignore
-                          parts: JSON.stringify(parts),
+                          parts: parts,
                         };
                         setField('decomposedRegexes', updatedRegexes);
                         handleTestEmail();
@@ -296,7 +296,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         updatedRegexes[index] = {
                           ...regex,
                           // @ts-ignore
-                          parts: JSON.stringify(parts),
+                          parts: parts,
                         };
                         setField('decomposedRegexes', updatedRegexes);
                         handleTestEmail();
@@ -322,7 +322,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                     updatedRegexes[index] = {
                       ...regex,
                       // @ts-ignore
-                      parts: JSON.stringify(parts),
+                      parts: parts,
                     };
                     setField('decomposedRegexes', updatedRegexes);
                   }}
@@ -356,6 +356,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
           {store.externalInputs?.length === 0 ? (
             <Button
               variant="default"
+              size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
                 const updatedInputs = store.externalInputs ? [...store.externalInputs, {}] : [{}];

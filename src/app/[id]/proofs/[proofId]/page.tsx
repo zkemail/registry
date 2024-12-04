@@ -124,7 +124,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       </div>
       <div className="flex flex-col gap-4">
         <div className="flex flex-col justify-between gap-1 md:flex-row">
-          <div className="text-base font-medium text-grey-700">Job Id</div>
+          <div className="text-base font-medium text-grey-700">Proof Id</div>
           <div className="gap-1 text-base font-medium text-grey-800">
             {proofId}
             <span className="ml-1">
@@ -136,7 +136,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
                   toast.success('Copied to clipboard');
                 }}
               >
-                <Image src="/assets/CopySimple.svg" alt="Copy job id" width={16} height={16} />
+                <Image src="/assets/CopySimple.svg" alt="Copy proof id" width={16} height={16} />
               </Button>
             </span>
           </div>

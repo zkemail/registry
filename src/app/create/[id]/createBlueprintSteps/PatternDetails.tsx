@@ -1,15 +1,10 @@
 'use client';
 
 import DragAndDropFile from '@/app/components/DragAndDropFile';
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useRouter } from 'next/navigation';
-import { use } from 'react';
 import { useCreateBlueprintStore } from '../store';
-import { Button } from '@/components/ui/button';
 
 const PatternDetails = ({ id, file, setFile }: { id: string, file: File | null, setFile: (file: File | null) => void }) => {
   const githubUserName = useAuthStore((state) => state.username);
@@ -19,13 +14,6 @@ const PatternDetails = ({ id, file, setFile }: { id: string, file: File | null, 
   const {
     setField,
   } = store;
-
-  const [errors, setErrors] = useState<string[]>([]);
-  // TODO: Add a checkbox in UI. This will reveal the isPublic: false fields if set to true
-  const [revealPrivateFields, setRevealPrivateFields] = useState(false);
-  const [generatedOutput, setGeneratedOutput] = useState<string>('');
-  const [aiPrompt, setAiPrompt] = useState<string>('');
-  const [isGeneratingFieldsLoading, setIsGeneratingFieldsLoading] = useState(false);
 
   return (
     <div className='flex flex-col gap-6'>
