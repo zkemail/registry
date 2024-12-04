@@ -4,11 +4,13 @@ import { cn } from '@/lib/utils';
 import { Label } from './label';
 import { cva } from 'class-variance-authority';
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   title?: string;
   error?: boolean;
   errorMessage?: string;
   helpText?: string;
+  size?: 'default' | 'sm' | 'lg';
+  startIcon?: React.ReactNode;
 }
 
 const inputVariants = cva(
@@ -45,7 +47,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         />
         {startIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2">{startIcon}</span>}
         {errorMessage || helpText ? (
-          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>{errorMessage || helpText}</p>
+          <p className={cn('text-base text-grey-600', error ? 'text-red-500' : '')}>
+            {errorMessage || helpText}
+          </p>
         ) : null}
       </div>
     );

@@ -13,7 +13,7 @@ interface BlueprintCardProps {
 
 const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: BlueprintCardProps) => {
   let [stars, setStars] = useState(blueprint.stars);
-  const onStar = async (e) => {
+  const onStar = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (starred) {
       await setUnStarred();

@@ -128,7 +128,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
     }
   };
 
-  const parseRegexParts = (parts: string | DecomposedRegexPart[]): DecomposedRegexPart[] => {
+  const parseRegexParts = (parts: any): any => {
     if (typeof parts === 'string') {
       try {
         return JSON.parse(parts);
@@ -235,7 +235,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             />
 
             <div className="flex flex-col gap-3">
-              {parseRegexParts(regex.parts).map((part, partIndex) => (
+              {parseRegexParts(regex.parts).map((part: any, partIndex: any) => (
                 <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                   <div className="flex items-center justify-between">
                     <Label>Regex field #{(partIndex + 1).toString().padStart(2, '0')}</Label>
@@ -251,6 +251,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         const updatedRegexes = [...store.decomposedRegexes];
                         updatedRegexes[index] = {
                           ...regex,
+                          // @ts-ignore
                           parts: JSON.stringify(parts),
                         };
                         setField('decomposedRegexes', updatedRegexes);
@@ -271,6 +272,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         const updatedRegexes = [...store.decomposedRegexes];
                         updatedRegexes[index] = {
                           ...regex,
+                          // @ts-ignore
                           parts: JSON.stringify(parts),
                         };
                         setField('decomposedRegexes', updatedRegexes);
@@ -293,6 +295,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         const updatedRegexes = [...store.decomposedRegexes];
                         updatedRegexes[index] = {
                           ...regex,
+                          // @ts-ignore
                           parts: JSON.stringify(parts),
                         };
                         setField('decomposedRegexes', updatedRegexes);
@@ -318,6 +321,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                     const updatedRegexes = [...store.decomposedRegexes];
                     updatedRegexes[index] = {
                       ...regex,
+                      // @ts-ignore
                       parts: JSON.stringify(parts),
                     };
                     setField('decomposedRegexes', updatedRegexes);

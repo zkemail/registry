@@ -66,6 +66,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     const state = get();
     console.log(state, field);
     try {
+      // @ts-ignore
       const fieldSchema = blueprintFormSchema.shape[field];
       if (fieldSchema) {
         fieldSchema.parse(state[field]);
@@ -99,6 +100,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
         const errors: ValidationErrors = {};
         error.errors.forEach((err) => {
           const path = err.path[0] as keyof BlueprintProps;
+          // @ts-ignore
           errors[path] = err.message;
         });
         set({ validationErrors: errors });

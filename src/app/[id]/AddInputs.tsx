@@ -16,7 +16,7 @@ const AddInputs = () => {
   const handleStartProofGeneration = async () => {
     setIsCreateProofLoading(true);
     try {
-      const proofId = await startProofGeneration(externalInputs);
+      const proofId = await startProofGeneration();
       const params = new URLSearchParams(searchParams);
       params.set('proofId', proofId);
       params.set('step', '3');
