@@ -28,6 +28,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
   const observerRef = useRef<IntersectionObserver>();
   const loadingRef = useRef<HTMLDivElement>(null);
   const githubUserName = useAuthStore.getState().username;
+  console.log('githubUserName', githubUserName);
 
   const fetchBlueprints = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -46,8 +47,16 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
 
       setBlueprints((prev) => {
         // If search changes, replace results instead of appending
-        if (skip === 0) return results;
-        return [...prev, ...results];
+        if (skip === 0)
+          return results.filter(
+            (bp) => bp.props.githubUsername === githubUserName || bp.props.status === Status.Done
+          );
+        return [
+          ...prev,
+          ...results.filter(
+            (bp) => bp.props.githubUsername === githubUserName || bp.props.status === Status.Done
+          ),
+        ];
       });
 
       // If we got fewer results than the limit, we've reached the end

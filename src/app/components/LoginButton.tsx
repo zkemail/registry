@@ -27,7 +27,14 @@ export default function LoginButton() {
           Login
         </Button>
       ) : (
-        <Button variant="secondary" className="rounded-xl" onClick={clearAuth}>
+        <Button
+          variant="secondary"
+          className="rounded-xl"
+          onClick={() => {
+            clearAuth();
+            window.location.reload();
+          }}
+        >
           Logout
         </Button>
       )}

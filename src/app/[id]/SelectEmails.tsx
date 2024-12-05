@@ -112,7 +112,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       setIsFetchEmailLoading(true);
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
         pageToken: pageToken,
-        q: blueprint?.props.emailQuery
+        q: blueprint?.props.emailQuery,
       });
 
       const emailResponseMessages = emailListResponse.messages;
@@ -154,20 +154,16 @@ const SelectEmails = ({ id }: { id: string }) => {
     }
   }, [googleAuthToken?.access_token]);
 
-  return (
-    <div className="flex flex-col items-center justify-center gap-6">
-      <div className="flex w-full flex-col gap-1">
-        <h4 className="text-xl font-bold text-grey-800">Select Emails</h4>
-        <p className="text-base font-medium text-grey-700">
-          Choose the emails you want to create proofs for. You can select multiple emails.
-        </p>
-        <p className="text-base font-medium text-grey-700">
-          <span className="text-grey-900 underline">Note</span> - If you select to create the proofs
-          remotely, your emails will be sent to our secured service for proof generation. Emails
-          will be deleted once the proofs are generated
-        </p>
-      </div>
+  const renderEmailsTable = () => {
+    if (fetchedEmails.filter((email) => email.valid).length === 0) {
+      return (
+        <div className="border-grey-200 rounded-lg border p-4 text-grey-700">
+          No valid emails found. Please check your inbox
+        </div>
+      );
+    }
 
+    return (
       <div className="mt-6 w-full">
         <div className="grid w-full">
           {/* Header */}
@@ -193,42 +189,49 @@ const SelectEmails = ({ id }: { id: string }) => {
             }}
           >
             <AnimatePresence initial={false}>
-              {fetchedEmails.map((email, index) => (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  key={email.emailMessageId}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
-                  style={{ gridTemplateColumns: '1fr 1fr 2fr 6fr' }}
-                >
-                  <RadioGroupItem
-                    value={email.decodedContents}
-                    id={email.emailMessageId}
-                    // disabled={!email.valid}
-                  />
+              {fetchedEmails
+                .filter((email) => email.valid)
+                .map((email, index) => (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    key={email.emailMessageId}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="grid items-center gap-6 border-t-2 border-neutral-100 py-3 text-grey-700"
+                    style={{ gridTemplateColumns: '1fr 1fr 2fr 6fr' }}
+                  >
+                    <RadioGroupItem
+                      value={email.decodedContents}
+                      id={email.emailMessageId}
+                      // disabled={!email.valid}
+                    />
 
-                  <div className="flex items-center justify-center">
-                    {email.valid ? (
-                      <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
-                    ) : (
-                      <Image src="/assets/WarningCircle.svg" alt="status" width={20} height={20} />
-                    )}
-                  </div>
-                  <div>
-                    <div>{formatDate(email.internalDate).split(',')[0]}</div>
-                    <div>{formatDate(email.internalDate).split(',')[1]}</div>
-                  </div>
-                  <div className="overflow-hidden text-ellipsis">{email.subject}</div>
-                  {/* <div>
-                    <button className="flex items-center gap-1 underline hover:underline">
-                      <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
-                      View Input
-                    </button>
-                  </div> */}
-                </motion.div>
-              ))}
+                    <div className="flex items-center justify-center">
+                      {email.valid ? (
+                        <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
+                      ) : (
+                        <Image
+                          src="/assets/WarningCircle.svg"
+                          alt="status"
+                          width={20}
+                          height={20}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <div>{formatDate(email.internalDate).split(',')[0]}</div>
+                      <div>{formatDate(email.internalDate).split(',')[1]}</div>
+                    </div>
+                    <div className="overflow-hidden text-ellipsis">{email.subject}</div>
+                    {/* <div>
+                <button className="flex items-center gap-1 underline hover:underline">
+                  <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
+                  View Input
+                </button>
+              </div> */}
+                  </motion.div>
+                ))}
             </AnimatePresence>
           </RadioGroup>
         </div>
@@ -266,6 +269,24 @@ const SelectEmails = ({ id }: { id: string }) => {
           </Button>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-6">
+      <div className="flex w-full flex-col gap-1">
+        <h4 className="text-xl font-bold text-grey-800">Select Emails</h4>
+        <p className="text-base font-medium text-grey-700">
+          Choose the emails you want to create proofs for. You can select multiple emails.
+        </p>
+        <p className="text-base font-medium text-grey-700">
+          <span className="text-grey-900 underline">Note</span> - If you select to create the proofs
+          remotely, your emails will be sent to our secured service for proof generation. Emails
+          will be deleted once the proofs are generated
+        </p>
+      </div>
+
+      {renderEmailsTable()}
     </div>
   );
 };

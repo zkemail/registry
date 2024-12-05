@@ -6,6 +6,7 @@ import { Blueprint, Status } from '@zk-email/sdk';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -15,6 +16,17 @@ interface VersionCardProps {
 
 const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps) => {
   const router = useRouter();
+  const onCancelCompilation = async () => {
+    if (!blueprint) return;
+    try {
+      await blueprint.cancelCompilation();
+      toast.success('Compilation cancelled');
+    } catch (err) {
+      console.error('Failed to cancel blueprint compilation: ', err);
+      toast.error('Failed to cancel blueprint compilation');
+    }
+  };
+
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between">
@@ -88,6 +100,25 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
               Report
             </Button>
           </Link>
+          {blueprint.props.status === Status.InProgress && isLatest && (
+            <Button
+              size="sm"
+              startIcon={
+                <Image
+                  src="/assets/RedClose.svg"
+                  style={{ color: 'red' }}
+                  alt="close"
+                  width={16}
+                  height={16}
+                />
+              }
+              variant="destructive"
+              className="mx-auto w-max"
+              onClick={onCancelCompilation}
+            >
+              Cancel Compilation
+            </Button>
+          )}
           {blueprint.props.status === Status.Draft && isLatest && (
             <Button
               variant="destructive"
