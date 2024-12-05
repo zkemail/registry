@@ -41,6 +41,10 @@ const initialState: BlueprintProps = {
   enableHeaderMasking: false,
   enableBodyMasking: false,
   isPublic: false,
+  verifierContract: {
+    chain: 84532,
+    address: '',
+  },
   externalInputs: [],
   decomposedRegexes: [],
 };
