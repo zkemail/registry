@@ -37,8 +37,11 @@ export const blueprintFormSchema = z.object({
   //   }
   // }),
   emailQuery: z.string(),
-  ignoreBodyHashCheck: z.boolean(),
-  shaPrecomputeSelector: z.string().transform((value) => value.replace(/(?<!\\)"/g, '\\"')),
+  ignoreBodyHashCheck: z.boolean().optional(),
+  shaPrecomputeSelector: z
+    .string()
+    .transform((value) => value.replace(/(?<!\\)"/g, '\\"'))
+    .optional(),
   senderDomain: z.string().refine((value) => !value.includes('@'), {
     message: "Sender domain should not contain '@' symbol, only the domain",
   }),
@@ -136,12 +139,14 @@ export const blueprintFormSchema = z.object({
         .or(z.array(z.any())), // this is that when we pre-populate the form directly with an array, the form will still accept it
     })
   ),
-  externalInputs: z.array(
-    z.object({
-      name: z.string().min(1),
-      maxLength: z.coerce.number().positive().default(64),
-    })
-  ),
+  externalInputs: z
+    .array(
+      z.object({
+        name: z.string().min(1),
+        maxLength: z.coerce.number().positive().default(64),
+      })
+    )
+    .optional(),
 });
 //   .refine(
 //     (

@@ -242,79 +242,98 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                 setField('decomposedRegexes', updatedRegexes);
               }}
             />
+            <Textarea
+                  title="Parts JSON"
+                  rows={3}
+                  placeholder="[]"
+                  value={regex.parts as unknown as string}
+                  onChange={(e) => {
+                    const updatedRegexes = [...store.decomposedRegexes];
+                    updatedRegexes[index] = {
+                      ...regex,
+                      parts: e.target.value as unknown as DecomposedRegexPart[],
+                    };
+                    setField('decomposedRegexes', updatedRegexes);
 
-            <div className="flex flex-col gap-3">
-              {parseRegexParts(regex.parts).map((part: any, partIndex: any) => (
-                <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
-                  <div className="flex items-center justify-between">
-                    <Label>Regex field #{(partIndex + 1).toString().padStart(2, '0')}</Label>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      startIcon={
-                        <Image src="/assets/Trash.svg" alt="trash" width={16} height={16} />
-                      }
-                      onClick={() => {
-                        const parts = parseRegexParts(regex.parts);
-                        parts.splice(partIndex, 1);
-                        const updatedRegexes = [...store.decomposedRegexes];
-                        updatedRegexes[index] = {
-                          ...regex,
-                          // @ts-ignore
-                          parts: parts,
-                        };
-                        setField('decomposedRegexes', updatedRegexes);
-                        handleTestEmail();
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                    handleTestEmail();
+                  }}
+                />
 
-                  <div className="ml-3 flex flex-col gap-3">
-                    <Label>Public / Private</Label>
-                    <Select
-                      value={part.is_public ? 'public' : 'private'}
-                      onChange={(value) => {
-                        const parts = parseRegexParts(regex.parts);
-                        parts[partIndex].is_public = value === 'public';
-                        const updatedRegexes = [...store.decomposedRegexes];
-                        updatedRegexes[index] = {
-                          ...regex,
-                          // @ts-ignore
-                          parts: parts,
-                        };
-                        setField('decomposedRegexes', updatedRegexes);
-                        handleTestEmail();
-                      }}
-                      options={[
-                        { label: 'Public', value: 'public' },
-                        { label: 'Private', value: 'private' },
-                      ]}
-                    />
-                  </div>
+            {/* <div className="flex flex-col gap-3">
+              {parseRegexParts(regex.parts).map((part: any, partIndex: any) => {
+                console.log(part);
+                return (
+                  <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
+                    <div className="flex items-center justify-between">
+                      <Label>Regex field #{(partIndex + 1).toString().padStart(2, '0')}</Label>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        startIcon={
+                          <Image src="/assets/Trash.svg" alt="trash" width={16} height={16} />
+                        }
+                        onClick={() => {
+                          const parts = parseRegexParts(regex.parts);
+                          parts.splice(partIndex, 1);
+                          const updatedRegexes = [...store.decomposedRegexes];
+                          updatedRegexes[index] = {
+                            ...regex,
+                            // @ts-ignore
+                            parts: parts,
+                          };
+                          setField('decomposedRegexes', updatedRegexes);
+                          handleTestEmail();
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
 
-                  <div className="ml-3 flex flex-col gap-3">
-                    <Label>Regex Definition</Label>
-                    <Input
-                      value={part.regex_def}
-                      onChange={(e) => {
-                        const parts = parseRegexParts(regex.parts);
-                        parts[partIndex].regex_def = e.target.value;
-                        const updatedRegexes = [...store.decomposedRegexes];
-                        updatedRegexes[index] = {
-                          ...regex,
-                          // @ts-ignore
-                          parts: parts,
-                        };
-                        setField('decomposedRegexes', updatedRegexes);
-                        handleTestEmail();
-                      }}
-                      placeholder="Enter regex definition"
-                    />
+                    <div className="ml-3 flex flex-col gap-3">
+                      <Label>Public / Private</Label>
+                      <Select
+                        value={part.is_public ? 'public' : 'private'}
+                        onChange={(value) => {
+                          const parts = parseRegexParts(regex.parts);
+                          parts[partIndex].is_public = value === 'public';
+                          const updatedRegexes = [...store.decomposedRegexes];
+                          updatedRegexes[index] = {
+                            ...regex,
+                            // @ts-ignore
+                            parts: parts,
+                          };
+                          setField('decomposedRegexes', updatedRegexes);
+                          handleTestEmail();
+                        }}
+                        options={[
+                          { label: 'Public', value: 'public' },
+                          { label: 'Private', value: 'private' },
+                        ]}
+                      />
+                    </div>
+
+                    <div className="ml-3 flex flex-col gap-3">
+                      <Label>Regex Definition</Label>
+                      <Input
+                        value={part.regex_def}
+                        onChange={(e) => {
+                          const parts = parseRegexParts(regex.parts);
+                          parts[partIndex].regex_def = e.target.value;
+                          const updatedRegexes = [...store.decomposedRegexes];
+                          updatedRegexes[index] = {
+                            ...regex,
+                            // @ts-ignore
+                            parts: parts,
+                          };
+                          setField('decomposedRegexes', updatedRegexes);
+                          handleTestEmail();
+                        }}
+                        placeholder="Enter regex definition"
+                      />
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div className="flex items-center justify-between">
                 <p className="text-gray-700">Add more regex fields?</p>
                 <Button
@@ -339,7 +358,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                   Add Regex Part
                 </Button>
               </div>
-            </div>
+            </div> */}
           </div>
         ))}
         {store?.decomposedRegexes?.length !== 0 ? (
