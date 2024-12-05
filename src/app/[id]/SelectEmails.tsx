@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
 import { testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import Loader from '@/components/ui/loader';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -155,6 +156,14 @@ const SelectEmails = ({ id }: { id: string }) => {
   }, [googleAuthToken?.access_token]);
 
   const renderEmailsTable = () => {
+    if (isFetchEmailLoading) {
+      return (
+        <div className="mt-6 w-full flex justify-center">
+          <Loader />
+        </div>
+      );
+    }
+
     if (fetchedEmails.filter((email) => email.valid).length === 0) {
       return (
         <div className="border-grey-200 rounded-lg border p-4 text-grey-700">
