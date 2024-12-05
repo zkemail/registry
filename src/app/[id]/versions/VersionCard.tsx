@@ -9,9 +9,11 @@ import { useRouter } from 'next/navigation';
 
 interface VersionCardProps {
   blueprint: Blueprint;
+  isLatest: boolean;
+  onDelete: () => {};
 }
 
-const VersionCard = ({ blueprint }: VersionCardProps) => {
+const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps) => {
   const router = useRouter();
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
@@ -86,11 +88,12 @@ const VersionCard = ({ blueprint }: VersionCardProps) => {
               Report
             </Button>
           </Link>
-          {blueprint.props.status === Status.Draft && (
+          {blueprint.props.status === Status.Draft && isLatest && (
             <Button
               variant="destructive"
               startIcon={<Image src="/assets/Trash.svg" alt="Delete" width={16} height={16} />}
               size="sm"
+              onClick={onDelete}
             >
               Delete
             </Button>
