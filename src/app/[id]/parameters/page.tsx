@@ -7,18 +7,24 @@ import { use, useEffect, useState } from 'react';
 import sdk from '@/lib/sdk';
 import { Blueprint, Status } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
+import Loader from '@/components/ui/loader';
 
 const ParametersPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const [mainBlueprint, setMainBlueprint] = useState<Blueprint | null>(null);
   const [versions, setVersions] = useState<Blueprint[]>([]);
+  const [isFetchingBlueprintLoading, setIsFetchingBlueprintLoading] = useState(false);
 
   useEffect(() => {
+    setIsFetchingBlueprintLoading(true);
     sdk
       .getBlueprintById(id)
       .then(setMainBlueprint)
       .catch((err) => {
         console.error(`Failed to blueprint with id ${id}: `, err);
+      })
+      .finally(() => {
+        setIsFetchingBlueprintLoading(false);
       });
   }, []);
 
@@ -49,6 +55,14 @@ const ParametersPage = ({ params }: { params: Promise<{ id: string }> }) => {
     navigator.clipboard.writeText(JSON.stringify(metadata, null, 2));
     toast.success('Metadata copied to clipboard');
   };
+
+  if (isFetchingBlueprintLoading) {
+    return (
+      <div className="mx-auto flex h-screen w-full items-center justify-center gap-10">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">
