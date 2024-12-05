@@ -30,7 +30,7 @@ export const handleGetStatusIcon = (status: ProofStatus) => {
       return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
     case ProofStatus.Failed:
       console.log('got failed status======================================');
-      return <Image src="/assets/X.svg" alt="❌" width={20} height={20} />;
+      return <Image src="/assets/RedClose.svg" alt="❌" width={20} height={20} />;
   }
 };
 

@@ -47,7 +47,7 @@ const ViewProof = () => {
         </p>
       </div>
 
-      {status === ProofStatus.Done ? (
+      {status === ProofStatus.Done || status === ProofStatus.Failed ? (
         <ProofStatusTable proofs={[proofId!]} />
       ) : (
         <div>

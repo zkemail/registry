@@ -70,8 +70,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       console.log('successfully saved blueprint');
       if (newId !== id) {
         router.push(`/create/${newId}`);
-        toast.success('Successfully saved draft');
       }
+      toast.success('Successfully saved draft');
     } catch (err) {
       console.log('Failed to submit blueprint', err);
       // TODO: Handle different kind of errors, e.g. per field errors
@@ -144,7 +144,25 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       });
   }, [store.senderDomain]);
 
-  console.log('store', !file , !!errors.length , isDKIMMissing);
+  const isNextButtonDisabled = () => {
+    if (!file) {
+      return true;
+    }
+
+    if (step === 0) {
+      return !store.circuitName || !store.title || !store.description;
+    }
+
+    if (step === 1) {
+      return !store.emailQuery || !store.emailBodyMaxLength;
+    }
+
+    if (step === 2) {
+      return !store.decomposedRegexes.length;
+    }
+
+    return !!errors.length || isDKIMMissing;
+  };
 
   return (
     <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
@@ -224,11 +242,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             </Button>
             {step < 2 ? (
               <Button
-                onClick={() => setStep(step + 1)}
+                onClick={() => handleSaveDraft().then(() => setStep(step + 1))}
                 endIcon={
                   <Image src="/assets/ArrowRight.svg" alt="arrow right" width={16} height={16} />
                 }
-                disabled={!file}
+                disabled={isNextButtonDisabled()}
               >
                 Next
               </Button>
