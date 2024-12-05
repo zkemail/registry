@@ -45,6 +45,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [showSampleEMLPreview, setShowSampleEMLPreview] = useState(false);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [isDKIMMissing, setIsDKIMMissing] = useState(false);
+  const [isFileInvalid, setIsFileInvalid] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -94,7 +95,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('senderDomain', senderDomain);
       // store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 2) * 64);
       store.setField('emailQuery', emailQuery);
-      store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 2) * 64);
+      if (emailBodyMaxLength > 9984) {
+        toast.error('Email body is too long, max is 10000 bytes');
+        setIsFileInvalid(true);
+      } else {
+        store.setField(
+          'emailBodyMaxLength',
+          Math.min((Math.ceil(emailBodyMaxLength / 64) + 2) * 64, 9984)
+        );
+      }
     } catch (err) {
       console.error('Failed to get content from email');
       return;
@@ -134,6 +143,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (file) {
       handleTestEmail();
     }
+    if (!file) {
+      setIsFileInvalid(false);
+    }
   }, [file, revealPrivateFields]);
 
   useEffect(() => {
@@ -145,7 +157,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [store.senderDomain]);
 
   const isNextButtonDisabled = () => {
-    if (!file) {
+    if (!file || isFileInvalid) {
       return true;
     }
 
@@ -154,7 +166,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
 
     if (step === 1) {
-      return !store.emailQuery || !store.emailBodyMaxLength;
+      return (
+        !store.emailQuery ||
+        !store.emailBodyMaxLength ||
+        store.emailBodyMaxLength > 10000 ||
+        store.ignoreBodyHashCheck === undefined
+      );
     }
 
     if (step === 2) {
@@ -200,7 +217,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </Button>
         </div>
       )}
-      {step === 0 && <PatternDetails id={id} file={file} setFile={setFile} />}
+      {step === 0 && (
+        <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
+      )}
       {step === 1 && <EmailDetails isDKIMMissing={isDKIMMissing} />}
       {step === 2 && <ExtractFields file={file} />}
       <div
