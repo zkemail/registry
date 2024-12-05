@@ -1,15 +1,15 @@
 import { z } from 'zod';
 
-export function getPrefixRegex(parts: { is_public: boolean; regex_def: string }[]): string {
+export function getPrefixRegex(parts: { isPublic: boolean; regexDef: string }[]): string {
   let prefixRegex = '';
   for (let part of parts) {
-    if (!part.is_public) prefixRegex = prefixRegex + part.regex_def;
-    if (!part.is_public && !part.regex_def)
-      throw new Error('Part has to have a nonempty regex with is_public = false');
+    if (!part.isPublic) prefixRegex = prefixRegex + part.regexDef;
+    if (!part.isPublic && !part.regexDef)
+      throw new Error('Part has to have a nonempty regex with isPublic = false');
     else break;
   }
   if (!prefixRegex)
-    throw new Error('Part has to have a regex with is_public = false in order to find it later');
+    throw new Error('Part has to have a regex with isPublic = false in order to find it later');
   return JSON.stringify(prefixRegex);
 }
 
@@ -81,12 +81,12 @@ export const blueprintFormSchema = z.object({
       parts: z
         .string()
         .transform((str, ctx) => {
-          // Check if the string contains 'is_public'
-          if (!str.includes('is_public')) {
+          // Check if the string contains 'isPublic'
+          if (!str.includes('isPublic')) {
             ctx.addIssue({
               code: 'custom',
               message:
-                'Each parts config must include at least one "is_public" field, and at least one thats true and one thats false. Please add it for now until we fix this requirement.',
+                'Each parts config must include at least one "isPublic" field, and at least one thats true and one thats false. Please add it for now until we fix this requirement.',
             });
             return z.NEVER;
           }
@@ -110,18 +110,18 @@ export const blueprintFormSchema = z.object({
               return z.NEVER;
             }
 
-            if (!('is_public' in part) || typeof part.is_public !== 'boolean') {
+            if (!('isPublic' in part) || typeof part.isPublic !== 'boolean') {
               ctx.addIssue({
                 code: 'custom',
-                message: `Part ${i} must have a boolean 'is_public' field`,
+                message: `Part ${i} must have a boolean 'isPublic' field`,
               });
               return z.NEVER;
             }
 
-            if (!('regex_def' in part) || typeof part.regex_def !== 'string') {
+            if (!('regexDef' in part) || typeof part.regexDef !== 'string') {
               ctx.addIssue({
                 code: 'custom',
-                message: `Part ${i} must have a string 'regex_def' field`,
+                message: `Part ${i} must have a string 'regexDef' field`,
               });
               return z.NEVER;
             }

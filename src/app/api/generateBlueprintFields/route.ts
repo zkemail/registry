@@ -26,8 +26,8 @@ Your task is to create a JSON structure that defines how to extract this informa
       "name": "descriptive_field_name",
       "parts": [
         {
-          "is_public": boolean,
-          "regex_def": "regex_pattern"
+          "isPublic": boolean,
+          "regexDef": "regex_pattern"
         },
         ...
       ],
@@ -49,8 +49,8 @@ Key Requirements:
 2. Parts Array Requirements:
 - Each part must be continuous with the next part in the email
 - Break the match into public and private sections
-- Private parts (is_public: false) typically match static text
-- Public parts (is_public: true) capture the desired information
+- Private parts (isPublic: false) typically match static text
+- Public parts (isPublic: true) capture the desired information
 
 3. Regex Pattern Rules:
 - JSON special characters need single backslash escape: \\"
@@ -71,16 +71,16 @@ For extracting a name like "Hi John Smith," you would create:
       "name": "recipient_name",
       "parts": [
         {
-          "is_public": false,
-          "regex_def": "Hi "
+          "isPublic": false,
+          "regexDef": "Hi "
         },
         {
-          "is_public": true,
-          "regex_def": "[^,]+"
+          "isPublic": true,
+          "regexDef": "[^,]+"
         },
         {
-          "is_public": false,
-          "regex_def": ","
+          "isPublic": false,
+          "regexDef": ","
         }
       ],
       "location": "body",
@@ -96,16 +96,16 @@ For extracting a text inside html tags like "<div id=\\"text\\">Hello World!</di
       "name": "recipient_name",
       "parts": [
         {
-          "is_public": false,
-          "regex_def": "<div id=\\"text\\">"
+          "isPublic": false,
+          "regexDef": "<div id=\\"text\\">"
         },
         {
-          "is_public": true,
-          "regex_def": "[^<]+"
+          "isPublic": true,
+          "regexDef": "[^<]+"
         },
         {
-          "is_public": false,
-          "regex_def": "<"
+          "isPublic": false,
+          "regexDef": "<"
         }
       ],
       "location": "body",
@@ -121,20 +121,20 @@ For extracting the email sender use exactly:
       "name": "email_sender",
       "parts": [
         {
-          "is_public": false,
-          "regex_def": "(\\r\\n|^)from:"
+          "isPublic": false,
+          "regexDef": "(\\r\\n|^)from:"
         },
         {
-          "is_public": false,
-          "regex_def": "([^\\r\\n]+<)?"
+          "isPublic": false,
+          "regexDef": "([^\\r\\n]+<)?"
         },
         {
-          "is_public": true,
-          "regex_def": "[A-Za-z0-9!#$%&'\\\\*\\\\+-/=\\\\?\\\\^_\`{\\\\|}~\\\\.]+@[A-Za-z0-9\\\\.-]+"
+          "isPublic": true,
+          "regexDef": "[A-Za-z0-9!#$%&'\\\\*\\\\+-/=\\\\?\\\\^_\`{\\\\|}~\\\\.]+@[A-Za-z0-9\\\\.-]+"
         },
         {
-          "is_public": false,
-          "regex_def": ">?\\r\\n"
+          "isPublic": false,
+          "regexDef": ">?\\r\\n"
         }
       ],
       "location": "from",
@@ -150,20 +150,20 @@ For extracting the email recipient use exactly:
       "name": "email_recipient",
       "parts": [
         {
-          "is_public": false,
-          "regex_def": "(\\r\\n|^)to:"
+          "isPublic": false,
+          "regexDef": "(\\r\\n|^)to:"
         },
         {
-          "is_public": false,
-          "regex_def": "([^\\r\\n]+<)?"
+          "isPublic": false,
+          "regexDef": "([^\\r\\n]+<)?"
         },
         {
-          "is_public": true,
-          "regex_def": "[a-zA-Z0-9!#$%&'\\\\*\\\\+-/=\\\\?\\\\^_\`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\.-]+"
+          "isPublic": true,
+          "regexDef": "[a-zA-Z0-9!#$%&'\\\\*\\\\+-/=\\\\?\\\\^_\`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\.-]+"
         },
         {
-          "is_public": false,
-          "regex_def": ">?\\r\\n"
+          "isPublic": false,
+          "regexDef": ">?\\r\\n"
         }
       ],
       "location": "to",
@@ -179,16 +179,16 @@ For extracting the email subject use exactly:
       "name": "email_subject",
       "parts": [
         {
-          "is_public": false,
-          "regex_def": "(\\r\\n|^)subject:"
+          "isPublic": false,
+          "regexDef": "(\\r\\n|^)subject:"
         },
         {
-          "is_public": true,
-          "regex_def": "[^\\r\\n]+"
+          "isPublic": true,
+          "regexDef": "[^\\r\\n]+"
         },
         {
-          "is_public": false,
-          "regex_def": "\\r\\n"
+          "isPublic": false,
+          "regexDef": "\\r\\n"
         }
       ],
       "location": "subject",
@@ -204,20 +204,20 @@ For extracting the email timestamp use exactly:
       "name": "email_timestamp",
       "parts": [
         {
-          "is_public": false,
-          "regex_def": "(\\r\\n|^)dkim-signature:"
+          "isPublic": false,
+          "regexDef": "(\\r\\n|^)dkim-signature:"
         },
         {
-          "is_public": false,
-          "regex_def": "([a-z]+=[^;]+; )+t="
+          "isPublic": false,
+          "regexDef": "([a-z]+=[^;]+; )+t="
         },
         {
-          "is_public": true,
-          "regex_def": "[0-9]+"
+          "isPublic": true,
+          "regexDef": "[0-9]+"
         },
         {
-          "is_public": false,
-          "regex_def": ";"
+          "isPublic": false,
+          "regexDef": ";"
         }
       ],
       "location": "timestamp",
@@ -289,8 +289,8 @@ export async function POST(request: Request) {
     const isValidPart = (part: any) => {
       return part && Array.isArray(part.parts) && 
         part.parts.every((p: any) => 
-          typeof p.is_public === 'boolean' &&
-          typeof p.regex_def === 'string'
+          typeof p.isPublic === 'boolean' &&
+          typeof p.regexDef === 'string'
         ) &&
         typeof part.name === 'string' &&
         typeof part.location === 'string' &&

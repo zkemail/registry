@@ -242,7 +242,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                 setField('decomposedRegexes', updatedRegexes);
               }}
             />
-            <Textarea
+            {/* <Textarea
                   title="Parts JSON"
                   rows={3}
                   placeholder="[]"
@@ -257,9 +257,9 @@ const ExtractFields = ({ file }: { file: File | null }) => {
 
                     handleTestEmail();
                   }}
-                />
+                /> */}
 
-            {/* <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3">
               {parseRegexParts(regex.parts).map((part: any, partIndex: any) => {
                 console.log(part);
                 return (
@@ -292,10 +292,10 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                     <div className="ml-3 flex flex-col gap-3">
                       <Label>Public / Private</Label>
                       <Select
-                        value={part.is_public ? 'public' : 'private'}
+                        value={(part.isPublic) ? 'public' : 'private'}
                         onChange={(value) => {
                           const parts = parseRegexParts(regex.parts);
-                          parts[partIndex].is_public = value === 'public';
+                          parts[partIndex].isPublic = value === 'public';
                           const updatedRegexes = [...store.decomposedRegexes];
                           updatedRegexes[index] = {
                             ...regex,
@@ -315,10 +315,10 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                     <div className="ml-3 flex flex-col gap-3">
                       <Label>Regex Definition</Label>
                       <Input
-                        value={part.regex_def}
+                        value={part.regexDef}
                         onChange={(e) => {
                           const parts = parseRegexParts(regex.parts);
-                          parts[partIndex].regex_def = e.target.value;
+                          parts[partIndex].regexDef = e.target.value;
                           const updatedRegexes = [...store.decomposedRegexes];
                           updatedRegexes[index] = {
                             ...regex,
@@ -343,8 +343,8 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                   onClick={() => {
                     const parts = parseRegexParts(regex.parts);
                     parts.push({
-                      is_public: false,
-                      regex_def: '',
+                      isPublic: false,
+                      regexDef: '',
                     });
                     const updatedRegexes = [...store.decomposedRegexes];
                     updatedRegexes[index] = {
@@ -358,7 +358,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                   Add Regex Part
                 </Button>
               </div>
-            </div> */}
+            </div>
           </div>
         ))}
         {store?.decomposedRegexes?.length !== 0 ? (

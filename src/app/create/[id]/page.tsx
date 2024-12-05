@@ -144,6 +144,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       });
   }, [store.senderDomain]);
 
+  console.log('store', !file , !!errors.length , isDKIMMissing);
+
   return (
     <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>

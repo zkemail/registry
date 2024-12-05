@@ -24,7 +24,7 @@ const getStatusIcon = (status?: Status) => {
     case Status.Draft:
       return '/assets/FileDashed.svg';
     case Status.Failed:
-      return '/assets/FailedIcon.svg';
+      return '/assets/WarningCircleOutlined.svg';
     default:
       return '/assets/CompiledIcon.svg';
   }
