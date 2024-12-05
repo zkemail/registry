@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import VersionCard from './VersionCard';
@@ -7,8 +8,10 @@ import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
 import sdk from '@/lib/sdk';
 import { Blueprint, Status } from '@zk-email/sdk';
+import { toast } from 'react-toastify';
 
 const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
+  const router = useRouter();
   const { id } = use(params);
   const [mainBlueprint, setMainBlueprint] = useState<Blueprint | null>(null);
   const [versions, setVersions] = useState<Blueprint[]>([]);
@@ -32,6 +35,22 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
         });
     }
   }, [mainBlueprint]);
+
+  const onDelete = async (blueprint: Blueprint) => {
+    try {
+      await blueprint.delete();
+      toast.success('Deleted blueprint');
+      const lastBlueprintId = versions[versions.length - 2]?.props.id;
+      if (lastBlueprintId) {
+        router.push(`/${lastBlueprintId}/versions`);
+      } else {
+        router.push(`/`);
+      }
+    } catch (err) {
+      console.error('Failed to delete blueprint: ', err);
+      toast.error('Failed to delete blueprint');
+    }
+  };
 
   return (
     <div className="mx-auto flex flex-col gap-10 py-16">
@@ -73,8 +92,13 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
 
         <div className="mt-10 flex flex-col gap-4">
-          {versions.map((version) => (
-            <VersionCard key={version.props.id} blueprint={version} />
+          {versions.map((version, i) => (
+            <VersionCard
+              key={version.props.id}
+              blueprint={version}
+              isLatest={i + 1 === versions.length}
+              onDelete={() => onDelete(version)}
+            />
           ))}
         </div>
       </div>
