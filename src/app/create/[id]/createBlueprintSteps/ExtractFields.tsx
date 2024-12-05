@@ -183,7 +183,10 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
-                setField('decomposedRegexes', [...store.decomposedRegexes, { maxLength: 64 }]);
+                setField('decomposedRegexes', [
+                  ...(store.decomposedRegexes ?? []),
+                  { maxLength: 64 },
+                ]);
               }}
             >
               Add values to extract
@@ -369,7 +372,10 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
-                setField('decomposedRegexes', [...store.decomposedRegexes, { maxLength: 64 }]);
+                setField('decomposedRegexes', [
+                  ...(store.decomposedRegexes ?? []),
+                  { maxLength: 64 },
+                ]);
               }}
             >
               Add values to extract

@@ -27,6 +27,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
   const [error, setError] = useState<Error | null>(null);
   const observerRef = useRef<IntersectionObserver>();
   const loadingRef = useRef<HTMLDivElement>(null);
+  const githubUserName = useAuthStore.getState().username;
 
   const fetchBlueprints = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -160,7 +161,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
                 : `/${encodeURIComponent(blueprint.props.id!)}`
             }
           >
-           <BlueprintCard
+            <BlueprintCard
               blueprint={blueprint}
               setStarred={() => onStar(blueprint)}
               setUnStarred={() => onUnStar(blueprint)}

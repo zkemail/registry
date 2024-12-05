@@ -53,7 +53,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               src={starred ? 'assets/StarFilled.svg' : 'assets/Star.svg'}
               alt="stars"
             />{' '}
-            Stars | {stars}
+            {stars < 2 ? 'Star' : 'Stars'} | {stars}
           </button>
         </div>
       </div>

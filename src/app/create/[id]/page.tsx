@@ -33,7 +33,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
   const store = useCreateBlueprintStore();
-
+  const { setField } = store;
   const { saveDraft, getParsedDecomposedRegexes, setToExistingBlueprint, reset, compile } = store;
 
   const [file, setFile] = useState<File | null>(null);
@@ -55,6 +55,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       });
     }
   }, [file]);
+
+  useEffect(() => {
+    setField('ignoreBodyHashCheck', false);
+    setField('removeSoftLinebreaks', true);
+  }, []);
 
   // Load data if an id is provided
   useEffect(() => {
@@ -90,19 +95,17 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
-      console.log('content', content);
-      const { senderDomain, emailQuery, emailBodyMaxLength } = extractEMLDetails(content);
+      const { senderDomain, emailQuery, emailBodyMaxLength } = await extractEMLDetails(content);
       store.setField('senderDomain', senderDomain);
-      // store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 2) * 64);
       store.setField('emailQuery', emailQuery);
+      store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 2) * 64);
       if (emailBodyMaxLength > 9984) {
-        toast.error('Email body is too long, max is 10000 bytes');
-        setIsFileInvalid(true);
-      } else {
-        store.setField(
-          'emailBodyMaxLength',
-          Math.min((Math.ceil(emailBodyMaxLength / 64) + 2) * 64, 9984)
+        toast.warning(
+          'Email body is too long, max is 10000 bytes. Please add Email body cut off value else skip body hash check'
         );
+        store.setField('ignoreBodyHashCheck', true);
+        store.setField('removeSoftLinebreaks', false);
+      } else {
       }
     } catch (err) {
       console.error('Failed to get content from email');
@@ -169,7 +172,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return (
         !store.emailQuery ||
         !store.emailBodyMaxLength ||
-        store.emailBodyMaxLength > 10000 ||
+        (store.emailBodyMaxLength > 10000 && !store.ignoreBodyHashCheck) ||
         store.ignoreBodyHashCheck === undefined
       );
     }
@@ -220,7 +223,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       {step === 0 && (
         <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
       )}
-      {step === 1 && <EmailDetails isDKIMMissing={isDKIMMissing} />}
+      {step === 1 && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
       {step === 2 && <ExtractFields file={file} />}
       <div
         style={{

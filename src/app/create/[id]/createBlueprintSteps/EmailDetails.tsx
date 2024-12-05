@@ -11,17 +11,40 @@ import { use } from 'react';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { getMaxEmailBodyLength } from '@/app/utils';
+import { getFileContent } from '@/lib/utils';
+import { parseEmail } from '@zk-email/sdk';
 
-const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
+const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: File | null }) => {
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
   const [showOptionalDetails, setShowOptionalDetails] = useState(false);
 
   useEffect(() => {
-    setField('ignoreBodyHashCheck', false);
-    setField('removeSoftLinebreaks', true);
-  }, []);
+    const updateEmailBodyMaxLength = async () => {
+      if (!file) {
+        return;
+      }
+
+      let content: string;
+      try {
+        content = await getFileContent(file);
+      } catch (err) {
+        console.error('Failed to get content from email');
+        return;
+      }
+
+      const maxEmailBodyLength = await getMaxEmailBodyLength(
+        content,
+        store.shaPrecomputeSelector || ''
+      );
+
+      setField('emailBodyMaxLength', (Math.ceil(maxEmailBodyLength / 64) + 2) * 64);
+    };
+
+    updateEmailBodyMaxLength();
+  }, [store.shaPrecomputeSelector, store.ignoreBodyHashCheck]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,6 +103,17 @@ const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
           {!store.ignoreBodyHashCheck && (
             <div className="ml-2">
               <Input
+                title="Email Body Cutoff Value (optional)"
+                placeholder=">Not my Account<"
+                type="text"
+                disabled={store.ignoreBodyHashCheck}
+                helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
+                value={store.shaPrecomputeSelector}
+                onChange={async (e) => {
+                  setField('shaPrecomputeSelector', e.target.value);
+                }}
+              />
+              <Input
                 title="Max Email Body Length"
                 disabled={store.ignoreBodyHashCheck}
                 placeholder="4032"
@@ -91,15 +125,6 @@ const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
                 helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
                 value={store.emailBodyMaxLength}
                 onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
-              />
-              <Input
-                title="Email Body Cutoff Value (optional)"
-                placeholder=">Not my Account<"
-                type="text"
-                disabled={store.ignoreBodyHashCheck}
-                helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
-                value={store.shaPrecomputeSelector}
-                onChange={(e) => setField('shaPrecomputeSelector', e.target.value)}
               />
             </div>
           )}

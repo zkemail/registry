@@ -1,4 +1,4 @@
-import { Status } from '@zk-email/sdk';
+import { parseEmail, Status } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -68,19 +68,19 @@ const formatDate = (timestamp: string) => {
   try {
     let date: Date;
     console.log('Input timestamp:', timestamp, typeof timestamp);
-    
+
     // Try parsing as milliseconds first
     const msTimestamp = parseInt(timestamp);
     console.log('Parsed msTimestamp:', msTimestamp);
-    
+
     if (!isNaN(msTimestamp) && msTimestamp.toString().length > 4) {
       date = new Date(msTimestamp);
     } else {
       date = new Date(timestamp);
     }
-    
+
     console.log('Resulting date object:', date);
-    
+
     if (date.toString() === 'Invalid Date') {
       throw new Error('Invalid date format');
     }
@@ -113,45 +113,75 @@ const formatDateAndTime = (date: Date) => {
   });
 };
 
-function extractEMLDetails(emlContent: string) {
+async function extractEMLDetails(emlContent: string) {
   const headers: Record<string, string> = {};
-  const lines = emlContent.split("\n");
+  const lines = emlContent.split('\n');
 
   let headerPart = true;
   let headerLines = [];
 
   // Parse headers
   for (let line of lines) {
-      if (headerPart) {
-          if (line.trim() === "") {
-              headerPart = false; // End of headers
-          } else {
-              headerLines.push(line);
-          }
+    if (headerPart) {
+      if (line.trim() === '') {
+        headerPart = false; // End of headers
+      } else {
+        headerLines.push(line);
       }
+    }
   }
 
   // Join multi-line headers and split into key-value pairs
   const joinedHeaders = headerLines
-      .map(line => line.startsWith(" ") || line.startsWith("\t") ? line.trim() : `\n${line.trim()}`)
-      .join("")
-      .split("\n");
+    .map((line) =>
+      line.startsWith(' ') || line.startsWith('\t') ? line.trim() : `\n${line.trim()}`
+    )
+    .join('')
+    .split('\n');
 
-  joinedHeaders.forEach(line => {
-      const [key, ...value] = line.split(":");
-      if (key) headers[key.trim()] = value.join(":").trim();
+  joinedHeaders.forEach((line) => {
+    const [key, ...value] = line.split(':');
+    if (key) headers[key.trim()] = value.join(':').trim();
   });
 
   // Extract details
-  const senderDomain = headers["Return-Path"]?.match(/@([^\s>]+)/)?.[1]
-    ?.split('.')
-    .slice(-2)
-    .join('.') || null;
-  const headerLength = headerLines.join("\n").length;
+  const senderDomain =
+    headers['Return-Path']
+      ?.match(/@([^\s>]+)/)?.[1]
+      ?.split('.')
+      .slice(-2)
+      .join('.') || null;
+  const headerLength = headerLines.join('\n').length;
   const emailQuery = `from:${senderDomain}`;
-  const emailBodyMaxLength = lines.slice(headerLines.length).join("\n").length;
+  const parsedEmail = await parseEmail(emlContent);
+  console.log(parsedEmail.canonicalized_body, 'parsedEmail');
+  const emailBodyMaxLength = parsedEmail.cleaned_body.length;
+
+  console.log(emailBodyMaxLength, 'emailBodyMaxLength');
 
   return { senderDomain, headerLength, emailQuery, emailBodyMaxLength };
 }
 
-export { getStatusColorLight, getStatusIcon, getDateToNowStr, getStatusName, formatDate, formatDateAndTime, extractEMLDetails };
+const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {
+  const parsedEmail = await parseEmail(emlContent);
+
+  const body = parsedEmail.canonicalized_body;
+  const index = body.indexOf(shaPrecomputeSelector);
+
+  if (index === -1) {
+    return body.length;
+  }
+
+  return emlContent.slice(index + shaPrecomputeSelector.length).length;
+};
+
+export {
+  getStatusColorLight,
+  getStatusIcon,
+  getDateToNowStr,
+  getStatusName,
+  formatDate,
+  formatDateAndTime,
+  extractEMLDetails,
+  getMaxEmailBodyLength,
+};

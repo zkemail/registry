@@ -145,11 +145,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     console.log('Creting blueprint with: ', data);
 
     // Parse decomposedRegexes since we are saving them as string to make handling TextArea easier
-    data.decomposedRegexes.forEach((dcr) => {
+    data.decomposedRegexes?.forEach((dcr) => {
       dcr.parts =
         typeof dcr.parts === 'string'
           ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
           : dcr.parts;
+      dcr.maxLength = dcr.maxLength || 64;
     });
 
     const githubUserName = useAuthStore.getState().username;
