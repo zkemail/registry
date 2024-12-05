@@ -115,6 +115,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
         <Button
           variant="default"
           size="sm"
+          disabled={status !== ProofStatus.Done}
           loading={isVerifyingProofLoading}
           onClick={onVerifyProof}
         >

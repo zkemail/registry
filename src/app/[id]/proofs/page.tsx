@@ -6,6 +6,7 @@ import { useProofStore } from '../store';
 import sdk from '@/lib/sdk';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import { BlueprintTitle } from '@/app/components/BlueprintTitle';
+import Loader from '@/components/ui/loader';
 
 const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -36,7 +37,11 @@ const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
   }, []);
 
   if (!blueprint) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader />
+      </div>
+    );
   }
 
   return (
