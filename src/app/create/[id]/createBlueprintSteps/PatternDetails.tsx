@@ -8,10 +8,12 @@ import { useCreateBlueprintStore } from '../store';
 
 const PatternDetails = ({
   id,
+  isFileInvalid,
   file,
   setFile,
 }: {
   id: string;
+  isFileInvalid: boolean;
   file: File | null;
   setFile: (file: File | null) => void;
 }) => {
@@ -54,6 +56,7 @@ const PatternDetails = ({
           console.log('setting the file');
           setFile(e);
         }}
+        errorMessage={isFileInvalid ? 'File is invalid' : ''}
       />
       {/* <InputTags 
   title="Tags" 

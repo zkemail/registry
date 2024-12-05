@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 const DragAndDropFile = ({
@@ -9,12 +10,14 @@ const DragAndDropFile = ({
   helpText,
   file,
   setFile,
+  errorMessage,
 }: {
   accept: string;
   title?: string;
   helpText?: string;
   file: File | null;
   setFile: (file: File | null) => void;
+  errorMessage: string;
 }) => {
   return (
     <div className="flex w-full flex-col gap-4">
@@ -57,7 +60,7 @@ const DragAndDropFile = ({
                     <Image src="/assets/Trash.svg" alt="Trash icon" width={16} height={16} />
                   }
                   onClick={() => {
-                    setFile(null);  
+                    setFile(null);
                   }}
                 >
                   Delete file
@@ -90,7 +93,11 @@ const DragAndDropFile = ({
           />
         </div>
       </div>
-      {helpText ? <p className="text-base text-grey-600">{helpText}</p> : null}
+      {errorMessage || helpText ? (
+        <p className={cn('text-base text-grey-600', errorMessage ? 'text-red-500' : '')}>
+          {errorMessage || helpText}
+        </p>
+      ) : null}{' '}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import DragAndDropFile from '@/app/components/DragAndDropFile';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +17,11 @@ const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
   const [showOptionalDetails, setShowOptionalDetails] = useState(false);
+
+  useEffect(() => {
+    setField('ignoreBodyHashCheck', false);
+    setField('removeSoftLinebreaks', true);
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
@@ -68,7 +73,7 @@ const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
             helpText="Enable to ignore the contents on the email and only extract data from the headers"
             checked={store.ignoreBodyHashCheck}
             onCheckedChange={(checked) => {
-              setField('ignoreBodyHashCheck', checked);
+              setField('ignoreBodyHashCheck', !!checked);
               setField('removeSoftLinebreaks', !checked);
             }}
           />
@@ -80,7 +85,7 @@ const EmailDetails = ({ isDKIMMissing }: { isDKIMMissing: boolean }) => {
                 placeholder="4032"
                 error={!!validationErrors.emailBodyMaxLength}
                 errorMessage={validationErrors.emailBodyMaxLength}
-                max={8192}
+                max={10000}
                 min={0}
                 type="number"
                 helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"

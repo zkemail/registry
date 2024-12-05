@@ -183,7 +183,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
-                setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
+                setField('decomposedRegexes', [...store.decomposedRegexes, { maxLength: 64 }]);
               }}
             >
               Add values to extract
@@ -292,7 +292,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                     <div className="ml-3 flex flex-col gap-3">
                       <Label>Public / Private</Label>
                       <Select
-                        value={(part.isPublic) ? 'public' : 'private'}
+                        value={part.isPublic ? 'public' : 'private'}
                         onChange={(value) => {
                           const parts = parseRegexParts(regex.parts);
                           parts[partIndex].isPublic = value === 'public';
@@ -369,7 +369,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
-                setField('decomposedRegexes', [...store.decomposedRegexes, {}]);
+                setField('decomposedRegexes', [...store.decomposedRegexes, { maxLength: 64 }]);
               }}
             >
               Add values to extract
@@ -387,7 +387,9 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               size="sm"
               startIcon={<Image src="/assets/Plus.svg" alt="plus" width={16} height={16} />}
               onClick={() => {
-                const updatedInputs = store.externalInputs ? [...store.externalInputs, {}] : [{}];
+                const updatedInputs = store.externalInputs
+                  ? [...store.externalInputs, { maxLength: 64 }]
+                  : [{ maxLength: 64 }];
                 setField('externalInputs', updatedInputs);
               }}
             >
