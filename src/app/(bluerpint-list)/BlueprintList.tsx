@@ -9,7 +9,7 @@ import Loader from '@/components/ui/loader';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { toast } from 'react-toastify';
 
-const PAGINATION_LIMIT = 30;
+const PAGINATION_LIMIT = 150;
 
 interface BlueprintListProps {
   search: string | null;
@@ -28,7 +28,6 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
   const observerRef = useRef<IntersectionObserver>();
   const loadingRef = useRef<HTMLDivElement>(null);
   const githubUserName = useAuthStore.getState().username;
-  console.log('githubUserName', githubUserName);
 
   const fetchBlueprints = useCallback(async () => {
     if (isLoading || !hasMore) return;
@@ -45,19 +44,27 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         // sort: sort === 'most-recent' ? 1 : -1,
       });
 
-      setBlueprints((prev) => {
-        // If search changes, replace results instead of appending
-        if (skip === 0)
-          return results.filter(
-            (bp) => bp.props.githubUsername === githubUserName || bp.props.status === Status.Done
-          );
-        return [
-          ...prev,
-          ...results.filter(
-            (bp) => bp.props.githubUsername === githubUserName || bp.props.status === Status.Done
-          ),
-        ];
-      });
+      setBlueprints([
+        ...results.filter((bp) => bp.props.githubUsername === githubUserName),
+        ...results
+          .filter((bp) => bp.props.status === Status.Done)
+          .sort((a, b) => b.stars - a.stars),
+      ]);
+
+      // TODO: commenting this out for now. Uncomment this when we have proper sorting and filtering logic in the SDK
+      // setBlueprints((prev) => {
+      //   // If search changes, replace results instead of appending
+      //   if (skip === 0)
+      //     return results.filter(
+      //       (bp) => bp.props.githubUsername === githubUserName || bp.props.status === Status.Done
+      //     );
+      //   return [
+      //     ...prev,
+      //     ...results.filter(
+      //       (bp) => bp.props.githubUsername === githubUserName || bp.props.status === Status.Done
+      //     ),
+      //   ];
+      // });
 
       // If we got fewer results than the limit, we've reached the end
       setHasMore(results.length === PAGINATION_LIMIT);
