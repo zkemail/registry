@@ -53,13 +53,13 @@ const getDateToNowStr = (date?: Date) => {
   const diffDays = Math.floor(diffHours / 24);
 
   if (diffSecs < 60) {
-    return `${diffSecs} seconds ago`;
+    return `${diffSecs} second${diffSecs < 2 ? '' : 's'} ago`;
   } else if (diffMins < 60) {
-    return `${diffMins} minutes ago`;
+    return `${diffMins} minute${diffMins < 2 ? '' : 's'} ago`;
   } else if (diffHours < 24) {
-    return `${diffHours} hours ago`;
+    return `${diffHours} hour${diffHours < 2 ? '' : 's'} ago`;
   } else {
-    return `${diffDays} days ago`;
+    return `${diffDays} day${diffDays < 2 ? '' : 's'} ago`;
   }
 };
 

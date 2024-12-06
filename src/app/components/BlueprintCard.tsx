@@ -77,7 +77,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       </div>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
 
-      <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-center">
+      <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-end">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-md font-medium text-grey-800">Extractable values:</p>
           {blueprint.props.decomposedRegexes?.map((dr, index) => (
@@ -103,7 +103,10 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
             />
             {getStatusName(blueprint.props.status)}
           </span>
-          <p className="text-sm text-grey-700" title={blueprint.props.updatedAt?.toLocaleString()}>
+          <p
+            className="w-max text-sm text-grey-700"
+            title={blueprint.props.updatedAt?.toLocaleString()}
+          >
             Updated {getDateToNowStr(blueprint.props.updatedAt)}
           </p>
         </div>
