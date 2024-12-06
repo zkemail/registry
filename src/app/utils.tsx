@@ -156,6 +156,8 @@ async function extractEMLDetails(emlContent: string) {
   const emailBodyMaxLength = parsedEmail.cleaned_body.length;
   const headerLength = parsedEmail.canonicalized_header.length;
 
+  
+
   return { senderDomain, headerLength, emailQuery, emailBodyMaxLength };
 }
 
@@ -172,6 +174,19 @@ const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: 
   return body.length - index - shaPrecomputeSelector.length;
 };
 
+const getDKIMSelector = (emlContent: string): string | null => {
+  const lines = emlContent.split('\n');
+  for (const line of lines) {
+    if (line.includes('DKIM-Signature')) {
+      const match = line.match(/s=([^;]+)/);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+  }
+  return null;
+};
+
 export {
   getStatusColorLight,
   getStatusIcon,
@@ -181,4 +196,5 @@ export {
   formatDateAndTime,
   extractEMLDetails,
   getMaxEmailBodyLength,
+  getDKIMSelector,
 };

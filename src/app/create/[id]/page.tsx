@@ -25,7 +25,7 @@ import Stepper from '@/app/components/Stepper';
 import PatternDetails from './createBlueprintSteps/PatternDetails';
 import ExtractFields from './createBlueprintSteps/ExtractFields';
 import EmailDetails from './createBlueprintSteps/EmailDetails';
-import { extractEMLDetails } from '@/app/utils';
+import { extractEMLDetails, getDKIMSelector } from '@/app/utils';
 import PostalMime from 'postal-mime';
 import { Email } from 'postal-mime';
 
@@ -117,7 +117,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         await extractEMLDetails(content);
       store.setField('senderDomain', senderDomain);
       store.setField('emailQuery', emailQuery);
-      store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 2) * 64);
+      store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 5) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 5) * 64);
       if (emailBodyMaxLength > 9984) {
         toast.warning(
@@ -171,12 +171,22 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [file, revealPrivateFields]);
 
   useEffect(() => {
+    if (step !== 1) {
+      return;
+    }
+
     fetch(`https://archive.prove.email/api/key?domain=${store.senderDomain}`)
       .then((res) => res.json())
       .then((data) => {
-        setIsDKIMMissing(!data.length);
+        if (file) {
+          getFileContent(file).then((content) => {
+            setIsDKIMMissing(
+              !data.length || !data?.find((item: any) => item.selector === getDKIMSelector(content))
+            );
+          });
+        }
       });
-  }, [store.senderDomain]);
+  }, [store.senderDomain, step]);
 
   const isNextButtonDisabled = () => {
     if (!file || isFileInvalid) {
@@ -197,7 +207,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
 
     if (step === 2) {
-      return !store.decomposedRegexes.length;
+      return !store?.decomposedRegexes?.length;
     }
 
     return !!errors.length || isDKIMMissing;
