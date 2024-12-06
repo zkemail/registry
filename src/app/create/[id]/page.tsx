@@ -17,7 +17,7 @@ import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { DecomposedRegex, testBlueprint } from '@zk-email/sdk';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import StepperMobile from '@/app/components/StepperMobile';
@@ -28,6 +28,8 @@ import EmailDetails from './createBlueprintSteps/EmailDetails';
 import { extractEMLDetails, getDKIMSelector } from '@/app/utils';
 import PostalMime from 'postal-mime';
 import { Email } from 'postal-mime';
+
+type Step = '0' | '1' | '2';
 
 const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -41,13 +43,19 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
   const steps = ['Pattern Details', 'Email Details', 'Extract Fields'];
-  const [step, setStep] = useState(0);
   const [showSampleEMLPreview, setShowSampleEMLPreview] = useState(false);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [isDKIMMissing, setIsDKIMMissing] = useState(false);
   const [isFileInvalid, setIsFileInvalid] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isCompileLoading, setIsCompileLoading] = useState(false);
+
+  const searchParams = useSearchParams();
+  let step = searchParams.get('step') || '0';
+
+  const setStep = (step: Step) => {
+    router.push(`?step=${step}`, { scroll: false });
+  };
 
   useEffect(() => {
     if (file) {
@@ -59,12 +67,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [file]);
 
   useEffect(() => {
+    console.log('component re-rendered: ', step);
     setField('ignoreBodyHashCheck', false);
     setField('removeSoftLinebreaks', true);
   }, []);
 
   // Load data if an id is provided
   useEffect(() => {
+    console.log('resetting');
     reset();
     if (id !== 'new') {
       setToExistingBlueprint(id);
@@ -171,7 +181,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [file, revealPrivateFields]);
 
   useEffect(() => {
-    if (step !== 1) {
+    if (step !== '1' || !store.senderDomain) {
       return;
     }
 
@@ -188,16 +198,20 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       });
   }, [store.senderDomain, step]);
 
+  useEffect(() => {
+    console.log('step changed: ', step);
+  }, [step]);
+
   const isNextButtonDisabled = () => {
     if (!file || isFileInvalid) {
       return true;
     }
 
-    if (step === 0) {
+    if (step === '0') {
       return !store.circuitName || !store.title || !store.description;
     }
 
-    if (step === 1) {
+    if (step === '1') {
       return (
         !store.emailQuery ||
         !store.emailBodyMaxLength ||
@@ -206,22 +220,55 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       );
     }
 
-    if (step === 2) {
-      return !store?.decomposedRegexes?.length;
+    if (step === '2') {
+      return !store.decomposedRegexes.length;
     }
 
     return !!errors.length || isDKIMMissing;
+  };
+
+  const onClickNext = async () => {
+    try {
+      console.log('saving draft');
+      await handleSaveDraft();
+      console.log('going to next step');
+      setStep((parseInt(step) + 1).toString() as Step);
+      console.log('went to next step');
+    } catch (err) {
+      console.error('failed to save draft and move to next step: ', err);
+    }
+  };
+
+  const SampleEMLPreview = () => {
+    if (!showSampleEMLPreview) return <></>;
+    console.log('parsedEmail: ', parsedEmail);
+    if (parsedEmail?.html) {
+      return (
+        <div
+          className="m-6"
+          dangerouslySetInnerHTML={{
+            __html: parsedEmail?.html!,
+          }}
+        />
+      );
+    }
+
+    if (parsedEmail?.text) {
+      return <div className="m-6">{parsedEmail.text}</div>;
+    }
+
+    return <></>;
   };
 
   return (
     <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
       <div className="flex flex-col items-center gap-6 md:hidden">
-        <StepperMobile steps={steps} currentStep={step.toString()} />
+        <StepperMobile steps={steps} currentStep={step} />
       </div>
       {/* desktop stepper */}
       <div className="hidden flex-col items-center gap-6 md:flex">
-        <Stepper steps={steps} currentStep={step.toString()} />
+        <Stepper steps={steps} currentStep={step} />
         <div
           style={{
             width: '100%',
@@ -231,29 +278,32 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           }}
         />
       </div>
-      {step !== 0 && (
+      {step !== '0' && (
         <div className="flex w-auto">
           <Button
             variant="ghost"
             startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
             onClick={() => {
-              const newStep = step - 1;
+              console.log('on click step');
+              const newStep = parseInt(step) - 1;
               if (steps.length === 3 && newStep === 2) {
-                setStep(1);
+                console.log('setting to step 1');
+                setStep('1');
               } else {
-                setStep((newStep + steps.length) % steps.length);
+                console.log('setting to other step');
+                setStep(((newStep + steps.length) % steps.length).toString() as Step);
               }
             }}
           >
-            {steps[step - 1]}
+            {steps[parseInt(step) - 1]}
           </Button>
         </div>
       )}
-      {step === 0 && (
+      {step === '0' && (
         <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
       )}
-      {step === 1 && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
-      {step === 2 && <ExtractFields file={file} />}
+      {step === '1' && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
+      {step === '2' && <ExtractFields file={file} />}
       <div
         style={{
           width: '100%',
@@ -263,14 +313,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         }}
       />
       <div>
-        {showSampleEMLPreview && parsedEmail && (
-          <div
-            className="m-6"
-            dangerouslySetInnerHTML={{
-              __html: parsedEmail?.html!,
-            }}
-          />
-        )}
+        <SampleEMLPreview />
         <div className={`flex w-full flex-row ${file ? 'justify-between' : 'justify-center'}`}>
           {file && (
             <div>
@@ -292,9 +335,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             >
               Save as Draft
             </Button>
-            {step < 2 ? (
+            {parseInt(step) < 2 ? (
               <Button
-                onClick={() => handleSaveDraft().then(() => setStep(step + 1))}
+                onClick={onClickNext}
                 endIcon={
                   <Image src="/assets/ArrowRight.svg" alt="arrow right" width={16} height={16} />
                 }

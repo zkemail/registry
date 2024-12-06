@@ -25,6 +25,7 @@ type CreateBlueprintState = BlueprintProps & {
 };
 
 const initialState: BlueprintProps = {
+  id: '',
   title: '',
   description: '',
   slug: '',
@@ -61,14 +62,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
 
   setField: (field: keyof BlueprintProps, value: any) => {
     set({ [field]: value });
-    console.log(field, value);
     get().validateField(field);
   },
 
   validateField: (field: keyof BlueprintProps) => {
-    console.log(field);
     const state = get();
-    console.log(state, field);
     try {
       // @ts-ignore
       const fieldSchema = blueprintFormSchema.shape[field];
@@ -100,7 +98,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
       set({ validationErrors: {} });
       return true;
     } catch (error) {
-      console.log('error: ', error);
+      console.log('Validation error: ', error);
       if (error instanceof z.ZodError) {
         const errors: ValidationErrors = {};
         error.errors.forEach((err) => {
@@ -115,9 +113,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
   },
 
   getParsedDecomposedRegexes: (): DecomposedRegex[] => {
-    console.log('parsing decomposed regex');
     const decomposedRegexes = get().decomposedRegexes;
-    console.log('decomposedRegexes: ', decomposedRegexes);
     return get().decomposedRegexes.map((dcr) => {
       const parts =
         typeof dcr.parts === 'string'
@@ -130,7 +126,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     });
   },
   saveDraft: async (): Promise<string> => {
-    console.log('saving draft');
     const state = get();
 
     // Remove functions from the state data and clone
@@ -157,16 +152,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     data.githubUsername = githubUserName ?? '';
     data.slug = `${data.githubUsername}/${data.circuitName}`;
 
-    console.log('Cleaned decomposed regex: ', data);
-
     try {
       // Create a new blueprint
       if (!state.id || state.id === 'new') {
-        console.log('creating blueprint');
         const blueprint = sdk.createBlueprint(data);
-        console.log('created a blueprint');
         await blueprint.submitDraft();
-        console.log('submitting draft');
         set({ blueprint });
         return blueprint.props.id!;
       }
@@ -195,7 +185,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     try {
       console.log('setting existing blueprint');
       const blueprint = await sdk.getBlueprintById(id);
-      console.log('blueprint: ', blueprint);
       blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
         dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
       });
