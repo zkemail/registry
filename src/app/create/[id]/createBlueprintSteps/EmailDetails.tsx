@@ -40,7 +40,7 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
         store.shaPrecomputeSelector || ''
       );
 
-      setField('emailBodyMaxLength', (Math.ceil(maxEmailBodyLength / 64) + 2) * 64);
+      setField('emailBodyMaxLength', (Math.ceil(maxEmailBodyLength / 64) + 5) * 64);
     };
 
     updateEmailBodyMaxLength();
