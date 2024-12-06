@@ -150,13 +150,11 @@ async function extractEMLDetails(emlContent: string) {
       ?.split('.')
       .slice(-2)
       .join('.') || null;
-  const headerLength = headerLines.join('\n').length;
   const emailQuery = `from:${senderDomain}`;
   const parsedEmail = await parseEmail(emlContent);
   console.log(parsedEmail.canonicalized_body, 'parsedEmail');
   const emailBodyMaxLength = parsedEmail.cleaned_body.length;
-
-  console.log(emailBodyMaxLength, 'emailBodyMaxLength');
+  const headerLength = parsedEmail.canonicalized_header.length;
 
   return { senderDomain, headerLength, emailQuery, emailBodyMaxLength };
 }

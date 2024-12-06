@@ -95,9 +95,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
-      const { senderDomain, emailQuery, emailBodyMaxLength } = await extractEMLDetails(content);
+      const { senderDomain, emailQuery, headerLength, emailBodyMaxLength } =
+        await extractEMLDetails(content);
       store.setField('senderDomain', senderDomain);
       store.setField('emailQuery', emailQuery);
+      store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 2) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 2) * 64);
       if (emailBodyMaxLength > 9984) {
         toast.warning(
