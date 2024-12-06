@@ -25,7 +25,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
-    if (file && store.decomposedRegexes.length > 0) {
+    if (file && store?.decomposedRegexes?.length > 0) {
       handleTestEmail();
     }
   }, [file, store.decomposedRegexes, store.externalInputs]);
