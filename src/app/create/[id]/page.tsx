@@ -35,10 +35,16 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
   const store = useCreateBlueprintStore();
-  const { setField } = store;
-  const { saveDraft, getParsedDecomposedRegexes, setToExistingBlueprint, reset, compile } = store;
+  const {
+    saveDraft,
+    getParsedDecomposedRegexes,
+    setToExistingBlueprint,
+    reset,
+    compile,
+    file,
+    setFile,
+  } = store;
 
-  const [file, setFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -53,8 +59,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
 
-  const setStep = (step: Step) => {
-    router.push(`?step=${step}`, { scroll: false });
+  const setStep = (step: Step, id?: string) => {
+    if (id) {
+      router.replace(`/create/${id}?step=${step}`, { scroll: false });
+    } else {
+      router.replace(`?step=${step}`, { scroll: false });
+    }
   };
 
   useEffect(() => {
@@ -66,33 +76,28 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [file]);
 
-  useEffect(() => {
-    console.log('component re-rendered: ', step);
-    setField('ignoreBodyHashCheck', false);
-    setField('removeSoftLinebreaks', true);
-  }, []);
-
   // Load data if an id is provided
   useEffect(() => {
-    console.log('resetting');
-    reset();
+    if (step === '0') {
+      reset();
+    }
     if (id !== 'new') {
       setToExistingBlueprint(id);
     }
-  }, [id]);
+  }, [id, step]);
 
-  const handleSaveDraft = async () => {
+  const handleSaveDraft = async (notify = true) => {
     setIsSaveDraftLoading(true);
     try {
       const newId = await saveDraft();
       setErrors([]);
-      console.log('successfully saved blueprint');
-      if (newId !== id) {
-        router.push(`/create/${newId}`);
+      if (notify) {
+        toast.success('Successfully saved draft');
       }
-      toast.success('Successfully saved draft');
+      if (newId !== id) {
+        return newId;
+      }
     } catch (err) {
-      console.log('Failed to submit blueprint', err);
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
       setErrors(['Unknown error while submitting blueprint']);
@@ -104,7 +109,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const handleCompile = async () => {
     setIsCompileLoading(true);
     try {
-      await handleSaveDraft();
+      await handleSaveDraft(false);
       await compile();
     } catch (error) {
       console.error('Failed to compile:', error);
@@ -198,10 +203,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       });
   }, [store.senderDomain, step]);
 
-  useEffect(() => {
-    console.log('step changed: ', step);
-  }, [step]);
-
   const isNextButtonDisabled = () => {
     if (!file || isFileInvalid) {
       return true;
@@ -229,11 +230,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const onClickNext = async () => {
     try {
-      console.log('saving draft');
-      await handleSaveDraft();
-      console.log('going to next step');
-      setStep((parseInt(step) + 1).toString() as Step);
-      console.log('went to next step');
+      const newId = await handleSaveDraft();
+      setStep((parseInt(step) + 1).toString() as Step, newId);
     } catch (err) {
       console.error('failed to save draft and move to next step: ', err);
     }
@@ -284,13 +282,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             variant="ghost"
             startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
             onClick={() => {
-              console.log('on click step');
               const newStep = parseInt(step) - 1;
               if (steps.length === 3 && newStep === 2) {
-                console.log('setting to step 1');
                 setStep('1');
               } else {
-                console.log('setting to other step');
                 setStep(((newStep + steps.length) % steps.length).toString() as Step);
               }
             }}
