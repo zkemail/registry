@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 interface ProofProps {
   // emailProof: ProofEmailStatusUpdate;
@@ -38,7 +39,7 @@ export const handleGetStatusIcon = (status: ProofStatus) => {
 const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   const { getUpdatingStatus, getProof } = useProofEmailStore();
   const emailProof = useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId]);
-
+  const router = useRouter();
   const [status, setStatus] = useState<ProofStatus>(emailProof.status!);
   const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
 
@@ -82,15 +83,19 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
 
   return (
     <>
-      <Link
-        target="_blank"
-        href={`/${emailProof.blueprintId}/proofs/${emailProof.id}`}
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={status !== ProofStatus.Done}
+        onClick={() => {
+          router.push(`/${emailProof.blueprintId}/proofs/${emailProof.id}`);
+        }}
         className="flex max-w-fit items-center gap-2 rounded border border-grey-500 px-3 py-1 text-sm font-semibold text-grey-800"
       >
         <span>{index + 1}</span>
         <span className="text-grey-500">|</span>
         <span>View</span>
-      </Link>
+      </Button>
       <div className="flex items-center">
         <pre className="whitespace-pre-wrap text-left">
           {emailProof?.publicData

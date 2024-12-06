@@ -47,6 +47,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
       setBlueprints([
         ...results.filter((bp) => bp.props.githubUsername === githubUserName),
         ...results
+          .filter((bp) => bp.props.githubUsername !== githubUserName)
           .filter((bp) => bp.props.status === Status.Done)
           .sort((a, b) => b.stars - a.stars),
       ]);
