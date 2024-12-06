@@ -22,6 +22,8 @@ type CreateBlueprintState = BlueprintProps & {
   compile: () => Promise<void>;
   saveDraft: () => Promise<string>;
   reset: () => void;
+  file: File | null;
+  setFile: (file: File | null) => void;
 };
 
 const initialState: BlueprintProps = {
@@ -59,6 +61,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
 
   blueprint: null,
   validationErrors: {},
+  file: null,
 
   setField: (field: keyof BlueprintProps, value: any) => {
     set({ [field]: value });
@@ -137,7 +140,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
       )
     ) as BlueprintProps;
 
-    console.log('Creting blueprint with: ', data);
+    console.log('Creating blueprint with: ', data);
 
     // Parse decomposedRegexes since we are saving them as string to make handling TextArea easier
     data.decomposedRegexes?.forEach((dcr) => {
@@ -153,8 +156,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
     data.slug = `${data.githubUsername}/${data.circuitName}`;
 
     try {
+      console.log('saving draft with state: ', state);
       // Create a new blueprint
       if (!state.id || state.id === 'new') {
+        console.log('creating a new blueprint');
         const blueprint = sdk.createBlueprint(data);
         await blueprint.submitDraft();
         set({ blueprint });
@@ -170,7 +175,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
 
       // Create a new version of an blueprint
       if (state.blueprint && !state.blueprint.canUpdate()) {
-        console.log('create');
+        console.log('creating new version');
         await state.blueprint.submitNewVersionDraft(data);
         return state.blueprint.props.id!;
       }
@@ -188,7 +193,19 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
       blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
         dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
       });
-      set({ ...blueprint.props, blueprint });
+
+      // TODO: sdk should not return undefined fields - workaround so we have sane defaults
+      for (const [key, value] of Object.entries(blueprint.props)) {
+        if (value === undefined) {
+          // @ts-ignore
+          delete blueprint.props[key];
+        }
+      }
+
+      set({
+        ...blueprint.props,
+        blueprint,
+      });
     } catch (err) {
       console.error('Failed to get blueprint for id ', id);
       throw err;
@@ -220,5 +237,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
 
     window.location.href = '/';
   },
-  reset: () => set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps) }),
+  reset: () => {
+    console.log('resetting store');
+    return set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps), file: null });
+  },
+  setFile: (file: File | null) => {
+    set({ file });
+  },
 }));
