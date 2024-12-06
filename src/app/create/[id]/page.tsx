@@ -46,6 +46,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [isDKIMMissing, setIsDKIMMissing] = useState(false);
   const [isFileInvalid, setIsFileInvalid] = useState(false);
+  const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
+  const [isCompileLoading, setIsCompileLoading] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -70,6 +72,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [id]);
 
   const handleSaveDraft = async () => {
+    setIsSaveDraftLoading(true);
     try {
       const newId = await saveDraft();
       setErrors([]);
@@ -83,6 +86,21 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
       setErrors(['Unknown error while submitting blueprint']);
+    } finally {
+      setIsSaveDraftLoading(false);
+    }
+  };
+
+  const handleCompile = async () => {
+    setIsCompileLoading(true);
+    try {
+      await handleSaveDraft();
+      await compile();
+    } catch (error) {
+      console.error('Failed to compile:', error);
+      toast.error('Failed to compile blueprint');
+    } finally {
+      setIsCompileLoading(false);
     }
   };
 
@@ -107,7 +125,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         );
         store.setField('ignoreBodyHashCheck', true);
         store.setField('removeSoftLinebreaks', false);
-      } else {
       }
     } catch (err) {
       console.error('Failed to get content from email');
@@ -259,6 +276,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             <Button
               variant="secondary"
               onClick={handleSaveDraft}
+              loading={isSaveDraftLoading}
               disabled={!store.circuitName || !store.title}
               startIcon={<Image src="/assets/Archive.svg" alt="save" width={16} height={16} />}
             >
@@ -276,7 +294,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               </Button>
             ) : (
               <Button
-                onClick={compile}
+                onClick={handleCompile}
+                loading={isCompileLoading}
                 disabled={!file || !!errors.length || isDKIMMissing}
                 startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
               >

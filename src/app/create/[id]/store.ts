@@ -208,6 +208,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get)
   compile: async (): Promise<void> => {
     const state = get();
 
+    if (state.ignoreBodyHashCheck) {
+      set({ emailBodyMaxLength: 0 });
+      state.emailBodyMaxLength = 0;
+    }
+
     if (!state.validateAll()) {
       throw new Error('Validation failed');
     }

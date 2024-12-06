@@ -69,12 +69,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         {...props}
       >
-        {startIcon ? (
-          <span className="mr-2 w-max">{startIcon}</span>
-        ) : loading ? (
+        {loading ? (
           <span className="mr-2 w-max">
             <Loader2 className="h-4 w-4 animate-spin" />
           </span>
+        ) : startIcon ? (
+          <span className="mr-2 w-max">{startIcon}</span>
         ) : null}
         {children}
         {endIcon && <span className="ml-2 w-max">{endIcon}</span>}

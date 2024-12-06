@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,12 @@ const ExtractFields = ({ file }: { file: File | null }) => {
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
   const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (file && store.decomposedRegexes.length > 0) {
+      handleTestEmail();
+    }
+  }, [file, store.decomposedRegexes, store.externalInputs]);
 
   const handleTestEmail = async () => {
     if (!file) {
