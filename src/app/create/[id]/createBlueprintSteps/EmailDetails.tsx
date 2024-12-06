@@ -1,19 +1,12 @@
 'use client';
 
-import DragAndDropFile from '@/app/components/DragAndDropFile';
 import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { useAuthStore } from '@/lib/stores/useAuthStore';
-import { useRouter } from 'next/navigation';
-import { use } from 'react';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getMaxEmailBodyLength } from '@/app/utils';
 import { getFileContent } from '@/lib/utils';
-import { parseEmail } from '@zk-email/sdk';
 
 const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: File | null }) => {
   const store = useCreateBlueprintStore();

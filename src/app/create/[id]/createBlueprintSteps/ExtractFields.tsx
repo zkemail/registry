@@ -70,6 +70,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
       setErrors([]);
     } catch (err) {
       setErrors(['Failed to test decomposed regex on eml']);
+      setGeneratedOutput('');
       console.error('Failed to test decomposed regex on eml: ', err);
     }
   };
