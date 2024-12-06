@@ -175,8 +175,20 @@ const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: 
 };
 
 const getDKIMSelector = (emlContent: string): string | null => {
+  const headerLines: string[] = [];
   const lines = emlContent.split('\n');
   for (const line of lines) {
+    if (line.trim() === '') break;
+    // If line starts with whitespace, it's a continuation of previous header
+    if (line.startsWith(' ') || line.startsWith('\t')) {
+      headerLines[headerLines.length - 1] += line.trim();
+    } else {
+      headerLines.push(line);
+    }
+  }
+
+  // Then look for DKIM-Signature in the joined headers
+  for (const line of headerLines) {
     if (line.includes('DKIM-Signature')) {
       const match = line.match(/s=([^;]+)/);
       if (match && match[1]) {
