@@ -196,7 +196,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         if (file) {
           getFileContent(file).then((content) => {
             setIsDKIMMissing(
-              !data.length || !data?.find((item: any) => item.selector === getDKIMSelector(content))
+              !data.length
             );
           });
         }
