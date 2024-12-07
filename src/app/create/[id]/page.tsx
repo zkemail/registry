@@ -134,7 +134,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailQuery', emailQuery);
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 5) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 5) * 64);
-      if (emailBodyMaxLength > 9984) {
+      if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector) {
         toast.warning(
           'Email body is too long, max is 10000 bytes. Please add Email body cut off value else skip body hash check'
         );
