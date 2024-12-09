@@ -12,8 +12,10 @@ const AuthHandler = () => {
   useEffect(() => {
     const token = searchParams.get('token');
     const username = searchParams.get('user');
+    const isAdmin = searchParams.get('isAdmin') === 'true';
+
     if (token && username) {
-      setAuth(username as string, token as string);
+      setAuth(username as string, token as string, isAdmin as boolean);
       setLoading(false);
 
       // Remove query params from url
