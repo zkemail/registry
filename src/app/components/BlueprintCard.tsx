@@ -3,6 +3,7 @@ import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } fr
 import { Blueprint } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 interface BlueprintCardProps {
   blueprint: Blueprint;
@@ -13,6 +14,7 @@ interface BlueprintCardProps {
 
 const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: BlueprintCardProps) => {
   let [stars, setStars] = useState(blueprint.stars);
+  const isLoggedIn = !!useAuthStore.getState().token;
   const onStar = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (starred) {
@@ -28,19 +30,21 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       <div className="mb-2 flex items-center justify-between">
         <div className="flex flex-row flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
-          <span
-            className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
-              blueprint.props.status
-            )}`}
-          >
-            <Image
-              width={12}
-              height={12}
-              src={getStatusIcon(blueprint.props.status)}
-              alt={blueprint.props.status?.toString() || 'Draft'}
-            />
-            {getStatusName(blueprint.props.status)}
-          </span>
+          {isLoggedIn && (
+            <span
+              className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
+                blueprint.props.status
+              )}`}
+            >
+              <Image
+                width={12}
+                height={12}
+                src={getStatusIcon(blueprint.props.status)}
+                alt={blueprint.props.status?.toString() || 'Draft'}
+              />
+              {getStatusName(blueprint.props.status)}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-4 text-sm text-grey-600">
           <button
