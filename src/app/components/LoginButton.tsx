@@ -14,7 +14,14 @@ export default function LoginButton() {
     setLoading(true);
     // Exclude query params, since the callback url appends them with ? and we would have 2 ?
     const redirectUrl = window.location.href.split('?')[0];
-    const loginWithGithubUrl = getLoginWithGithubUrl(redirectUrl);
+    const githubClientId = process.env.NEXT_PUBLIC_GITHUB_CLIENT_ID;
+    let loginWithGithubUrl: string;
+    if (githubClientId) {
+      loginWithGithubUrl = getLoginWithGithubUrl(redirectUrl, githubClientId);
+    } else {
+      // If no githubClientId is given, the sdk will automatically use the prod key
+      loginWithGithubUrl = getLoginWithGithubUrl(redirectUrl);
+    }
     router.replace(loginWithGithubUrl);
   };
 
