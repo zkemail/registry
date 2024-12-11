@@ -29,24 +29,15 @@ const PatternDetails = ({
         title="Pattern Name"
         disabled={id !== 'new'}
         value={store.title}
-        onChange={(e) => setField('title', e.target.value)}
+        onChange={(e) => {
+          setField('title', e.target.value);
+          const circuitName = e.target.value.replace(/[^a-zA-Z0-9_]/g, '');
+          setField('circuitName', circuitName);
+          setField('slug', `${githubUserName}/${circuitName}`);
+        }}
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
       />
-      <Input
-        title="Circuit Name"
-        disabled={id !== 'new'}
-        placeholder="e.g CircuitName (without the .circom extension)"
-        value={store.circuitName}
-        onChange={(e) => {
-          setField('circuitName', e.target.value);
-          setField('slug', `${githubUserName}/${e.target.value}`);
-        }}
-        error={!!validationErrors.circuitName}
-        errorMessage={validationErrors.circuitName}
-      />
-      <Input title="Slug" disabled value={`${githubUserName}/${store.circuitName}`} />
-      {/* TODO: Add check for email body max length */}
       <DragAndDropFile
         accept=".eml"
         file={file}
@@ -58,12 +49,6 @@ const PatternDetails = ({
         }}
         errorMessage={isFileInvalid ? 'File is invalid' : ''}
       />
-      {/* <InputTags 
-  title="Tags" 
-  value={store.tags || []} 
-  onChange={(e) => setField('tags', e)} 
-  errorMessage={validationErrors.tags}
-/> */}
       <Textarea
         title="Description"
         placeholder="Enter a description"

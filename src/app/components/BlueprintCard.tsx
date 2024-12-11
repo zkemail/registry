@@ -59,7 +59,8 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       </div>
       <div className="mb-2 inline-flex w-full flex-row items-center">
         <p className="text-md overflow-hidden text-ellipsis font-medium text-grey-800">
-          {blueprint.props.slug}
+          <span className="hidden">{blueprint.props.slug}</span>
+          {blueprint.props.title}
         </p>
         <div
           onClick={(e) => {
