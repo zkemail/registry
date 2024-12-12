@@ -28,6 +28,8 @@ import EmailDetails from './createBlueprintSteps/EmailDetails';
 import { extractEMLDetails, getDKIMSelector } from '@/app/utils';
 import PostalMime from 'postal-mime';
 import { Email } from 'postal-mime';
+import LoginButton from '@/app/components/LoginButton';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 type Step = '0' | '1' | '2';
 
@@ -45,6 +47,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setFile,
   } = store;
 
+  const token = useAuthStore((state) => state.token);
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -257,6 +260,17 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     return <></>;
   };
+
+  if (!token) {
+    return (
+      <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+        <div>Please login first to create a new blueprint.</div>
+        <div>
+          <LoginButton />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
