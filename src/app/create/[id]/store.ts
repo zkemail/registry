@@ -10,6 +10,7 @@ import {
 import { create } from 'zustand';
 import { z } from 'zod';
 import { blueprintFormSchema } from './blueprintFormSchema';
+import { persist } from 'zustand/middleware';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
@@ -56,192 +57,198 @@ export type ValidationErrors = {
   [K in keyof z.infer<typeof blueprintFormSchema>]?: string;
 };
 
-export const useCreateBlueprintStore = create<CreateBlueprintState>()((set, get) => ({
-  ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps),
+export const useCreateBlueprintStore = create<CreateBlueprintState>()(
+  persist(
+    (set, get) => ({
+      ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps),
 
-  blueprint: null,
-  validationErrors: {},
-  file: null,
+      blueprint: null,
+      validationErrors: {},
+      file: null,
 
-  setField: (field: keyof BlueprintProps, value: any) => {
-    set({ [field]: value });
-    get().validateField(field);
-  },
+      setField: (field: keyof BlueprintProps, value: any) => {
+        set({ [field]: value });
+        get().validateField(field);
+      },
 
-  validateField: (field: keyof BlueprintProps) => {
-    const state = get();
-    try {
-      // @ts-ignore
-      const fieldSchema = blueprintFormSchema.shape[field];
-      if (fieldSchema) {
-        fieldSchema.parse(state[field]);
-        set((prev) => ({
-          validationErrors: {
-            ...prev.validationErrors,
-            [field]: undefined,
-          },
-        }));
-      }
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        set((prev) => ({
-          validationErrors: {
-            ...prev.validationErrors,
-            [field]: error.errors[0].message,
-          },
-        }));
-      }
-    }
-  },
-
-  validateAll: () => {
-    const state = get();
-    try {
-      blueprintFormSchema.parse(state);
-      set({ validationErrors: {} });
-      return true;
-    } catch (error) {
-      console.log('Validation error: ', error);
-      if (error instanceof z.ZodError) {
-        const errors: ValidationErrors = {};
-        error.errors.forEach((err) => {
-          const path = err.path[0] as keyof BlueprintProps;
+      validateField: (field: keyof BlueprintProps) => {
+        const state = get();
+        try {
           // @ts-ignore
-          errors[path] = err.message;
-        });
-        set({ validationErrors: errors });
-      }
-      return false;
-    }
-  },
-
-  getParsedDecomposedRegexes: (): DecomposedRegex[] => {
-    const decomposedRegexes = get().decomposedRegexes;
-    return get().decomposedRegexes.map((dcr) => {
-      const parts =
-        typeof dcr.parts === 'string'
-          ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
-          : dcr.parts;
-      return {
-        ...dcr,
-        parts: parts,
-      };
-    });
-  },
-  saveDraft: async (): Promise<string> => {
-    const state = get();
-
-    // Remove functions from the state data and clone
-    const data = JSON.parse(
-      JSON.stringify(
-        Object.fromEntries(
-          Object.entries(state).filter(([_, value]) => typeof value !== 'function')
-        )
-      )
-    ) as BlueprintProps;
-
-    console.log('Creating blueprint with: ', data);
-
-    // Parse decomposedRegexes since we are saving them as string to make handling TextArea easier
-    data.decomposedRegexes?.forEach((dcr) => {
-      dcr.parts =
-        typeof dcr.parts === 'string'
-          ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
-          : dcr.parts;
-      dcr.maxLength = dcr.maxLength || 64;
-    });
-
-    const githubUserName = useAuthStore.getState().username;
-    data.githubUsername = githubUserName ?? '';
-    data.slug = `${data.githubUsername}/${data.circuitName}`;
-
-    try {
-      console.log('saving draft with state: ', state);
-      // Create a new blueprint
-      if (!state.id || state.id === 'new') {
-        console.log('creating a new blueprint');
-        const blueprint = sdk.createBlueprint(data);
-        await blueprint.submitDraft();
-        set({ blueprint });
-        return blueprint.props.id!;
-      }
-
-      // Update an existing blueprint
-      if (state.blueprint && state.blueprint.canUpdate()) {
-        console.log('updating');
-        await state.blueprint.update(data);
-        return state.blueprint.props.id!;
-      }
-
-      // Create a new version of an blueprint
-      if (state.blueprint && !state.blueprint.canUpdate()) {
-        console.log('creating new version');
-        await state.blueprint.submitNewVersionDraft(data);
-        return state.blueprint.props.id!;
-      }
-
-      throw new Error('Unknown error saving blueprint');
-    } catch (err) {
-      console.error('Failed to submit blueprint: ', err);
-      throw err;
-    }
-  },
-  setToExistingBlueprint: async (id: string) => {
-    try {
-      console.log('setting existing blueprint');
-      const blueprint = await sdk.getBlueprintById(id);
-      blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
-        dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
-      });
-
-      // TODO: sdk should not return undefined fields - workaround so we have sane defaults
-      for (const [key, value] of Object.entries(blueprint.props)) {
-        if (value === undefined) {
-          // @ts-ignore
-          delete blueprint.props[key];
+          const fieldSchema = blueprintFormSchema.shape[field];
+          if (fieldSchema) {
+            fieldSchema.parse(state[field]);
+            set((prev) => ({
+              validationErrors: {
+                ...prev.validationErrors,
+                [field]: undefined,
+              },
+            }));
+          }
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            set((prev) => ({
+              validationErrors: {
+                ...prev.validationErrors,
+                [field]: error.errors[0].message,
+              },
+            }));
+          }
         }
-      }
+      },
 
-      set({
-        ...blueprint.props,
-        blueprint,
-      });
-    } catch (err) {
-      console.error('Failed to get blueprint for id ', id);
-      throw err;
-    }
-  },
-  compile: async (): Promise<void> => {
-    const state = get();
+      validateAll: () => {
+        const state = get();
+        try {
+          blueprintFormSchema.parse(state);
+          set({ validationErrors: {} });
+          return true;
+        } catch (error) {
+          console.log('Validation error: ', error);
+          if (error instanceof z.ZodError) {
+            const errors: ValidationErrors = {};
+            error.errors.forEach((err) => {
+              const path = err.path[0] as keyof BlueprintProps;
+              // @ts-ignore
+              errors[path] = err.message;
+            });
+            set({ validationErrors: errors });
+          }
+          return false;
+        }
+      },
 
-    if (state.ignoreBodyHashCheck) {
-      set({ emailBodyMaxLength: 0 });
-      state.emailBodyMaxLength = 0;
-    }
+      getParsedDecomposedRegexes: (): DecomposedRegex[] => {
+        const decomposedRegexes = get().decomposedRegexes;
+        return get().decomposedRegexes.map((dcr) => {
+          const parts =
+            typeof dcr.parts === 'string'
+              ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
+              : dcr.parts;
+          return {
+            ...dcr,
+            parts: parts,
+          };
+        });
+      },
+      saveDraft: async (): Promise<string> => {
+        const state = get();
 
-    if (!state.validateAll()) {
-      throw new Error('Validation failed');
-    }
-    // In theory we could also save before compiling here if we want, caling createBlueprint first
-    if (!state.blueprint) {
-      throw new Error('Blueprint must be saved first');
-    }
-    try {
-      await state.blueprint.submit();
-    } catch (err) {
-      console.error('Failed to start blueprint compilation: ', err);
-      throw err;
-    }
+        // Remove functions from the state data and clone
+        const data = JSON.parse(
+          JSON.stringify(
+            Object.fromEntries(
+              Object.entries(state).filter(([_, value]) => typeof value !== 'function')
+            )
+          )
+        ) as BlueprintProps;
 
-    // const status = await state.blueprint.checkStatus()
+        console.log('Creating blueprint with: ', data);
 
-    window.location.href = '/';
-  },
-  reset: () => {
-    console.log('resetting store');
-    return set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps), file: null });
-  },
-  setFile: (file: File | null) => {
-    set({ file });
-  },
-}));
+        // Parse decomposedRegexes since we are saving them as string to make handling TextArea easier
+        data.decomposedRegexes?.forEach((dcr) => {
+          dcr.parts =
+            typeof dcr.parts === 'string'
+              ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
+              : dcr.parts;
+          dcr.maxLength = dcr.maxLength || 64;
+        });
+
+        const githubUserName = useAuthStore.getState().username;
+        data.githubUsername = githubUserName ?? '';
+        data.slug = `${data.githubUsername}/${data.circuitName}`;
+
+        try {
+          console.log('saving draft with state: ', state);
+          // Create a new blueprint
+          if (!state.id || state.id === 'new') {
+            console.log('creating a new blueprint');
+            const blueprint = sdk.createBlueprint(data);
+            await blueprint.submitDraft();
+            set({ blueprint });
+            return blueprint.props.id!;
+          }
+
+          // Update an existing blueprint
+          if (state.blueprint && state.blueprint.canUpdate()) {
+            console.log('updating');
+            await state.blueprint.update(data);
+            return state.blueprint.props.id!;
+          }
+
+          // Create a new version of an blueprint
+          if (state.blueprint && !state.blueprint.canUpdate()) {
+            console.log('creating new version');
+            await state.blueprint.submitNewVersionDraft(data);
+            return state.blueprint.props.id!;
+          }
+
+          throw new Error('Unknown error saving blueprint');
+        } catch (err) {
+          console.error('Failed to submit blueprint: ', err);
+          throw err;
+        }
+      },
+      setToExistingBlueprint: async (id: string) => {
+        try {
+          console.log('setting existing blueprint');
+          const blueprint = await sdk.getBlueprintById(id);
+          blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
+            dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
+          });
+
+          // TODO: sdk should not return undefined fields - workaround so we have sane defaults
+          for (const [key, value] of Object.entries(blueprint.props)) {
+            if (value === undefined) {
+              // @ts-ignore
+              delete blueprint.props[key];
+            }
+          }
+
+          set({
+            ...blueprint.props,
+            blueprint,
+          });
+        } catch (err) {
+          console.error('Failed to get blueprint for id ', id);
+          throw err;
+        }
+      },
+      compile: async (): Promise<void> => {
+        const state = get();
+
+        if (state.ignoreBodyHashCheck) {
+          set({ emailBodyMaxLength: 0 });
+          state.emailBodyMaxLength = 0;
+        }
+
+        if (!state.validateAll()) {
+          throw new Error('Validation failed');
+        }
+        // In theory we could also save before compiling here if we want, caling createBlueprint first
+        if (!state.blueprint) {
+          throw new Error('Blueprint must be saved first');
+        }
+        try {
+          await state.blueprint.submit();
+        } catch (err) {
+          console.error('Failed to start blueprint compilation: ', err);
+          throw err;
+        }
+
+        // const status = await state.blueprint.checkStatus()
+
+        window.location.href = '/';
+      },
+      reset: () => {
+        return set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps), file: null });
+      },
+      setFile: (file: File | null) => {
+        set({ file });
+      },
+    }),
+    {
+      name: 'create-blueprint',
+    }
+  )
+);

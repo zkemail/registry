@@ -81,7 +81,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   // Load data if an id is provided
   useEffect(() => {
-    if (step === '0') {
+    if (id === 'new' || (step === '0' && id !== 'new')) {
       reset();
     }
     if (id !== 'new') {
