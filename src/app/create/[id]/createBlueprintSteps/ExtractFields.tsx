@@ -164,6 +164,12 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               className="w-full border-0 hover:border-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
               placeholder="Use our AI to magically extract the fields you want"
               value={aiPrompt}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleGenerateFields();
+                }
+              }}
               onChange={(e) => setAiPrompt(e.target.value)}
             />
           </span>
