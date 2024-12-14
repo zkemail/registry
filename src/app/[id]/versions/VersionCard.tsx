@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useEffect } from 'react';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -16,6 +18,12 @@ interface VersionCardProps {
 
 const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps) => {
   const router = useRouter();
+  const { isAdmin } = useAuthStore();
+
+  useEffect(() => {
+    console.log('isAdmin: ', isAdmin);
+  }, [isAdmin]);
+
   const onCancelCompilation = async () => {
     if (!blueprint) return;
     try {
@@ -119,7 +127,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
               Cancel Compilation
             </Button>
           )}
-          {blueprint.props.status === Status.Draft && isLatest && (
+          {(blueprint.props.status === Status.Draft || isAdmin) && isLatest && (
             <Button
               variant="destructive"
               startIcon={<Image src="/assets/Trash.svg" alt="Delete" width={16} height={16} />}
