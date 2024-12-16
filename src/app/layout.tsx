@@ -7,22 +7,22 @@ import GoogleAuthProvider from './contexts/GoogleAuthProvider';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import ToastProvider from './contexts/ToastProvider';
 import { Suspense } from 'react';
+import { CSPostHogProvider } from './providers';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "ZK Email Registry",
-  description:
-    "Create email blueprints to create proofs about emails.",
+  title: 'ZK Email Registry',
+  description: 'Create email blueprints to create proofs about emails.',
   icons: {
     icon: [
       {
-        media: "(prefers-color-scheme: light)",
-        url: "/favicon-dark.svg",
+        media: '(prefers-color-scheme: light)',
+        url: '/favicon-dark.svg',
       },
       {
-        media: "(prefers-color-scheme: dark)",
-        url: "/favicon-light.svg",
+        media: '(prefers-color-scheme: dark)',
+        url: '/favicon-light.svg',
       },
     ],
   },
@@ -38,14 +38,16 @@ export default function RootLayout({
       <body className={`${fustat.className} flex min-h-screen flex-col bg-[#F5F3EF] antialiased`}>
         <Suspense>
           <ThemeProvider attribute="class">
-            <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
-              <GoogleAuthProvider>
-                <ToastProvider>
-                  <AuthHandler />
-                  {children}
-                </ToastProvider>
-              </GoogleAuthProvider>
-            </GoogleOAuthProvider>
+            <CSPostHogProvider>
+              <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
+                <GoogleAuthProvider>
+                  <ToastProvider>
+                    <AuthHandler />
+                    {children}
+                  </ToastProvider>
+                </GoogleAuthProvider>
+              </GoogleOAuthProvider>
+            </CSPostHogProvider>
           </ThemeProvider>
         </Suspense>
       </body>
