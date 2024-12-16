@@ -30,6 +30,7 @@ import PostalMime from 'postal-mime';
 import { Email } from 'postal-mime';
 import LoginButton from '@/app/components/LoginButton';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { usePostHog } from 'posthog-js/react';
 
 type Step = '0' | '1' | '2';
 
@@ -37,6 +38,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
   const store = useCreateBlueprintStore();
+  const posthog = usePostHog();
+
   const {
     saveDraft,
     getParsedDecomposedRegexes,
@@ -69,6 +72,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       router.replace(`?step=${step}`, { scroll: false });
     }
   };
+
+  useEffect(() => {
+    posthog.startSessionRecording();
+
+    return () => {
+      posthog.stopSessionRecording();
+      posthog.reset()
+    };
+  }, []);
 
   useEffect(() => {
     if (file) {
