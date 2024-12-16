@@ -71,6 +71,8 @@ export const BlueprintTitle = ({
                 height: "auto"
               }} />{' '}
             {blueprint.stars < 2 ? 'Star' : 'Stars'} | {blueprint.stars || 0}
+            />{' '}
+            {(blueprint.props.stars || 0) < 2 ? 'Star' : 'Stars'} | {blueprint.props.stars || 0}
           </button>
         </div>
       </div>
