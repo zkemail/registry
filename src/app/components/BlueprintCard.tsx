@@ -13,7 +13,7 @@ interface BlueprintCardProps {
 }
 
 const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: BlueprintCardProps) => {
-  let [stars, setStars] = useState(blueprint.stars);
+  let [stars, setStars] = useState(blueprint.props.stars);
   const isLoggedIn = !!useAuthStore.getState().token;
   const onStar = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -22,7 +22,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
     } else {
       await setStarred();
     }
-    setStars(blueprint.stars);
+    setStars(blueprint.props.stars || 0);
   };
 
   return (

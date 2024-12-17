@@ -64,7 +64,7 @@ export const BlueprintTitle = ({
               src={isUserStarred ? '/assets/StarFilled.svg' : '/assets/Star.svg'}
               alt="⭐"
             />{' '}
-            {blueprint.stars < 2 ? 'Star' : 'Stars'} | {blueprint.stars || 0}
+            {(blueprint.props.stars || 0) < 2 ? 'Star' : 'Stars'} | {blueprint.props.stars || 0}
           </button>
         </div>
       </div>
