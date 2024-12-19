@@ -160,7 +160,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
               Cancel Compilation
             </Button>
           )}
-          {(blueprint.props.status === Status.Draft || isAdmin) && isLatest && (
+          {(blueprint.props.status === Status.Draft || isAdmin) && (
             <Button
               variant="destructive"
               startIcon={<Image

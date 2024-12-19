@@ -8,6 +8,7 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import ToastProvider from './contexts/ToastProvider';
 import { Suspense } from 'react';
 import { CSPostHogProvider } from './providers';
+import PostHogPageView from './pageview';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
@@ -43,6 +44,7 @@ export default function RootLayout({
                 <GoogleAuthProvider>
                   <ToastProvider>
                     <AuthHandler />
+                    <PostHogPageView />
                     {children}
                   </ToastProvider>
                 </GoogleAuthProvider>

@@ -15,7 +15,7 @@ import { useCreateBlueprintStore } from './store';
 
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from "next/image";
+import Image from 'next/image';
 import { DecomposedRegex, testBlueprint } from '@zk-email/sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
@@ -31,6 +31,7 @@ import { Email } from 'postal-mime';
 import LoginButton from '@/app/components/LoginButton';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { usePostHog } from 'posthog-js/react';
+import { Switch } from '@/components/ui/switch';
 
 type Step = '0' | '1' | '2';
 
@@ -61,6 +62,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isFileInvalid, setIsFileInvalid] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isCompileLoading, setIsCompileLoading] = useState(false);
+  const [optOut, setOptOut] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -74,13 +76,16 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   useEffect(() => {
-    posthog.startSessionRecording();
+    if (!optOut) {
+      posthog.startSessionRecording();
+    } else {
+      posthog.stopSessionRecording();
+    }
 
     return () => {
-      posthog.stopSessionRecording();
-      posthog.reset()
+      posthog.reset();
     };
-  }, []);
+  }, [optOut]);
 
   useEffect(() => {
     if (file) {
@@ -136,8 +141,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const handleTestEmail = async () => {
     if (!file) {
-      console.error('Add email first');
+      console.error('Add eml file first');
       return;
+    }
+
+    if (!optOut) {
+      posthog.capture('$test_email');
     }
 
     let content: string;
@@ -157,6 +166,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         store.setField('removeSoftLinebreaks', false);
       }
     } catch (err) {
+      if (!optOut) {
+        posthog.capture('$test_email_error:failed_to_get_content', { error: err });
+      }
       console.error('Failed to get content from email');
       return;
     }
@@ -186,6 +198,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
       setErrors([]);
     } catch (err) {
+      if (!optOut) {
+        posthog.capture('$test_email_error:failed_to_test_decomposed_regex', { error: err, content });
+      }
       setErrors(['Failed to test decomposed regex on eml']);
       console.error('Failed to test decomposed regex on eml: ', err);
     }
@@ -285,7 +300,21 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   return (
-    (<div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+    <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+      <div className="mb-4 rounded-md bg-yellow-100 p-4">
+        <div className="flex items-center">
+          <Switch
+            title="Private output"
+            className="mr-2"
+            checked={optOut}
+            onCheckedChange={(checked) => setOptOut(checked)}
+          />
+          <span className="text-sm">
+            Blueprint creation processes and data may be shared with the team for improvement
+            purposes. Opt out of sharing.
+          </span>
+        </div>
+      </div>
       <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
       <div className="flex flex-col items-center gap-6 md:hidden">
         <StepperMobile steps={steps} currentStep={step} />
@@ -306,15 +335,18 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="flex w-auto">
           <Button
             variant="ghost"
-            startIcon={<Image
-              src="/assets/ArrowLeft.svg"
-              alt="back"
-              width={16}
-              height={16}
-              style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />}
+            startIcon={
+              <Image
+                src="/assets/ArrowLeft.svg"
+                alt="back"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+            }
             onClick={() => {
               const newStep = parseInt(step) - 1;
               if (steps.length === 3 && newStep === 2) {
@@ -332,7 +364,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
       )}
       {step === '1' && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
-      {step === '2' && <ExtractFields file={file} />}
+      {step === '2' && <ExtractFields file={file} optOut={optOut} />}
       <div
         style={{
           width: '100%',
@@ -360,15 +392,18 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               onClick={handleSaveDraft}
               loading={isSaveDraftLoading}
               disabled={!store.circuitName || !store.title}
-              startIcon={<Image
-                src="/assets/Archive.svg"
-                alt="save"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/Archive.svg"
+                  alt="save"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
             >
               Save as Draft
             </Button>
@@ -382,9 +417,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                     width={16}
                     height={16}
                     style={{
-                      maxWidth: "100%",
-                      height: "auto"
-                    }} />
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
                 }
                 disabled={isNextButtonDisabled()}
               >
@@ -395,15 +431,18 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 onClick={handleCompile}
                 loading={isCompileLoading}
                 disabled={!file || !!errors.length || isDKIMMissing}
-                startIcon={<Image
-                  src="/assets/Check.svg"
-                  alt="check"
-                  width={16}
-                  height={16}
-                  style={{
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />}
+                startIcon={
+                  <Image
+                    src="/assets/Check.svg"
+                    alt="check"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
               >
                 Submit Blueprint
               </Button>
@@ -411,7 +450,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       </div>
-    </div>)
+    </div>
   );
 };
 

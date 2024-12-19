@@ -6,14 +6,15 @@ import { useEffect, useState } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import Image from "next/image";
+import Image from 'next/image';
 import { DecomposedRegex, DecomposedRegexPart, ExternalInput, testBlueprint } from '@zk-email/sdk';
 import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { Switch } from '@/components/ui/switch';
+import { posthog } from 'posthog-js';
 
-const ExtractFields = ({ file }: { file: File | null }) => {
+const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean }) => {
   const store = useCreateBlueprintStore();
 
   const { setField, getParsedDecomposedRegexes } = store;
@@ -83,6 +84,9 @@ const ExtractFields = ({ file }: { file: File | null }) => {
       return;
     }
 
+    if (!optOut) {
+      posthog.capture('$generate_fields_using_ai', { aiPrompt });
+    }
     try {
       const formData = new FormData();
       formData.append('emlFile', file);
@@ -107,9 +111,15 @@ const ExtractFields = ({ file }: { file: File | null }) => {
       }));
 
       setField('decomposedRegexes', convertedRegexes);
+      if (!optOut) {
+        posthog.capture('$generate_fields_using_ai_success', { aiPrompt, convertedRegexes });
+      }
       toast.success('Successfully generated fields');
     } catch (error) {
       console.error('Error generating fields:', error);
+      if (!optOut) {
+        posthog.capture('$generate_fields_using_ai_error', { aiPrompt });
+      }
       toast.error('Failed to generate fields');
     } finally {
       setIsGeneratingFieldsLoading(false);
@@ -127,9 +137,10 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             width={20}
             height={20}
             style={{
-              maxWidth: "100%",
-              height: "auto"
-            }} />
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
           <span className="text-base font-medium">{error}</span>
         </div>
       ));
@@ -143,26 +154,28 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             width={20}
             height={20}
             style={{
-              maxWidth: "100%",
-              height: "auto"
-            }} />
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
           <span className="text-base font-medium">No generated output</span>
         </div>
       ));
     } else {
       return (
-        (<div className="flex items-center gap-2 text-green-300">
+        <div className="flex items-center gap-2 text-green-300">
           <Image
             src="/assets/CheckCircle.svg"
             alt="check"
             width={20}
             height={20}
             style={{
-              maxWidth: "100%",
-              height: "auto"
-            }} />
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
           <span className="text-base font-medium">All tests passed. Ready to compile</span>
-        </div>)
+        </div>
       );
     }
   };
@@ -179,7 +192,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
   };
 
   return (
-    (<div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6">
       <Label>AI auto extraction</Label>
       <div className="rounded-lg border border-[#EDCEF8] p-3 shadow-[0px_0px_10px_0px_#EDCEF8]">
         <div className="flex items-center justify-between">
@@ -203,15 +216,18 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             size="sm"
             disabled={!file || aiPrompt.length === 0 || isGeneratingFieldsLoading}
             loading={isGeneratingFieldsLoading}
-            startIcon={<Image
-              src="/assets/Sparkle.svg"
-              alt="sparkle"
-              width={16}
-              height={16}
-              style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />}
+            startIcon={
+              <Image
+                src="/assets/Sparkle.svg"
+                alt="sparkle"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+            }
             onClick={handleGenerateFields}
           >
             {isGeneratingFieldsLoading ? 'Generating...' : 'Generate Fields'}
@@ -226,16 +242,22 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             <Button
               variant="default"
               size="sm"
-              startIcon={<Image
-                src="/assets/Plus.svg"
-                alt="plus"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/Plus.svg"
+                  alt="plus"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
               onClick={() => {
+                if (!optOut) {
+                  posthog.capture('$add_values_to_extract_decomposed_regex');
+                }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
                   { maxLength: 64 },
@@ -254,15 +276,18 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               <Button
                 size="sm"
                 variant="destructive"
-                startIcon={<Image
-                  src="/assets/Trash.svg"
-                  alt="trash"
-                  width={16}
-                  height={16}
-                  style={{
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />}
+                startIcon={
+                  <Image
+                    src="/assets/Trash.svg"
+                    alt="trash"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
                 onClick={() => {
                   const updatedRegexes = [...store.decomposedRegexes];
                   updatedRegexes.splice(index, 1);
@@ -327,7 +352,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               {parseRegexParts(regex.parts).map((part: any, partIndex: any) => {
                 console.log(part);
                 return (
-                  (<div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
+                  <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                     <div className="flex items-center justify-between">
                       <Label>Regex field #{(partIndex + 1).toString().padStart(2, '0')}</Label>
                       <Button
@@ -340,9 +365,10 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                             width={16}
                             height={16}
                             style={{
-                              maxWidth: "100%",
-                              height: "auto"
-                            }} />
+                              maxWidth: '100%',
+                              height: 'auto',
+                            }}
+                          />
                         }
                         onClick={() => {
                           const parts = parseRegexParts(regex.parts);
@@ -401,7 +427,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                         placeholder="Enter regex definition"
                       />
                     </div>
-                  </div>)
+                  </div>
                 );
               })}
               <div className="flex items-center justify-between">
@@ -409,15 +435,18 @@ const ExtractFields = ({ file }: { file: File | null }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  startIcon={<Image
-                    src="/assets/Plus.svg"
-                    alt="plus"
-                    width={16}
-                    height={16}
-                    style={{
-                      maxWidth: "100%",
-                      height: "auto"
-                    }} />}
+                  startIcon={
+                    <Image
+                      src="/assets/Plus.svg"
+                      alt="plus"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  }
                   onClick={() => {
                     const parts = parseRegexParts(regex.parts);
                     parts.push({
@@ -445,16 +474,22 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             <Button
               variant="default"
               size="sm"
-              startIcon={<Image
-                src="/assets/Plus.svg"
-                alt="plus"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/Plus.svg"
+                  alt="plus"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
               onClick={() => {
+                if (!optOut) {
+                  posthog.capture('$add_values_to_extract_decomposed_regex');
+                }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
                   { maxLength: 64 },
@@ -474,16 +509,22 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             <Button
               variant="default"
               size="sm"
-              startIcon={<Image
-                src="/assets/Plus.svg"
-                alt="plus"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/Plus.svg"
+                  alt="plus"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
               onClick={() => {
+                if (!optOut) {
+                  posthog.capture('$add_values_to_extract_external_inputs');
+                }
                 const updatedInputs = store.externalInputs
                   ? [...store.externalInputs, { maxLength: 64 }]
                   : [{ maxLength: 64 }];
@@ -501,15 +542,18 @@ const ExtractFields = ({ file }: { file: File | null }) => {
               <Button
                 variant="destructive"
                 size="sm"
-                startIcon={<Image
-                  src="/assets/Trash.svg"
-                  alt="trash"
-                  width={16}
-                  height={16}
-                  style={{
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />}
+                startIcon={
+                  <Image
+                    src="/assets/Trash.svg"
+                    alt="trash"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
                 onClick={() => {
                   const updatedInputs = store.externalInputs ? [...store.externalInputs] : [];
                   updatedInputs.splice(index, 1);
@@ -548,16 +592,22 @@ const ExtractFields = ({ file }: { file: File | null }) => {
             <Button
               variant="default"
               size="sm"
-              startIcon={<Image
-                src="/assets/Plus.svg"
-                alt="plus"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/Plus.svg"
+                  alt="plus"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
               onClick={() => {
+                if (!optOut) {
+                  posthog.capture('$add_values_to_extract_external_inputs');
+                }
                 const updatedInputs = store.externalInputs ? [...store.externalInputs, {}] : [{}];
                 setField('externalInputs', updatedInputs);
               }}
@@ -587,7 +637,7 @@ const ExtractFields = ({ file }: { file: File | null }) => {
         />
       </div>
       <Status />
-    </div>)
+    </div>
   );
 };
 
