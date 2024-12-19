@@ -5,11 +5,10 @@ import {
   BlueprintProps,
   DecomposedRegex,
   DecomposedRegexPart,
-  Status,
+  ValidationErrors,
+  ZodError,
 } from '@zk-email/sdk';
 import { create } from 'zustand';
-import { z } from 'zod';
-import { blueprintFormSchema } from './blueprintFormSchema';
 import { persist } from 'zustand/middleware';
 import posthog from 'posthog-js';
 
@@ -54,10 +53,6 @@ const initialState: BlueprintProps = {
   decomposedRegexes: [],
 };
 
-export type ValidationErrors = {
-  [K in keyof z.infer<typeof blueprintFormSchema>]?: string;
-};
-
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
   persist(
     (set, get) => ({
@@ -76,7 +71,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         const state = get();
         try {
           // @ts-ignore
-          const fieldSchema = blueprintFormSchema.shape[field];
+          const fieldSchema = Blueprint.formSchema.shape[field];
           if (fieldSchema) {
             fieldSchema.parse(state[field]);
             set((prev) => ({
@@ -87,7 +82,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
             }));
           }
         } catch (error) {
-          if (error instanceof z.ZodError) {
+          if (error instanceof ZodError) {
             set((prev) => ({
               validationErrors: {
                 ...prev.validationErrors,
@@ -101,12 +96,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       validateAll: () => {
         const state = get();
         try {
-          blueprintFormSchema.parse(state);
+          Blueprint.formSchema.parse(state);
           set({ validationErrors: {} });
           return true;
         } catch (error) {
           console.log('Validation error: ', error);
-          if (error instanceof z.ZodError) {
+          if (error instanceof ZodError) {
             const errors: ValidationErrors = {};
             error.errors.forEach((err) => {
               const path = err.path[0] as keyof BlueprintProps;
@@ -121,7 +116,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
 
       getParsedDecomposedRegexes: (): DecomposedRegex[] => {
         const decomposedRegexes = get().decomposedRegexes;
-        return get().decomposedRegexes.map((dcr) => {
+        return decomposedRegexes.map((dcr) => {
           const parts =
             typeof dcr.parts === 'string'
               ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
