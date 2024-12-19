@@ -69,16 +69,6 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
           <Link href={`/${blueprint.props.id}`}>
             <Button size="sm">Try it</Button>
           </Link>
-          <Button
-            className="hidden md:inline-flex"
-            variant="secondary"
-            startIcon={<Image src="/assets/Download.svg" alt="Download" width={16} height={16} />}
-            size="sm"
-            disabled={blueprint.props.status !== Status.Done}
-            onClick={() => router.push(`/${blueprint.props.id}/download`)}
-          >
-            Download
-          </Button>
           <Link className="hidden md:block" href={`/create/${blueprint.props.id}`}>
             <Button
               variant="secondary"
@@ -88,13 +78,18 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
               Edit
             </Button>
           </Link>
+          <Button
+            className="hidden md:inline-flex"
+            variant="secondary"
+            size="smIcon"
+            disabled={blueprint.props.status !== Status.Done}
+            onClick={() => router.push(`/${blueprint.props.id}/download`)}
+          >
+            <Image src="/assets/Download.svg" alt="Download" width={16} height={16} />
+          </Button>
           <Link className="hidden md:block" href={`/${blueprint.props.id}/parameters`}>
-            <Button
-              variant="secondary"
-              startIcon={<Image src="/assets/Parameters.svg" alt="Edit" width={16} height={16} />}
-              size="sm"
-            >
-              Parameters
+            <Button variant="secondary" size="smIcon">
+              <Image src="/assets/ParametersIcon.svg" alt="Download" width={16} height={16} />
             </Button>
           </Link>
         </div>
