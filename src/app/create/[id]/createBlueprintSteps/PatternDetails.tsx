@@ -69,12 +69,6 @@ const PatternDetails = ({
         }}
         errorMessage={isFileInvalid ? 'File is invalid' : ''}
       />
-      {/* <InputTags 
-  title="Tags" 
-  value={store.tags || []} 
-  onChange={(e) => setField('tags', e)} 
-  errorMessage={validationErrors.tags}
-/> */}
       <Textarea
         title="Description"
         placeholder="Enter a description"

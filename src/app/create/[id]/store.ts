@@ -11,6 +11,7 @@ import { create } from 'zustand';
 import { z } from 'zod';
 import { blueprintFormSchema } from './blueprintFormSchema';
 import { persist } from 'zustand/middleware';
+import posthog from 'posthog-js';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
@@ -216,6 +217,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       compile: async (): Promise<void> => {
         const state = get();
+
+        posthog.capture('$compile_blueprint', {
+          state,
+        });
 
         if (state.ignoreBodyHashCheck) {
           set({ emailBodyMaxLength: 0 });
