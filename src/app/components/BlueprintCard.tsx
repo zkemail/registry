@@ -32,7 +32,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           {isLoggedIn && (
             <span
-              className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
+              className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex text-white ${getStatusColorLight(
                 blueprint.props.status
               )}`}
             >
@@ -95,7 +95,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         </div>
         <div className="mt-2 flex w-full flex-row items-center justify-between gap-2 md:mt-0 md:w-auto">
           <span
-            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:hidden ${getStatusColorLight(
+            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:hidden text-white ${getStatusColorLight(
               blueprint.props.status
             )}`}
           >
