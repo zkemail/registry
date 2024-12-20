@@ -193,7 +193,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return;
     }
 
-    fetch(`https://archive.prove.email/api/key?domain=${store.senderDomain}`)
+    fetch(`https://archive.zk.email/api/key?domain=${store.senderDomain}`)
       .then((res) => res.json())
       .then((data) => {
         if (file) {
