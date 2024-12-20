@@ -59,7 +59,7 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
         error={!!validationErrors.senderDomain || isDKIMMissing}
         errorMessage={
           isDKIMMissing
-            ? 'DKIM is missing. Please add a DKIM record at https://archive.prove.email'
+            ? 'DKIM is missing. Please add a DKIM record at https://archive.zk.email'
             : validationErrors.senderDomain
         }
       />

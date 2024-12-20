@@ -26,7 +26,7 @@ const Footer = () => {
         {/* Left side - Links */}
         <div className="flex items-center gap-4">
           <Link
-            href="https://docs.prove.email/introduction"
+            href="https://docs.zk.email/introduction"
             target="_blank"
             className="text-grey-800 hover:text-grey-900"
           >
