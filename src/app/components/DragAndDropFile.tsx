@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -11,6 +12,7 @@ const DragAndDropFile = ({
   file,
   setFile,
   errorMessage,
+  tooltipComponent,
 }: {
   accept: string;
   title?: string;
@@ -18,13 +20,27 @@ const DragAndDropFile = ({
   file: File | null;
   setFile: (file: File | null) => void;
   errorMessage: string;
+  tooltipComponent?: React.ReactNode;
 }) => {
   return (
     <div className="flex w-full flex-col gap-4">
       {title ? (
-        <Label className="text-base text-grey-900" htmlFor={title}>
-          {title}
-        </Label>
+        <div className="flex flex-row gap-2">
+          <Label className="text-base text-grey-900" htmlFor={title}>
+            {title}
+          </Label>
+
+          {tooltipComponent ? (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Image src="/assets/Info.svg" alt="info" width={16} height={16} />
+                </TooltipTrigger>
+                <TooltipContent>{tooltipComponent}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          ) : null}
+        </div>
       ) : null}
       <div
         className="w-full cursor-pointer rounded-lg p-8"

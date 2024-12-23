@@ -19,6 +19,7 @@
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.1",
+    "@radix-ui/react-tooltip": "^1.1.6",
     "@react-oauth/google": "^0.12.1",
     "@zk-email/sdk": "0.0.84",
     "class-variance-authority": "^0.7.0",

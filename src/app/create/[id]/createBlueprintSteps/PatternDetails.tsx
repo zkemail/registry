@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useCreateBlueprintStore } from '../store';
+import Image from 'next/image';
 
 const PatternDetails = ({
   id,
@@ -50,6 +51,16 @@ const PatternDetails = ({
       <DragAndDropFile
         accept=".eml"
         file={file}
+        tooltipComponent={
+          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+            <Image src="/assets/emlInfo.svg" alt="emlInfo" width={360} height={80} />
+            <p className="text-base text-grey-700 font-medium mt-3">
+              The test .eml file is a sample email used to check if all the provided patterns
+              (regex) work correctly. This helps confirm everything is set up properly before
+              blueprint creation. We always store this file locally and never send it to our server.
+            </p>
+          </div>
+        }
         title="Upload test .eml"
         helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
         setFile={(e) => {
