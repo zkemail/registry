@@ -112,91 +112,6 @@ const formatDateAndTime = (date: Date) => {
   });
 };
 
-async function extractEMLDetails(emlContent: string) {
-  const headers: Record<string, string> = {};
-  const lines = emlContent.split('\n');
-
-  let headerPart = true;
-  let headerLines = [];
-
-  // Parse headers
-  for (let line of lines) {
-    if (headerPart) {
-      if (line.trim() === '') {
-        headerPart = false; // End of headers
-      } else {
-        headerLines.push(line);
-      }
-    }
-  }
-
-  // Join multi-line headers and split into key-value pairs
-  const joinedHeaders = headerLines
-    .map((line) =>
-      line.startsWith(' ') || line.startsWith('\t') ? line.trim() : `\n${line.trim()}`
-    )
-    .join('')
-    .split('\n');
-
-  joinedHeaders.forEach((line) => {
-    const [key, ...value] = line.split(':');
-    if (key) headers[key.trim()] = value.join(':').trim();
-  });
-
-  // Extract details
-  const senderDomain =
-    headers['Return-Path']
-      ?.match(/@([^\s>]+)/)?.[1]
-      ?.split('.')
-      .slice(-2)
-      .join('.') || null;
-  const emailQuery = `from:${senderDomain}`;
-  const parsedEmail = await parseEmail(emlContent);
-  console.log(parsedEmail.canonicalizedBody, 'parsedEmail');
-  const emailBodyMaxLength = parsedEmail.cleanedBody.length;
-  const headerLength = parsedEmail.canonicalizedHeader.length;
-
-  return { senderDomain, headerLength, emailQuery, emailBodyMaxLength };
-}
-
-const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {
-  const parsedEmail = await parseEmail(emlContent);
-
-  const body = parsedEmail.cleanedBody;
-  const index = body.indexOf(shaPrecomputeSelector);
-
-  if (index === -1) {
-    return body.length;
-  }
-
-  return body.length - index - shaPrecomputeSelector.length;
-};
-
-const getDKIMSelector = (emlContent: string): string | null => {
-  const headerLines: string[] = [];
-  const lines = emlContent.split('\n');
-  for (const line of lines) {
-    if (line.trim() === '') break;
-    // If line starts with whitespace, it's a continuation of previous header
-    if (line.startsWith(' ') || line.startsWith('\t')) {
-      headerLines[headerLines.length - 1] += line.trim();
-    } else {
-      headerLines.push(line);
-    }
-  }
-
-  // Then look for DKIM-Signature in the joined headers
-  for (const line of headerLines) {
-    if (line.includes('DKIM-Signature')) {
-      const match = line.match(/s=([^;]+)/);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
-    }
-  }
-  return null;
-};
-
 export {
   getStatusColorLight,
   getStatusIcon,
@@ -204,7 +119,4 @@ export {
   getStatusName,
   formatDate,
   formatDateAndTime,
-  extractEMLDetails,
-  getMaxEmailBodyLength,
-  getDKIMSelector,
 };
