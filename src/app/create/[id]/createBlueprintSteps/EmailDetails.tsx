@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getMaxEmailBodyLength } from '@/app/utils';
 import { getFileContent } from '@/lib/utils';
+import Image from 'next/image';
 
 const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: File | null }) => {
   const store = useCreateBlueprintStore();
@@ -49,6 +50,21 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
         helpText="As if you were searching for the email in your Gmail inbox. Only emails matching this query will be shown to the user to prove when they sign in with Gmail"
         error={!!validationErrors.emailQuery}
         errorMessage={validationErrors.emailQuery}
+        tooltipComponent={
+          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+            <Image
+              src="/assets/emailQueryInfo.svg"
+              className="rounded-t-xl"
+              alt="emailQueryInfo"
+              width={360}
+              height={80}
+            />
+            <p className="mt-3 text-base font-medium text-grey-700">
+              As if you were searching for the email in your Gmail inbox. Only emails matching this
+              query will be shown to the user to prove when they sign in with Gmail
+            </p>
+          </div>
+        }
       />
       <Input
         title="Sender domain"
@@ -61,6 +77,22 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
           isDKIMMissing
             ? 'DKIM is missing. Please add a DKIM record at https://archive.zk.email'
             : validationErrors.senderDomain
+        }
+        tooltipComponent={
+          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+            <Image
+              src="/assets/senderDomainInfo.svg"
+              className="rounded-t-xl"
+              alt="emailQueryInfo"
+              width={360}
+              height={80}
+            />
+            <p className="mt-3 text-base font-medium text-grey-700">
+              This is the domain used for DKIM verification, which may not exactly match the senders
+              domain (you can check via the d= field in the DKIM-Signature header in your sample
+              .eml). Note to only include the part after the @ symbol
+            </p>
+          </div>
         }
       />
       <Input
@@ -105,6 +137,23 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
                 onChange={async (e) => {
                   setField('shaPrecomputeSelector', e.target.value);
                 }}
+                tooltipComponent={
+                  <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+                    <Image
+                      src="/assets/emailBodyCutOffValue.svg"
+                      className="rounded-t-xl"
+                      alt="emailQueryInfo"
+                      width={360}
+                      height={80}
+                    />
+                    <p className="mt-3 text-base font-medium text-grey-700">
+                      We will cut-off the part of the email body before this value, so that we only
+                      compute the regex on the email body after this value. This is to reduce the
+                      number of constraints for long email bodies where only regex matches at the
+                      end matter
+                    </p>
+                  </div>
+                }
               />
               <Input
                 title="Max Email Body Length"

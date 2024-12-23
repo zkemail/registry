@@ -3,6 +3,8 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Label } from './label';
 import { cva } from 'class-variance-authority';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
+import Image from 'next/image';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   title?: string;
@@ -11,6 +13,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   helpText?: string;
   size?: 'default' | 'sm' | 'lg';
   startIcon?: React.ReactNode;
+  tooltipComponent?: React.ReactNode;
 }
 
 const inputVariants = cva(
@@ -30,13 +33,29 @@ const inputVariants = cva(
 );
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, helpText, errorMessage, startIcon, error, size, ...props }, ref) => {
+  (
+    { className, type, helpText, errorMessage, startIcon, error, size, tooltipComponent, ...props },
+    ref
+  ) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
-          <Label className="text-base text-grey-900" htmlFor={props.title}>
-            {props.title}
-          </Label>
+          <div className="flex flex-row gap-2">
+            <Label className="text-base text-grey-900" htmlFor={props.title}>
+              {props.title}
+            </Label>
+
+            {tooltipComponent ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Image src="/assets/Info.svg" alt="info" width={16} height={16} />
+                  </TooltipTrigger>
+                  <TooltipContent>{tooltipComponent}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : null}
+          </div>
         ) : null}
         <input
           type={type}
