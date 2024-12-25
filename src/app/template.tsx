@@ -8,7 +8,11 @@ import { Button } from '@/components/ui/button';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  localStorage.setItem('theme', 'light');
+
+  // Check if localStorage is available
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('theme', 'light');
+  }
 
   return (
     <>
