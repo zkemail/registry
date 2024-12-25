@@ -13,6 +13,7 @@ import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { Switch } from '@/components/ui/switch';
 import { posthog } from 'posthog-js';
+import { Separator } from '@/components/ui/separator';
 
 const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean }) => {
   const store = useCreateBlueprintStore();
@@ -270,9 +271,9 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
         </div>
 
         {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => (
-          <div key={index} className="flex flex-col gap-3 pl-2">
+          <div key={index} className="flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <Label>Input field #{(index + 1).toString().padStart(2, '0')}</Label>
+              <Label>Extracted data #{(index + 1).toString().padStart(2, '0')}</Label>
               <Button
                 size="sm"
                 variant="destructive"
@@ -297,58 +298,45 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                 Delete
               </Button>
             </div>
-            <Input
-              title="Field Name"
-              placeholder="receiverName"
-              value={regex.name}
-              onChange={(e) => {
-                const updatedRegexes = [...store.decomposedRegexes];
-                updatedRegexes[index] = { ...regex, name: e.target.value };
-                setField('decomposedRegexes', updatedRegexes);
-              }}
-            />
-            <Select
-              label="Data Location"
-              value={regex.location}
-              onChange={(value: string) => {
-                const updatedRegexes = [...store.decomposedRegexes];
-                updatedRegexes[index] = { ...regex, location: value as 'body' | 'header' };
-                setField('decomposedRegexes', updatedRegexes);
-              }}
-              options={[
-                { label: 'Email Body', value: 'body' },
-                { label: 'Email Headers', value: 'header' },
-              ]}
-            />
-            <Input
-              title="Max Length"
-              placeholder="64"
-              type="number"
-              value={regex.maxLength}
-              onChange={(e) => {
-                const updatedRegexes = [...store.decomposedRegexes];
-                updatedRegexes[index] = { ...regex, maxLength: parseInt(e.target.value) };
-                setField('decomposedRegexes', updatedRegexes);
-              }}
-            />
-            {/* <Textarea
-                  title="Parts JSON"
-                  rows={3}
-                  placeholder="[]"
-                  value={regex.parts as unknown as string}
-                  onChange={(e) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = {
-                      ...regex,
-                      parts: e.target.value as unknown as DecomposedRegexPart[],
-                    };
-                    setField('decomposedRegexes', updatedRegexes);
-
-                    handleTestEmail();
-                  }}
-                /> */}
-
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 px-2">
+              <Input
+                title="Field Name"
+                placeholder="receiverName"
+                value={regex.name}
+                onChange={(e) => {
+                  const updatedRegexes = [...store.decomposedRegexes];
+                  updatedRegexes[index] = { ...regex, name: e.target.value };
+                  setField('decomposedRegexes', updatedRegexes);
+                }}
+              />
+              <Select
+                label="Data Location"
+                value={regex.location}
+                onChange={(value: string) => {
+                  const updatedRegexes = [...store.decomposedRegexes];
+                  updatedRegexes[index] = { ...regex, location: value as 'body' | 'header' };
+                  setField('decomposedRegexes', updatedRegexes);
+                }}
+                options={[
+                  { label: 'Email Body', value: 'body' },
+                  { label: 'Email Headers', value: 'header' },
+                ]}
+              />
+              <Input
+                title="Max Length"
+                placeholder="64"
+                type="number"
+                value={regex.maxLength}
+                onChange={(e) => {
+                  const updatedRegexes = [...store.decomposedRegexes];
+                  updatedRegexes[index] = { ...regex, maxLength: parseInt(e.target.value) };
+                  setField('decomposedRegexes', updatedRegexes);
+                }}
+              />
+            </div>
+            <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3">
+              <p className="text-base font-medium text-gray-900">Regex Definition</p>
+              <Separator />
               {parseRegexParts(regex.parts).map((part: any, partIndex: any) => {
                 console.log(part);
                 return (
@@ -430,8 +418,14 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                   </div>
                 );
               })}
-              <div className="flex items-center justify-between">
-                <p className="text-gray-700">Add more regex fields?</p>
+              <div
+                className={`flex items-center ${
+                  parseRegexParts(regex.parts).length !== 0 ? 'justify-between' : 'justify-center'
+                }`}
+              >
+                {parseRegexParts(regex.parts).length !== 0 ? (
+                  <p className="text-gray-700">Add more regex fields?</p>
+                ) : null}
                 <Button
                   variant="default"
                   size="sm"
