@@ -4,7 +4,7 @@ import sdk from '@/lib/sdk';
 import { useProofStore } from '../../store';
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { toast } from 'react-toastify';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import PostalMime, { Email } from 'postal-mime';

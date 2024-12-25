@@ -1,6 +1,6 @@
 'use client';
 import { use, useEffect } from 'react';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Button } from '@/components/ui/button';
 import Stepper from '../components/Stepper';

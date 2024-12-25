@@ -2,7 +2,7 @@ import { Blueprint, Proof, ProofStatus, startJsonFileDownload, Status } from '@z
 import { ProofEmailStatusUpdate, useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
