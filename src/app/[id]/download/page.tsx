@@ -5,7 +5,7 @@ import { use, useEffect, useState } from 'react';
 import Loader from '@/components/ui/loader';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { useProofStore } from '../store';
 
 const DownloadLinks = ({ params }: { params: Promise<{ id: string }> }) => {

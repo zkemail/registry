@@ -15,7 +15,7 @@ import { useCreateBlueprintStore } from './store';
 
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { DecomposedRegex, testBlueprint } from '@zk-email/sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';

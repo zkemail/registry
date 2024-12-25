@@ -3,7 +3,7 @@ import { ButtonProps, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { forwardRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { Status } from '@zk-email/sdk';

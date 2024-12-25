@@ -3,7 +3,7 @@
 import 'react-toastify/dist/ReactToastify.css';
 // import '../../app/globals.css';
 import { ToastContainer } from 'react-toastify';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { Button } from '@/components/ui/button';
 
 interface ToastProviderProps {

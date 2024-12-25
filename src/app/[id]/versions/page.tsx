@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import VersionCard from './VersionCard';
 import Link from 'next/link';
 import { use, useEffect, useState } from 'react';

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { DecomposedRegex, DecomposedRegexPart, ExternalInput, testBlueprint } from '@zk-email/sdk';
 import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';

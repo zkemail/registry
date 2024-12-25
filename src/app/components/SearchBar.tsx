@@ -1,6 +1,6 @@
 'use client';
 import { Input } from '@/components/ui/input';
-import Image from 'next/image';
+import Image from "next/legacy/image";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 
