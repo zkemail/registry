@@ -1,24 +1,33 @@
-import { useEffect, useRef } from 'react';
-import lottie, { AnimationItem } from 'lottie-web';
+import { useEffect, useRef, useCallback } from 'react';
 
 export default function Loader() {
   const animationContainer = useRef(null);
-  const animationInstance = useRef<AnimationItem | null>(null);
+  const animationInstance = useRef<any>(null);
+  const isInitialized = useRef(false);
+
+  const getLottie = useCallback(async () => {
+    const lottie = await import('lottie-web');
+
+    if (!animationContainer.current || isInitialized.current) {
+      return;
+    }
+
+    animationInstance.current = lottie.default.loadAnimation({
+      container: animationContainer.current,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: '/assets/loader.json',
+    });
+
+    isInitialized.current = true;
+  }, []);
 
   useEffect(() => {
-    if (animationContainer.current && !animationInstance.current) {
-      animationInstance.current = lottie.loadAnimation({
-        container: animationContainer.current as Element,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        path: '/assets/loader.json',
-      });
-    }
+    getLottie();
 
     return () => {
       if (animationInstance.current) {
-        animationInstance.current.destroy();
         animationInstance.current = null;
       }
     };
