@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import Image from "next/legacy/image";
+import Image from "next/image";
 
 const DragAndDropFile = ({
   accept,
@@ -23,7 +23,7 @@ const DragAndDropFile = ({
   tooltipComponent?: React.ReactNode;
 }) => {
   return (
-    <div className="flex w-full flex-col gap-4">
+    (<div className="flex w-full flex-col gap-4">
       {title ? (
         <div className="flex flex-row gap-2">
           <Label className="text-base text-grey-900" htmlFor={title}>
@@ -64,7 +64,15 @@ const DragAndDropFile = ({
         <div className="flex flex-col items-center justify-center gap-4">
           {file ? (
             <>
-              <Image src="/assets/CheckCircle.svg" alt="Upload icon" width={40} height={40} />
+              <Image
+                src="/assets/CheckCircle.svg"
+                alt="Upload icon"
+                width={40}
+                height={40}
+                style={{
+                  maxWidth: "100%",
+                  height: "auto"
+                }} />
               <div className="flex flex-col items-center text-base font-semibold">
                 <p className="text-grey-800">
                   {file.name} <span className="text-grey-700">(Uploaded)</span>
@@ -73,7 +81,15 @@ const DragAndDropFile = ({
                   variant="link"
                   className="text-grey-700"
                   startIcon={
-                    <Image src="/assets/Trash.svg" alt="Trash icon" width={16} height={16} />
+                    <Image
+                      src="/assets/Trash.svg"
+                      alt="Trash icon"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: "100%",
+                        height: "auto"
+                      }} />
                   }
                   onClick={() => {
                     setFile(null);
@@ -85,7 +101,15 @@ const DragAndDropFile = ({
             </>
           ) : (
             <>
-              <Image src="/assets/FileArrowUp.svg" alt="Upload icon" width={40} height={40} />
+              <Image
+                src="/assets/FileArrowUp.svg"
+                alt="Upload icon"
+                width={40}
+                height={40}
+                style={{
+                  maxWidth: "100%",
+                  height: "auto"
+                }} />
               <div className="flex flex-col items-center text-base font-semibold">
                 <p className="text-brand-400">
                   Click to upload <span className="text-grey-700">or drag and drop</span>
@@ -114,7 +138,7 @@ const DragAndDropFile = ({
           {errorMessage || helpText}
         </p>
       ) : null}{' '}
-    </div>
+    </div>)
   );
 };
 

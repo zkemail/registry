@@ -5,7 +5,7 @@ import { use, useEffect, useState } from 'react';
 import Loader from '@/components/ui/loader';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { useProofStore } from '../store';
 
 const DownloadLinks = ({ params }: { params: Promise<{ id: string }> }) => {
@@ -56,14 +56,22 @@ const DownloadLinks = ({ params }: { params: Promise<{ id: string }> }) => {
   }, []);
 
   return (
-    <div className="mx-auto flex flex-col gap-10 py-16">
+    (<div className="mx-auto flex flex-col gap-10 py-16">
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex w-full flex-col items-start gap-2">
             <Link href={`/${id}`}>
               <Button
                 variant="ghost"
-                startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
+                startIcon={<Image
+                  src="/assets/ArrowLeft.svg"
+                  alt="back"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: "100%",
+                    height: "auto"
+                  }} />}
               >
                 {mainBlueprint?.props.title}
               </Button>
@@ -82,14 +90,22 @@ const DownloadLinks = ({ params }: { params: Promise<{ id: string }> }) => {
               <div className="flex items-center justify-between">
                 {name}
                 <Button variant="ghost" size="icon" onClick={() => startDownload(url, name)}>
-                  <Image src="/assets/Download.svg" alt="download" width={20} height={20} />
+                  <Image
+                    src="/assets/Download.svg"
+                    alt="download"
+                    width={20}
+                    height={20}
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto"
+                    }} />
                 </Button>
               </div>
             ))
           )}
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 

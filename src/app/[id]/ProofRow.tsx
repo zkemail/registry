@@ -2,7 +2,7 @@ import { Blueprint, Proof, ProofStatus, startJsonFileDownload, Status } from '@z
 import { ProofEmailStatusUpdate, useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import Link from 'next/link';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
@@ -17,7 +17,17 @@ interface ProofProps {
 export const handleGetStatusIcon = (status: ProofStatus) => {
   switch (status) {
     case ProofStatus.None:
-      return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
+      return (
+        <Image
+          src="/assets/Checks.svg"
+          alt="status"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />
+      );
     case ProofStatus.InProgress:
       return (
         <Image
@@ -26,13 +36,36 @@ export const handleGetStatusIcon = (status: ProofStatus) => {
           alt="status"
           width={20}
           height={20}
-        />
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />
       );
     case ProofStatus.Done:
-      return <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />;
+      return (
+        <Image
+          src="/assets/Checks.svg"
+          alt="status"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />
+      );
     case ProofStatus.Failed:
       console.log('got failed status======================================');
-      return <Image src="/assets/RedClose.svg" alt="❌" width={20} height={20} />;
+      return (
+        <Image
+          src="/assets/RedClose.svg"
+          alt="❌"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />
+      );
   }
 };
 
@@ -81,54 +114,60 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
     setIsVerifyingProofLoading(false);
   };
 
-  return (
-    <>
+  return (<>
+    <Button
+      variant="ghost"
+      size="sm"
+      disabled={status !== ProofStatus.Done}
+      onClick={() => {
+        router.push(`/${emailProof.blueprintId}/proofs/${emailProof.id}`);
+      }}
+      className="flex max-w-fit items-center gap-2 rounded border border-grey-500 px-3 py-1 text-sm font-semibold text-grey-800"
+    >
+      <span>{index + 1}</span>
+      <span className="text-grey-500">|</span>
+      <span>View</span>
+    </Button>
+    <div className="flex items-center">
+      <pre className="whitespace-pre-wrap text-left">
+        {emailProof?.publicData
+          ? Object.entries(emailProof.publicData)
+              .map(([key, value]) => `{"${key}": "${value}"}`)
+              .join('\n')
+          : '-'}
+      </pre>
+    </div>
+    <div className="flex items-center justify-center">{handleGetStatusIcon(status)}</div>
+    <div className="flex items-center justify-center">
       <Button
         variant="ghost"
+        size="icon"
+        onClick={handleProofDownload}
+        disabled={!emailProof.publicData}
+      >
+        <Image
+          src="/assets/Download.svg"
+          alt="download"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />
+      </Button>
+    </div>
+    <div className="flex items-center justify-center">
+      <Button
+        variant="default"
         size="sm"
         disabled={status !== ProofStatus.Done}
-        onClick={() => {
-          router.push(`/${emailProof.blueprintId}/proofs/${emailProof.id}`);
-        }}
-        className="flex max-w-fit items-center gap-2 rounded border border-grey-500 px-3 py-1 text-sm font-semibold text-grey-800"
+        loading={isVerifyingProofLoading}
+        onClick={onVerifyProof}
       >
-        <span>{index + 1}</span>
-        <span className="text-grey-500">|</span>
-        <span>View</span>
+        Verify
       </Button>
-      <div className="flex items-center">
-        <pre className="whitespace-pre-wrap text-left">
-          {emailProof?.publicData
-            ? Object.entries(emailProof.publicData)
-                .map(([key, value]) => `{"${key}": "${value}"}`)
-                .join('\n')
-            : '-'}
-        </pre>
-      </div>
-      <div className="flex items-center justify-center">{handleGetStatusIcon(status)}</div>
-      <div className="flex items-center justify-center">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={handleProofDownload}
-          disabled={!emailProof.publicData}
-        >
-          <Image src="/assets/Download.svg" alt="download" width={20} height={20} />
-        </Button>
-      </div>
-      <div className="flex items-center justify-center">
-        <Button
-          variant="default"
-          size="sm"
-          disabled={status !== ProofStatus.Done}
-          loading={isVerifyingProofLoading}
-          onClick={onVerifyProof}
-        >
-          Verify
-        </Button>
-      </div>
-    </>
-  );
+    </div>
+  </>);
 };
 
 export default ProofRow;

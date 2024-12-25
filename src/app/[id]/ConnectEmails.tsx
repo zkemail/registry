@@ -1,4 +1,4 @@
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
@@ -12,7 +12,7 @@ const ConnectEmails = () => {
   const { googleLogIn } = useGoogleAuth();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6">
+    (<div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Connect emails</h4>
         <p className="text-base font-medium text-grey-700">
@@ -30,16 +30,22 @@ const ConnectEmails = () => {
           setStep('1');
         })}
       >
-        <Image src="/assets/GoogleLogo.svg" alt="Google Logo" width={16} height={16} />
+        <Image
+          src="/assets/GoogleLogo.svg"
+          alt="Google Logo"
+          width={16}
+          height={16}
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />
         Connect Gmail Account
       </Button>
-
       <div className="flex w-full items-center">
         <Separator className="flex-1" />
         <span className="mx-3 text-base font-semibold text-grey-700">OR</span>
         <Separator className="flex-1" />
       </div>
-
       <div
         className="w-full cursor-pointer rounded-lg p-8"
         onClick={() => document.getElementById('email-file')?.click()}
@@ -62,7 +68,15 @@ const ConnectEmails = () => {
         }}
       >
         <div className="flex flex-col items-center justify-center gap-4">
-          <Image src="/assets/FileArrowUp.svg" alt="Upload icon" width={40} height={40} />
+          <Image
+            src="/assets/FileArrowUp.svg"
+            alt="Upload icon"
+            width={40}
+            height={40}
+            style={{
+              maxWidth: "100%",
+              height: "auto"
+            }} />
           <div className="flex flex-col items-center text-base font-semibold">
             <p className="text-brand-400">
               Click to upload <span className="text-grey-700">or drag and drop</span>
@@ -88,7 +102,7 @@ const ConnectEmails = () => {
           />
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 
