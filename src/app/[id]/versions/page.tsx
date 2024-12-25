@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import VersionCard from './VersionCard';
 import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
@@ -67,14 +67,22 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   return (
-    <div className="mx-auto flex flex-col gap-10 py-16">
+    (<div className="mx-auto flex flex-col gap-10 py-16">
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex w-full flex-col items-start gap-2">
             <Link href={mainBlueprint?.props.status === Status.Draft ? `/` : `/${id}`}>
               <Button
                 variant="ghost"
-                startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
+                startIcon={<Image
+                  src="/assets/ArrowLeft.svg"
+                  alt="back"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: "100%",
+                    height: "auto"
+                  }} />}
               >
                 {mainBlueprint?.props.title}
               </Button>
@@ -86,7 +94,15 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   variant="outline"
                   size="sm"
                   startIcon={
-                    <Image src="/assets/GitCommit.svg" alt="versions" width={16} height={16} />
+                    <Image
+                      src="/assets/GitCommit.svg"
+                      alt="versions"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: "100%",
+                        height: "auto"
+                      }} />
                   }
                 >
                   {versions.length} Version{versions.length > 1 && 's'}
@@ -95,7 +111,15 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   <Button
                     variant="default"
                     size="sm"
-                    startIcon={<Image src="/assets/Plus.svg" alt="add" width={16} height={16} />}
+                    startIcon={<Image
+                      src="/assets/Plus.svg"
+                      alt="add"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: "100%",
+                        height: "auto"
+                      }} />}
                   >
                     Create from scratch
                   </Button>
@@ -116,7 +140,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
           ))}
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 

@@ -1,6 +1,6 @@
 'use client';
 import { Input } from '@/components/ui/input';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
 
@@ -20,7 +20,7 @@ export default function SearchBar() {
   }, 300);
 
   return (
-    <div className="relative w-full max-w-md">
+    (<div className="relative w-full max-w-md">
       <Input
         type="text"
         size='sm'
@@ -30,8 +30,16 @@ export default function SearchBar() {
           handleSearch(e.target.value);
         }}
         defaultValue={searchParams.get('search')?.toString()}
-        startIcon={<Image src="/assets/SearchIcon.svg" alt="search" width={16} height={16} />}
+        startIcon={<Image
+          src="/assets/SearchIcon.svg"
+          alt="search"
+          width={16}
+          height={16}
+          style={{
+            maxWidth: "100%",
+            height: "auto"
+          }} />}
       />
-    </div>
+    </div>)
   );
 }

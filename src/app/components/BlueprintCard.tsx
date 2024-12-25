@@ -1,4 +1,4 @@
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Blueprint } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
@@ -26,7 +26,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
   };
 
   return (
-    <div className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
+    (<div className="rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex flex-row flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
@@ -41,7 +41,10 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                 height={12}
                 src={getStatusIcon(blueprint.props.status)}
                 alt={blueprint.props.status?.toString() || 'Draft'}
-              />
+                style={{
+                  maxWidth: "100%",
+                  height: "auto"
+                }} />
               {getStatusName(blueprint.props.status)}
             </span>
           )}
@@ -56,7 +59,10 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               height={16}
               src={starred ? 'assets/StarFilled.svg' : 'assets/Star.svg'}
               alt="stars"
-            />{' '}
+              style={{
+                maxWidth: "100%",
+                height: "auto"
+              }} />{' '}
             {stars < 2 ? 'Star' : 'Stars'} | {stars}
           </button>
         </div>
@@ -76,11 +82,18 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           }}
           className="ml-2 cursor-pointer rounded-sm border border-grey-500 bg-neutral-100 p-1 py-0.5 md:flex"
         >
-          <Image src="/assets/LinkIcon.svg" alt="copy" width={16} height={16} />
+          <Image
+            src="/assets/LinkIcon.svg"
+            alt="copy"
+            width={16}
+            height={16}
+            style={{
+              maxWidth: "100%",
+              height: "auto"
+            }} />
         </div>
       </div>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
-
       <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-end">
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-md font-medium text-grey-800">Extractable values:</p>
@@ -104,7 +117,10 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               height={12}
               src={getStatusIcon(blueprint.props.status)}
               alt={blueprint.props.status?.toString() || 'Draft'}
-            />
+              style={{
+                maxWidth: "100%",
+                height: "auto"
+              }} />
             {getStatusName(blueprint.props.status)}
           </span>
           <p
@@ -115,7 +131,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           </p>
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 

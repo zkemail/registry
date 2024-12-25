@@ -15,7 +15,7 @@ import { useCreateBlueprintStore } from './store';
 
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { DecomposedRegex, testBlueprint } from '@zk-email/sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
@@ -273,7 +273,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   return (
-    <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+    (<div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
       <div className="flex flex-col items-center gap-6 md:hidden">
         <StepperMobile steps={steps} currentStep={step} />
@@ -294,7 +294,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="flex w-auto">
           <Button
             variant="ghost"
-            startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
+            startIcon={<Image
+              src="/assets/ArrowLeft.svg"
+              alt="back"
+              width={16}
+              height={16}
+              style={{
+                maxWidth: "100%",
+                height: "auto"
+              }} />}
             onClick={() => {
               const newStep = parseInt(step) - 1;
               if (steps.length === 3 && newStep === 2) {
@@ -340,7 +348,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               onClick={handleSaveDraft}
               loading={isSaveDraftLoading}
               disabled={!store.circuitName || !store.title}
-              startIcon={<Image src="/assets/Archive.svg" alt="save" width={16} height={16} />}
+              startIcon={<Image
+                src="/assets/Archive.svg"
+                alt="save"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: "100%",
+                  height: "auto"
+                }} />}
             >
               Save as Draft
             </Button>
@@ -348,7 +364,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               <Button
                 onClick={onClickNext}
                 endIcon={
-                  <Image src="/assets/ArrowRight.svg" alt="arrow right" width={16} height={16} />
+                  <Image
+                    src="/assets/ArrowRight.svg"
+                    alt="arrow right"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto"
+                    }} />
                 }
                 disabled={isNextButtonDisabled()}
               >
@@ -359,7 +383,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 onClick={handleCompile}
                 loading={isCompileLoading}
                 disabled={!file || !!errors.length || isDKIMMissing}
-                startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
+                startIcon={<Image
+                  src="/assets/Check.svg"
+                  alt="check"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: "100%",
+                    height: "auto"
+                  }} />}
               >
                 Submit Blueprint
               </Button>
@@ -367,7 +399,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 

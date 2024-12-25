@@ -3,7 +3,7 @@ import { ButtonProps, buttonVariants } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { forwardRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { Status } from '@zk-email/sdk';
@@ -49,7 +49,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
     };
 
     return (
-      <div
+      (<div
         className={cn(
           buttonVariants({ variant: 'secondary', size: 'sm', className: 'bg-white' }),
           'flex flex-col',
@@ -59,7 +59,15 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         {expanded ? (
           <>
             <div className="flex w-max items-center gap-2" onClick={() => setExpanded(!expanded)}>
-              <Image src="/assets/Faders.svg" alt="filter" width={16} height={16} />
+              <Image
+                src="/assets/Faders.svg"
+                alt="filter"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: "100%",
+                  height: "auto"
+                }} />
               Filter and Sort
             </div>
             <div className="absolute right-[-1px] top-full box-content w-full rounded-b-md border border-t-0 border-grey-500 bg-white pb-2">
@@ -120,11 +128,19 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
           </>
         ) : (
           <div className="flex w-max items-center gap-2" onClick={() => setExpanded(!expanded)}>
-            <Image src="/assets/Faders.svg" alt="filter" width={16} height={16} />
+            <Image
+              src="/assets/Faders.svg"
+              alt="filter"
+              width={16}
+              height={16}
+              style={{
+                maxWidth: "100%",
+                height: "auto"
+              }} />
             Filter and Sort
           </div>
         )}
-      </div>
+      </div>)
     );
   }
 );

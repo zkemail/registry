@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import Link from 'next/link';
 import { use, useEffect, useState } from 'react';
 import sdk from '@/lib/sdk';
@@ -65,14 +65,22 @@ const ParametersPage = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   return (
-    <div className="mx-auto flex flex-col gap-10 py-16">
+    (<div className="mx-auto flex flex-col gap-10 py-16">
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex w-full flex-col items-start gap-2">
             <Link href={`/${id}/versions`}>
               <Button
                 variant="ghost"
-                startIcon={<Image src="/assets/ArrowLeft.svg" alt="back" width={16} height={16} />}
+                startIcon={<Image
+                  src="/assets/ArrowLeft.svg"
+                  alt="back"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: "100%",
+                    height: "auto"
+                  }} />}
               >
                 Version History ({mainBlueprint?.props.title})
               </Button>
@@ -83,7 +91,15 @@ const ParametersPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   variant="default"
                   size="sm"
-                  startIcon={<Image src="/assets/CopyLight.svg" alt="add" width={16} height={16} />}
+                  startIcon={<Image
+                    src="/assets/CopyLight.svg"
+                    alt="add"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto"
+                    }} />}
                   onClick={copyMetadata}
                 >
                   Copy Metadata
@@ -115,7 +131,7 @@ const ParametersPage = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 

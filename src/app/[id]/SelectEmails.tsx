@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import Image from "next/legacy/image";
+import Image from "next/image";
 import { useEffect, useState } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
@@ -173,7 +173,7 @@ const SelectEmails = ({ id }: { id: string }) => {
     }
 
     return (
-      <div className="mt-6 w-full">
+      (<div className="mt-6 w-full">
         <div className="grid w-full">
           {/* Header */}
           <div
@@ -218,14 +218,25 @@ const SelectEmails = ({ id }: { id: string }) => {
 
                     <div className="flex items-center justify-center">
                       {email.valid ? (
-                        <Image src="/assets/Checks.svg" alt="status" width={20} height={20} />
+                        <Image
+                          src="/assets/Checks.svg"
+                          alt="status"
+                          width={20}
+                          height={20}
+                          style={{
+                            maxWidth: "100%",
+                            height: "auto"
+                          }} />
                       ) : (
                         <Image
                           src="/assets/WarningCircle.svg"
                           alt="status"
                           width={20}
                           height={20}
-                        />
+                          style={{
+                            maxWidth: "100%",
+                            height: "auto"
+                          }} />
                       )}
                     </div>
                     <div>
@@ -244,7 +255,6 @@ const SelectEmails = ({ id }: { id: string }) => {
             </AnimatePresence>
           </RadioGroup>
         </div>
-
         <div className="mt-6 flex w-full flex-col items-center gap-4">
           <Button
             variant="ghost"
@@ -258,7 +268,10 @@ const SelectEmails = ({ id }: { id: string }) => {
               width={16}
               height={16}
               className={isFetchEmailLoading ? 'animate-spin' : ''}
-            />
+              style={{
+                maxWidth: "100%",
+                height: "auto"
+              }} />
             Load More Emails
           </Button>
 
@@ -277,7 +290,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             {blueprint?.props.externalInputs ? 'Add Inputs' : 'Create Proof Remotely'}
           </Button>
         </div>
-      </div>
+      </div>)
     );
   };
 
