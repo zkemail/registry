@@ -44,10 +44,10 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
     <div className="flex flex-col gap-6">
       <Input
         title="Email Query"
+        disabled={store.status === 3}
         value={store.emailQuery}
         onChange={(e) => setField('emailQuery', e.target.value)}
         placeholder="Password request from: contact@x.com"
-        helpText="As if you were searching for the email in your Gmail inbox. Only emails matching this query will be shown to the user to prove when they sign in with Gmail"
         error={!!validationErrors.emailQuery}
         errorMessage={validationErrors.emailQuery}
         tooltipComponent={
