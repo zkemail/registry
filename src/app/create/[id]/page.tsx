@@ -199,7 +199,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setErrors([]);
     } catch (err) {
       if (!optOut) {
-        posthog.capture('$test_email_error:failed_to_test_decomposed_regex', { error: err, content });
+        posthog.capture('$test_email_error:failed_to_test_decomposed_regex', {
+          error: err,
+          content,
+        });
       }
       setErrors(['Failed to test decomposed regex on eml']);
       console.error('Failed to test decomposed regex on eml: ', err);
