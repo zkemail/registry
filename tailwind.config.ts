@@ -26,12 +26,13 @@ const config: Config = {
         },
         warning: '#D7AE0B',
         neutral: {
-          '100': '#F5F3EF',
+          '100': '#FFFFFF',
         },
         success: '#34C759',
         green: {
           '100': '#EDFFF1',
           '300': '#278266',
+          '500': '#22A66D',
         },
         brand: {
           '400': '#68A3E9',
