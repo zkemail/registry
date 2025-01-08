@@ -133,9 +133,9 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   return (
     (<div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-      <div className="flex flex-row items-center justify-between">
+      <div className="flex flex-row items-center justify-between flex-wrap gap-2">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row flex-wrap gap-2">
           <Button
             loading={isVerifyingProofLoading}
             variant="secondary"
@@ -215,7 +215,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <Link
             target="_blank"
             href={`https://sepolia.basescan.org/address/${blueprint?.props.verifierContract?.address}`}
-            className="text-base font-medium text-grey-800 underline"
+            className="text-base font-medium text-grey-800 underline break-words"
           >
             {blueprint?.props.verifierContract?.address || '-'}
           </Link>
