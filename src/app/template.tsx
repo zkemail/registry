@@ -38,7 +38,6 @@ export default function Template({ children }: { children: React.ReactNode }) {
           priority
           style={{
             maxWidth: "100%",
-            height: "auto"
           }} />
       </div>
     )}
