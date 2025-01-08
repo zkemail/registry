@@ -23,7 +23,7 @@ const Navbar = () => {
             maxWidth: "100%",
             height: "auto"
           }} />
-        <span className="text-xl font-semibold dark:text-white">registry</span>
+        <span className="text-xl font-semibold text-[#1C1C1C] dark:text-white">registry</span>
       </Link>
       <div className="flex items-center gap-4">
         {token && !pathname.includes('/create') ? (

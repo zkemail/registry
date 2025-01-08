@@ -36,10 +36,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
           width={4000}
           height={200}
           priority
-          style={{
-            maxWidth: "100%",
-            height: "auto"
-          }} />
+        />
       </div>
     )}
     <div className="mx-auto w-full flex-grow md:w-[768px] px-4 md:px-0">{children}</div>
