@@ -62,6 +62,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isFileInvalid, setIsFileInvalid] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isCompileLoading, setIsCompileLoading] = useState(false);
+  const [dkimSelector, setDkimSelector] = useState<string | null>(null);
   const [optOut, setOptOut] = useState(false);
 
   const searchParams = useSearchParams();
@@ -152,8 +153,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
-      const { senderDomain, emailQuery, headerLength, emailBodyMaxLength } =
+      const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
         await extractEMLDetails(content);
+      setDkimSelector(selector);
       store.setField('senderDomain', senderDomain);
       store.setField('emailQuery', emailQuery);
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 5) * 64);
@@ -199,7 +201,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setErrors([]);
     } catch (err) {
       if (!optOut) {
-        posthog.capture('$test_email_error:failed_to_test_decomposed_regex', { error: err, content });
+        posthog.capture('$test_email_error:failed_to_test_decomposed_regex', {
+          error: err,
+          content,
+        });
       }
       setErrors(['Failed to test decomposed regex on eml']);
       console.error('Failed to test decomposed regex on eml: ', err);
@@ -220,18 +225,16 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return;
     }
 
-    fetch(`https://archive.zk.email/api/key?domain=${store.senderDomain}`)
+    fetch(`https://archive.zk.email/api/key?domain=${store.senderDomain}&selector=${dkimSelector}`)
       .then((res) => res.json())
       .then((data) => {
         if (file) {
           getFileContent(file).then((content) => {
-            setIsDKIMMissing(
-              !data.length || !data?.find((item: any) => item.selector === getDKIMSelector(content))
-            );
+            setIsDKIMMissing(!data.length);
           });
         }
       });
-  }, [store.senderDomain, step]);
+  }, [store.senderDomain, dkimSelector, step]);
 
   const isNextButtonDisabled = () => {
     if (!file || isFileInvalid) {
