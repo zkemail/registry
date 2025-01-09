@@ -159,6 +159,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         data.githubUsername = githubUserName ?? '';
         data.slug = `${data.githubUsername}/${data.circuitName}`;
 
+        if (state.ignoreBodyHashCheck) {
+          data.emailBodyMaxLength = 0;
+        }
+
         try {
           console.log('saving draft with state: ', state);
           // Create a new blueprint
