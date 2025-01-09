@@ -150,13 +150,13 @@ async function extractEMLDetails(emlContent: string) {
       ?.split('.')
       .slice(-2)
       .join('.') || null;
+  const selector = getDKIMSelector(emlContent);
   const emailQuery = `from:${senderDomain}`;
   const parsedEmail = await parseEmail(emlContent);
-  console.log(parsedEmail.canonicalizedBody, 'parsedEmail');
   const emailBodyMaxLength = parsedEmail.cleanedBody.length;
   const headerLength = parsedEmail.canonicalizedHeader.length;
 
-  return { senderDomain, headerLength, emailQuery, emailBodyMaxLength };
+  return { senderDomain, headerLength, selector, emailQuery, emailBodyMaxLength };
 }
 
 const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {
