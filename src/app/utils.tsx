@@ -143,9 +143,8 @@ async function extractEMLDetails(emlContent: string) {
     if (key) headers[key.trim()] = value.join(':').trim();
   });
 
-  // Extract details
   const senderDomain =
-    headers['Return-Path']
+    headers['From']
       ?.match(/@([^\s>]+)/)?.[1]
       ?.split('.')
       .slice(-2)
