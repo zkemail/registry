@@ -18,3 +18,30 @@ export async function getFileContent(file: File): Promise<string> {
     reader.readAsText(file);
   });
 }
+
+export function decodeMimeEncodedText(encodedText: string) {
+  const matches = encodedText.match(/=\?([^?]+)\?([BQbq])\?([^?]+)\?=/);
+  if (!matches) return encodedText; // Return as is if no match is found
+
+  const charset = matches[1]; // Extract the character set (e.g., UTF-8)
+  const encoding = matches[2].toUpperCase(); // Encoding type: Q (Quoted-Printable) or B (Base64)
+  const encodedContent = matches[3];
+
+  if (encoding === 'Q') {
+    // Decode Quoted-Printable
+    const decoded = encodedContent
+      .replace(/_/g, ' ') // Replace underscores with spaces
+      .replace(/=([A-Fa-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))); // Decode =XX to characters
+    return new TextDecoder(charset).decode(
+      new Uint8Array([...decoded].map((c) => c.charCodeAt(0)))
+    );
+  } else if (encoding === 'B') {
+    // Decode Base64
+    const decoded = atob(encodedContent); // Decode Base64
+    return new TextDecoder(charset).decode(
+      new Uint8Array([...decoded].map((c) => c.charCodeAt(0)))
+    );
+  }
+
+  return encodedText; // Return the original text if unhandled encoding
+}
