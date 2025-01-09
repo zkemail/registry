@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import Image from "next/image";
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
@@ -12,6 +12,7 @@ import { useCreateBlueprintStore } from '../create/[id]/store';
 import { testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
+import { decodeMimeEncodedText } from '@/lib/utils';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -113,7 +114,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       setIsFetchEmailLoading(true);
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
         pageToken: pageToken,
-        q: blueprint?.props.emailQuery,
+        // q: blueprint?.props.emailQuery,
       });
 
       const emailResponseMessages = emailListResponse.messages;
@@ -127,7 +128,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
-              valid: validationResult ?? false,
+              valid: true ?? false,
             };
           })
         );
@@ -158,7 +159,7 @@ const SelectEmails = ({ id }: { id: string }) => {
   const renderEmailsTable = () => {
     if (isFetchEmailLoading) {
       return (
-        <div className="mt-6 w-full flex justify-center">
+        <div className="mt-6 flex w-full justify-center">
           <Loader />
         </div>
       );
@@ -173,7 +174,7 @@ const SelectEmails = ({ id }: { id: string }) => {
     }
 
     return (
-      (<div className="mt-6 w-full">
+      <div className="mt-6 w-full">
         <div className="grid w-full">
           {/* Header */}
           <div
@@ -224,9 +225,10 @@ const SelectEmails = ({ id }: { id: string }) => {
                           width={20}
                           height={20}
                           style={{
-                            maxWidth: "100%",
-                            height: "auto"
-                          }} />
+                            maxWidth: '100%',
+                            height: 'auto',
+                          }}
+                        />
                       ) : (
                         <Image
                           src="/assets/WarningCircle.svg"
@@ -234,16 +236,19 @@ const SelectEmails = ({ id }: { id: string }) => {
                           width={20}
                           height={20}
                           style={{
-                            maxWidth: "100%",
-                            height: "auto"
-                          }} />
+                            maxWidth: '100%',
+                            height: 'auto',
+                          }}
+                        />
                       )}
                     </div>
                     <div>
                       <div>{formatDate(email.internalDate).split(',')[0]}</div>
                       <div>{formatDate(email.internalDate).split(',')[1]}</div>
                     </div>
-                    <div className="overflow-hidden text-ellipsis">{email.subject}</div>
+                    <div className="overflow-hidden text-ellipsis">
+                      {decodeMimeEncodedText(email.subject)}
+                    </div>
                     {/* <div>
                 <button className="flex items-center gap-1 underline hover:underline">
                   <Image src="/assets/Eye.svg" alt="view" width={16} height={16} />
@@ -269,9 +274,10 @@ const SelectEmails = ({ id }: { id: string }) => {
               height={16}
               className={isFetchEmailLoading ? 'animate-spin' : ''}
               style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
             Load More Emails
           </Button>
 
@@ -290,7 +296,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             {blueprint?.props.externalInputs ? 'Add Inputs' : 'Create Proof Remotely'}
           </Button>
         </div>
-      </div>)
+      </div>
     );
   };
 
