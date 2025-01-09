@@ -1,7 +1,7 @@
 import { getDateToNowStr, getStatusIcon } from '@/app/utils';
 
 import { getStatusColorLight, getStatusName } from '@/app/utils';
-import Image from "next/image";
+import Image from 'next/image';
 import { Blueprint, Status } from '@zk-email/sdk';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -9,6 +9,17 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useEffect } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -36,7 +47,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
   };
 
   return (
-    (<div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
+    <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">v {blueprint.props.version}</h2>
@@ -51,9 +62,10 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
               src={getStatusIcon(blueprint.props.status)}
               alt={getStatusName(blueprint.props.status)}
               style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
             {getStatusName(blueprint.props.status)}
           </span>
         </div>
@@ -75,15 +87,18 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
           <Link className="hidden md:block" href={`/create/${blueprint.props.id}`}>
             <Button
               variant="secondary"
-              startIcon={<Image
-                src="/assets/Edit.svg"
-                alt="Edit"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/Edit.svg"
+                  alt="Edit"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
               size="sm"
             >
               Edit
@@ -102,9 +117,10 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
               width={16}
               height={16}
               style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
           </Button>
           <Link className="hidden md:block" href={`/${blueprint.props.id}/parameters`}>
             <Button variant="secondary" size="smIcon">
@@ -114,9 +130,10 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 width={16}
                 height={16}
                 style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
             </Button>
           </Link>
         </div>
@@ -124,15 +141,18 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
           <Link href={'https://t.me/zkemail'} target="_blank">
             <Button
               variant="destructive"
-              startIcon={<Image
-                src="/assets/LinkBreak.svg"
-                alt="Report"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
+              startIcon={
+                <Image
+                  src="/assets/LinkBreak.svg"
+                  alt="Report"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
               size="sm"
             >
               Report
@@ -149,9 +169,10 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                   height={16}
                   style={{
                     color: 'red',
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
               }
               variant="destructive"
               className="mx-auto w-max"
@@ -161,26 +182,45 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             </Button>
           )}
           {(blueprint.props.status === Status.Draft || isAdmin) && (
-            <Button
-              variant="destructive"
-              startIcon={<Image
-                src="/assets/Trash.svg"
-                alt="Delete"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />}
-              size="sm"
-              onClick={onDelete}
-            >
-              Delete
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  startIcon={
+                    <Image
+                      src="/assets/Trash.svg"
+                      alt="Delete"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  }
+                  size="sm"
+                >
+                  Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete this version and it's
+                    data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDelete}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>
-    </div>)
+    </div>
   );
 };
 
