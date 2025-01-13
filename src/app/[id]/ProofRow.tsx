@@ -132,7 +132,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
       <pre className="whitespace-pre-wrap text-left">
         {emailProof?.publicData
           ? Object.entries(emailProof.publicData)
-              .map(([key, value]) => `{"${key}": "${value}"}`)
+              .map(([key, value]) => `{"${key}": ${JSON.stringify(value)}}`)
               .join('\n')
           : '-'}
       </pre>

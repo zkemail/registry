@@ -225,7 +225,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <div className="text-base font-medium text-grey-800">
             {emailProof?.publicData
               ? Object.entries(emailProof.publicData)
-                  .map(([key, value]) => `{"${key}": "${value}"}`)
+                  .map(([key, value]) => `{"${key}": ${JSON.stringify(value)}}`)
                   .join('\n')
               : '-'}
           </div>
