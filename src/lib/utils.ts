@@ -20,7 +20,7 @@ export async function getFileContent(file: File): Promise<string> {
 }
 
 export function decodeMimeEncodedText(encodedText: string) {
-  const matches = encodedText.match(/=\?([^?]+)\?([BQbq])\?([^?]+)\?=/);
+  const matches = encodedText.match(/=\?([^?]+)\?([BQbq])\?([^?]+)\?=(.*)/);
   if (!matches) return encodedText; // Return as is if no match is found
 
   const charset = matches[1]; // Extract the character set (e.g., UTF-8)
@@ -32,9 +32,10 @@ export function decodeMimeEncodedText(encodedText: string) {
     const decoded = encodedContent
       .replace(/_/g, ' ') // Replace underscores with spaces
       .replace(/=([A-Fa-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))); // Decode =XX to characters
+    const remainingText = matches[4] ? matches[4].trim() : ''; // Capture any text after the encoded part
     return new TextDecoder(charset).decode(
       new Uint8Array([...decoded].map((c) => c.charCodeAt(0)))
-    );
+    ) + remainingText;
   } else if (encoding === 'B') {
     // Decode Base64
     const decoded = atob(encodedContent); // Decode Base64
