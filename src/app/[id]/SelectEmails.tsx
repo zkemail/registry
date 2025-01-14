@@ -114,7 +114,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       setIsFetchEmailLoading(true);
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
         pageToken: pageToken,
-        // q: blueprint?.props.emailQuery,
+        q: blueprint?.props.emailQuery,
       });
 
       const emailResponseMessages = emailListResponse.messages;
@@ -128,7 +128,7 @@ const SelectEmails = ({ id }: { id: string }) => {
             const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
-              valid: true ?? false,
+              valid: validationResult ?? false,
             };
           })
         );
