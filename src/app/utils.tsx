@@ -155,7 +155,7 @@ async function extractEMLDetails(emlContent: string) {
   const emailBodyMaxLength = parsedEmail.cleanedBody.length;
   const headerLength = parsedEmail.canonicalizedHeader.length;
 
-  return { senderDomain, headerLength, selector, emailQuery, emailBodyMaxLength };
+  return { parsedEmail, senderDomain, headerLength, selector, emailQuery, emailBodyMaxLength };
 }
 
 const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {

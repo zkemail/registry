@@ -14,17 +14,89 @@ import { toast } from 'react-toastify';
 import { Switch } from '@/components/ui/switch';
 import { posthog } from 'posthog-js';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
+import { REGEX_COLORS } from '@/app/constants';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const AIPromptInput = ({
+  aiPrompt,
+  setAiPrompt,
+  handleGenerateFields,
+  file,
+  isGeneratingFieldsLoading,
+}: {
+  aiPrompt: string;
+  setAiPrompt: (aiPrompt: string) => void;
+  handleGenerateFields: () => void;
+  file: File | null;
+  isGeneratingFieldsLoading: boolean;
+}) => {
+  return (
+    <div className="flex flex-col gap-2">
+      <Label>AI auto definition</Label>
+      <div className="rounded-lg border border-[#EDCEF8] p-3 pl-0 shadow-[0px_0px_10px_0px_#EDCEF8]">
+        <div className="flex items-center justify-between">
+          <span className="w-full text-base font-medium">
+            <Input
+              className="w-full border-0 hover:border-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              placeholder="Use our AI to magically extract the fields you want"
+              value={aiPrompt}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleGenerateFields();
+                }
+              }}
+              onChange={(e) => setAiPrompt(e.target.value)}
+            />
+          </span>
+          <Button
+            className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
+            variant="secondary"
+            size="sm"
+            disabled={!file || isGeneratingFieldsLoading}
+            loading={isGeneratingFieldsLoading}
+            startIcon={
+              <Image
+                src="/assets/Sparkle.svg"
+                alt="sparkle"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+            }
+            onClick={handleGenerateFields}
+          >
+            {isGeneratingFieldsLoading ? 'Generating...' : 'Generate Fields'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean }) => {
   const store = useCreateBlueprintStore();
 
   const { setField, getParsedDecomposedRegexes } = store;
 
-  const [aiPrompt, setAiPrompt] = useState<string>('');
-  const [isGeneratingFieldsLoading, setIsGeneratingFieldsLoading] = useState(false);
+  const [isGeneratingFieldsLoading, setIsGeneratingFieldsLoading] = useState<boolean[]>(
+    Array(store.decomposedRegexes?.length ?? 0).fill(false)
+  );
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
   const [errors, setErrors] = useState<string[]>([]);
+  const [aiPrompts, setAiPrompts] = useState<string[]>(
+    Array(store.decomposedRegexes?.length ?? 0).fill('')
+  );
+  const [isExtractSubjectChecked, setIsExtractSubjectChecked] = useState(false);
+  const [isExtractReceiverChecked, setIsExtractReceiverChecked] = useState(false);
+  const [isExtractSenderNameChecked, setIsExtractSenderNameChecked] = useState(false);
+  const [isExtractSenderDomainChecked, setIsExtractSenderDomainChecked] = useState(false);
+  const [isExtractTimestampChecked, setIsExtractTimestampChecked] = useState(false);
 
   useEffect(() => {
     if (file && store?.decomposedRegexes?.length > 0) {
@@ -77,21 +149,24 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
     }
   };
 
-  const handleGenerateFields = async () => {
-    setIsGeneratingFieldsLoading(true);
-    if (!file || !aiPrompt) {
+  const handleGenerateFields = async (index: number) => {
+    const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
+    updatedIsGeneratingFieldsLoading[index] = true;
+    setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
+    if (!file || !aiPrompts[index]) {
       toast.error('Please provide both an email file and extraction goals');
-      setIsGeneratingFieldsLoading(false);
+      updatedIsGeneratingFieldsLoading[index] = false;
+      setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
       return;
     }
 
     if (!optOut) {
-      posthog.capture('$generate_fields_using_ai', { aiPrompt });
+      posthog.capture('$generate_fields_using_ai', { aiPrompt: aiPrompts[index] });
     }
     try {
       const formData = new FormData();
       formData.append('emlFile', file);
-      formData.append('extractionGoals', aiPrompt);
+      formData.append('extractionGoals', aiPrompts[index]);
 
       const response = await fetch('/api/generateBlueprintFields', {
         method: 'POST',
@@ -104,26 +179,30 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
 
       const data = await response.json();
 
-      // Convert the API response format to match your store's format
-      const convertedRegexes = data.map((item: any) => ({
-        name: item.name,
-        location: item.location === 'body' ? 'body' : 'header',
-        parts: JSON.stringify(item.parts, null, 2),
-      }));
+      const updatedRegexes = [...store.decomposedRegexes];
+      updatedRegexes[index] = {
+        name: data[0].name,
+        location: data[0].location === 'body' ? 'body' : 'header',
+        parts: JSON.stringify(data[0].parts, null, 2),
+      };
 
-      setField('decomposedRegexes', convertedRegexes);
+      setField('decomposedRegexes', updatedRegexes);
       if (!optOut) {
-        posthog.capture('$generate_fields_using_ai_success', { aiPrompt, convertedRegexes });
+        posthog.capture('$generate_fields_using_ai_success', {
+          aiPrompt: aiPrompts[index],
+          convertedRegexes: data,
+        });
       }
       toast.success('Successfully generated fields');
     } catch (error) {
       console.error('Error generating fields:', error);
       if (!optOut) {
-        posthog.capture('$generate_fields_using_ai_error', { aiPrompt });
+        posthog.capture('$generate_fields_using_ai_error', { aiPrompt: aiPrompts[index] });
       }
       toast.error('Failed to generate fields');
     } finally {
-      setIsGeneratingFieldsLoading(false);
+      updatedIsGeneratingFieldsLoading[index] = false;
+      setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
       handleTestEmail();
     }
   };
@@ -194,51 +273,9 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
 
   return (
     <div className="flex flex-col gap-6">
-      <Label>AI auto extraction</Label>
-      <div className="rounded-lg border border-[#EDCEF8] p-3 shadow-[0px_0px_10px_0px_#EDCEF8]">
-        <div className="flex items-center justify-between">
-          <span className="w-full text-base font-medium">
-            <Input
-              className="w-full border-0 hover:border-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder="Use our AI to magically extract the fields you want"
-              value={aiPrompt}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleGenerateFields();
-                }
-              }}
-              onChange={(e) => setAiPrompt(e.target.value)}
-            />
-          </span>
-          <Button
-            className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
-            variant="secondary"
-            size="sm"
-            disabled={!file || aiPrompt.length === 0 || isGeneratingFieldsLoading}
-            loading={isGeneratingFieldsLoading}
-            startIcon={
-              <Image
-                src="/assets/Sparkle.svg"
-                alt="sparkle"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                }}
-              />
-            }
-            onClick={handleGenerateFields}
-          >
-            {isGeneratingFieldsLoading ? 'Generating...' : 'Generate Fields'}
-          </Button>
-        </div>
-      </div>
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <Label>Fields to extract</Label>
           {store?.decomposedRegexes?.length === 0 ? (
             <Button
               variant="default"
@@ -292,6 +329,7 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                 onClick={() => {
                   const updatedRegexes = [...store.decomposedRegexes];
                   updatedRegexes.splice(index, 1);
+                  aiPrompts.splice(index, 1);
                   setField('decomposedRegexes', updatedRegexes);
                 }}
               >
@@ -300,7 +338,7 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
             </div>
             <div className="flex flex-col gap-3 px-2">
               <Input
-                title="Field Name"
+                title="Data Name"
                 placeholder="receiverName"
                 value={regex.name}
                 onChange={(e) => {
@@ -335,29 +373,48 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
               />
             </div>
             <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3">
-              <p className="text-base font-medium text-gray-900">Regex Definition</p>
+              <div className="flex flex-row items-center justify-between">
+                <p className="text-base font-medium text-gray-900">Regex Definition</p>
+                <Link
+                  href="/docs/regex-definition"
+                  className="text-base font-medium text-brand-400 underline"
+                >
+                  Our guide to regexes
+                </Link>
+              </div>
               <Separator />
+              <AIPromptInput
+                aiPrompt={aiPrompts[index]}
+                setAiPrompt={(value) => {
+                  const updatedAiPrompts = [...aiPrompts];
+                  updatedAiPrompts[index] = value;
+                  setAiPrompts(updatedAiPrompts);
+                }}
+                handleGenerateFields={() => {
+                  handleGenerateFields(index);
+                }}
+                file={file}
+                isGeneratingFieldsLoading={isGeneratingFieldsLoading[index]}
+              />
               {parseRegexParts(regex.parts).map((part: any, partIndex: any) => {
-                console.log(part);
                 return (
                   <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                     <div className="flex items-center justify-between">
-                      <Label>Regex field #{(partIndex + 1).toString().padStart(2, '0')}</Label>
+                      <div className="flex flex-row gap-2">
+                        <div
+                          className="h-3 w-3 border border-grey-500"
+                          style={{
+                            borderRadius: '2px',
+                            background: part.isPublic
+                              ? REGEX_COLORS[index % REGEX_COLORS.length].public
+                              : REGEX_COLORS[index % REGEX_COLORS.length].private,
+                          }}
+                        />
+                        <Label>Field #{(partIndex + 1).toString().padStart(2, '0')}</Label>
+                      </div>
                       <Button
                         variant="destructive"
-                        size="sm"
-                        startIcon={
-                          <Image
-                            src="/assets/Trash.svg"
-                            alt="trash"
-                            width={16}
-                            height={16}
-                            style={{
-                              maxWidth: '100%',
-                              height: 'auto',
-                            }}
-                          />
-                        }
+                        size="smIcon"
                         onClick={() => {
                           const parts = parseRegexParts(regex.parts);
                           parts.splice(partIndex, 1);
@@ -371,7 +428,16 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                           handleTestEmail();
                         }}
                       >
-                        Delete
+                        <Image
+                          src="/assets/Trash.svg"
+                          alt="trash"
+                          width={16}
+                          height={16}
+                          style={{
+                            maxWidth: '100%',
+                            height: 'auto',
+                          }}
+                        />
                       </Button>
                     </div>
                     <div className="ml-3 flex flex-col gap-3">

@@ -17,7 +17,7 @@ import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { extractEMLDetails, DecomposedRegex, testBlueprint, getDKIMSelector } from '@zk-email/sdk';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import StepperMobile from '@/app/components/StepperMobile';
@@ -31,6 +31,8 @@ import LoginButton from '@/app/components/LoginButton';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { usePostHog } from 'posthog-js/react';
 import { Switch } from '@/components/ui/switch';
+import HighlightText from '@/app/components/HighlightRegex';
+import { REGEX_COLORS } from '@/app/constants';
 
 type Step = '0' | '1' | '2';
 
@@ -39,6 +41,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const store = useCreateBlueprintStore();
   const posthog = usePostHog();
+  const pathname = usePathname();
+  const token = useAuthStore((state) => state.token);
 
   const {
     saveDraft,
@@ -50,7 +54,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setFile,
   } = store;
 
-  const token = useAuthStore((state) => state.token);
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -63,6 +66,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isCompileLoading, setIsCompileLoading] = useState(false);
   const [dkimSelector, setDkimSelector] = useState<string | null>(null);
   const [optOut, setOptOut] = useState(false);
+  const [canonicalizedHeader, setCanonicalizedHeader] = useState<string>('');
+  const [canonicalizedBody, setCanonicalizedBody] = useState<string>('');
+  const [headerRegexList, setHeaderRegexList] = useState<any[]>([]);
+  const [bodyRegexList, setBodyRegexList] = useState<any[]>([]);
+  const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
+  const [isBodyExpanded, setIsBodyExpanded] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -152,8 +161,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
-      const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
+      const { parsedEmail, senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
         await extractEMLDetails(content);
+      setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
+      setCanonicalizedBody(parsedEmail.canonicalizedBody);
       setDkimSelector(selector);
       store.setField('senderDomain', senderDomain);
       store.setField('emailQuery', emailQuery);
@@ -301,103 +312,113 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
+  useEffect(() => {
+    if (step === '2') {
+      genrateHighlightRegexContent();
+    }
+  }, [store.decomposedRegexes, file]);
+
+  const genrateHighlightRegexContent = async () => {
+    if (!file) {
+      return;
+    }
+
+    let content: string;
+    try {
+      content = await getFileContent(file);
+    } catch (err) {
+      console.error('Failed to get content from email');
+      return;
+    }
+
+    const parsed = getParsedDecomposedRegexes();
+
+    const output = await testBlueprint(
+      content,
+      {
+        ...store,
+        decomposedRegexes: getParsedDecomposedRegexes(),
+      },
+      true
+    );
+
+    const mappedOutput = parsed
+      .map((dcr: DecomposedRegex, index: number) => ({
+        name: dcr.name,
+        value: output[index],
+      }))
+      .filter((item: { value: string[] }) => item.value?.length > 0);
+
+    const bodyRegexList: { regex: string; color: string }[] = [];
+    const headerRegexList: { regex: string; color: string }[] = [];
+
+    mappedOutput.forEach((item: { name: string; value: string[] }, index: number) => {
+      item.value.forEach((value: string, itemIndex: number) => {
+        if (parsed[index].location === 'body') {
+          bodyRegexList.push({
+            regex: value,
+            color:
+              REGEX_COLORS[index % REGEX_COLORS.length][
+                parsed[index].parts[itemIndex]?.isPublic ? 'public' : 'private'
+              ],
+          });
+        } else {
+          headerRegexList.push({
+            regex: value,
+            color:
+              REGEX_COLORS[index % REGEX_COLORS.length][
+                parsed[index].parts[itemIndex]?.isPublic ? 'public' : 'private'
+              ],
+          });
+        }
+      });
+    });
+
+    setHeaderRegexList(headerRegexList);
+    setBodyRegexList(bodyRegexList);
+  };
+
   return (
-    <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-      <div className="mb-4 rounded-md bg-yellow-100 p-4">
-        <div className="flex items-center">
-          <Switch
-            title="Private output"
-            className="mr-2"
-            checked={optOut}
-            onCheckedChange={(checked) => setOptOut(checked)}
-          />
-          <span className="text-sm">
-            Blueprint creation processes and data may be shared with the team for improvement
-            purposes. Opt out of sharing.
-          </span>
+    <div className="flex flex-row justify-center gap-2">
+      <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+        <div className="border-grey-200 mb-4 rounded-md border bg-neutral-100 p-2">
+          <div className="flex items-center">
+            <Switch
+              title="Private output"
+              className="mr-2"
+              checked={optOut}
+              onCheckedChange={(checked) => setOptOut(checked)}
+            />
+            <span className="text-base">
+              You can help improve the registry by sharing the process data with the team for future
+              improvements. Feel free to opt out of sharing.
+            </span>
+          </div>
         </div>
-      </div>
-      <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
-      <div className="flex flex-col items-center gap-6 md:hidden">
-        <StepperMobile steps={steps} currentStep={step} />
-      </div>
-      {/* desktop stepper */}
-      <div className="hidden flex-col items-center gap-6 md:flex">
-        <Stepper steps={steps} currentStep={step} />
-        <div
-          style={{
-            width: '100%',
-            height: '2px',
-            marginTop: '24px',
-            backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
-          }}
-        />
-      </div>
-      {step !== '0' && (
-        <div className="flex w-auto">
-          <Button
-            variant="ghost"
-            startIcon={
-              <Image
-                src="/assets/ArrowLeft.svg"
-                alt="back"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                }}
-              />
-            }
-            onClick={() => {
-              const newStep = parseInt(step) - 1;
-              if (steps.length === 3 && newStep === 2) {
-                setStep('1');
-              } else {
-                setStep(((newStep + steps.length) % steps.length).toString() as Step);
-              }
+        <h4 className="text-lg font-bold text-grey-800">Submit Blueprint</h4>
+        <div className="flex flex-col items-center gap-6 md:hidden">
+          <StepperMobile steps={steps} currentStep={step} />
+        </div>
+        {/* desktop stepper */}
+        <div className="hidden flex-col items-center gap-6 md:flex">
+          <Stepper steps={steps} currentStep={step} />
+          <div
+            style={{
+              width: '100%',
+              height: '2px',
+              marginTop: '24px',
+              backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
             }}
-          >
-            {steps[parseInt(step) - 1]}
-          </Button>
+          />
         </div>
-      )}
-      {step === '0' && (
-        <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
-      )}
-      {step === '1' && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
-      {step === '2' && <ExtractFields file={file} optOut={optOut} />}
-      <div
-        style={{
-          width: '100%',
-          height: '2px',
-          marginTop: '24px',
-          backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
-        }}
-      />
-      <div>
-        <SampleEMLPreview />
-        <div className={`flex w-full flex-row ${file ? 'justify-between' : 'justify-center'}`}>
-          {file && (
-            <div>
-              <Button
-                variant="secondary"
-                onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
-              >
-                {showSampleEMLPreview ? '- Hide sample .eml' : '+ View sample .eml'}
-              </Button>
-            </div>
-          )}
-          <div className="flex justify-center gap-4">
+        {step !== '0' && (
+          <div className="flex w-auto">
             <Button
-              variant="secondary"
-              onClick={handleSaveDraft}
-              loading={isSaveDraftLoading}
-              disabled={!store.circuitName || !store.title}
+              variant="ghost"
               startIcon={
                 <Image
-                  src="/assets/Archive.svg"
-                  alt="save"
+                  src="/assets/ArrowLeft.svg"
+                  alt="back"
                   width={16}
                   height={16}
                   style={{
@@ -406,37 +427,55 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                   }}
                 />
               }
-            >
-              Save as Draft
-            </Button>
-            {parseInt(step) < 2 ? (
-              <Button
-                onClick={onClickNext}
-                endIcon={
-                  <Image
-                    src="/assets/ArrowRight.svg"
-                    alt="arrow right"
-                    width={16}
-                    height={16}
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                    }}
-                  />
+              onClick={() => {
+                const newStep = parseInt(step) - 1;
+                if (steps.length === 3 && newStep === 2) {
+                  setStep('1');
+                } else {
+                  setStep(((newStep + steps.length) % steps.length).toString() as Step);
                 }
-                disabled={isNextButtonDisabled()}
-              >
-                Next
-              </Button>
-            ) : (
+              }}
+            >
+              {steps[parseInt(step) - 1]}
+            </Button>
+          </div>
+        )}
+        {step === '0' && (
+          <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
+        )}
+        {step === '1' && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
+        {step === '2' && <ExtractFields file={file} optOut={optOut} />}
+        <div
+          style={{
+            width: '100%',
+            height: '2px',
+            marginTop: '24px',
+            backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
+          }}
+        />
+        <div>
+          <SampleEMLPreview />
+          <div className={`flex w-full flex-row ${file ? 'justify-between' : 'justify-center'}`}>
+            {file && (
+              <div>
+                <Button
+                  variant="secondary"
+                  onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
+                >
+                  {showSampleEMLPreview ? '- Hide sample .eml' : '+ View sample .eml'}
+                </Button>
+              </div>
+            )}
+            <div className="flex justify-center gap-4">
               <Button
-                onClick={handleCompile}
-                loading={isCompileLoading}
-                disabled={!file || !!errors.length || isDKIMMissing}
+                variant="secondary"
+                onClick={handleSaveDraft}
+                loading={isSaveDraftLoading}
+                disabled={!store.circuitName || !store.title}
                 startIcon={
                   <Image
-                    src="/assets/Check.svg"
-                    alt="check"
+                    src="/assets/Archive.svg"
+                    alt="save"
                     width={16}
                     height={16}
                     style={{
@@ -446,12 +485,105 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                   />
                 }
               >
-                Submit Blueprint
+                Save as Draft
               </Button>
-            )}
+              {parseInt(step) < 2 ? (
+                <Button
+                  onClick={onClickNext}
+                  endIcon={
+                    <Image
+                      src="/assets/ArrowRight.svg"
+                      alt="arrow right"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  }
+                  disabled={isNextButtonDisabled()}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleCompile}
+                  loading={isCompileLoading}
+                  disabled={!file || !!errors.length || isDKIMMissing}
+                  startIcon={
+                    <Image
+                      src="/assets/Check.svg"
+                      alt="check"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  }
+                >
+                  Submit Blueprint
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
+      {pathname.includes('create') && step === '2' ? (
+        <div className="my-16 flex w-96 min-w-96 flex-col gap-2 transition-all duration-300">
+          <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] transition-all duration-300">
+            <div>
+              <div className={`flex flex-row items-center justify-between border-b border-grey-500  ${isHeaderExpanded ? 'pb-3 mb-3' : 'border-b-0'}`}>
+                <h4 className="text-base font-bold text-grey-800">Header</h4>
+                <Button
+                  size={'smIcon'}
+                  variant={'secondary'}
+                  onClick={() => setIsHeaderExpanded(!isHeaderExpanded)}
+                >
+                  <Image
+                    src={isHeaderExpanded ? '/assets/Subtract.svg' : '/assets/Add.svg'}
+                    alt={isHeaderExpanded ? 'collapse' : 'expand'}
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                </Button>
+              </div>
+              {isHeaderExpanded && (
+                <p className="break-words">
+                  <HighlightText text={canonicalizedHeader} regexList={headerRegexList} />
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+            <div>
+              <div className={`flex flex-row items-center justify-between border-b border-grey-500  ${isBodyExpanded ? 'pb-3 mb-3' : 'border-b-0'}`}>
+                <h4 className="text-base font-bold text-grey-800">Body</h4>
+                <Button
+                  size={'smIcon'}
+                  variant={'secondary'}
+                  onClick={() => setIsBodyExpanded(!isBodyExpanded)}
+                >
+                  <Image src="/assets/Add.svg" alt="expand" width={16} height={16} />
+                </Button>
+              </div>
+              <div className="max-h-[75vh] overflow-y-auto no-scrollbar">
+                {isBodyExpanded && (
+                  <p className="break-words">
+                    <HighlightText text={canonicalizedBody} regexList={bodyRegexList} />
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

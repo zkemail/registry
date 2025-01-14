@@ -15,6 +15,7 @@ const config: Config = {
         foreground: 'hsl(var(--foreground))',
         grey: {
           '100': '#F5F3EF',
+          '200': '#E2E2E2',
           '400': '#E2E2E2',
           '500': '#D4D4D4',
           '600': '#A8A8A8',
