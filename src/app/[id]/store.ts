@@ -21,7 +21,7 @@ interface ProofState {
   setFile: (file: File | null) => Promise<void>;
   setExternalInputs: (inputs: ExternalInputInput[]) => void;
   setBlueprint: (blueprint: Blueprint) => void;
-  startProofGeneration: () => Promise<string>;
+  startProofGeneration: (isLocal: boolean) => Promise<string>;
   reset: () => void;
   setIsUserStarred: () => Promise<void>;
   isUserStarred: boolean;
@@ -127,7 +127,7 @@ export const useProofStore = create<ProofState>()(
         set({ isUserStarred: isStared });
       },
       // Starts the proof generation, waits for initial response and saves eml and proof to emailProofStrore
-      startProofGeneration: async () => {
+      startProofGeneration: async (isLocal = false) => {
         const { blueprint, file, externalInputs } = get();
         if (!blueprint) {
           throw new Error('Proof store not initialized yet, blueprint is not set');
@@ -137,10 +137,10 @@ export const useProofStore = create<ProofState>()(
         }
 
         // Create prover and generate proof
-        const prover = blueprint.createProver();
+        const prover = blueprint.createProver({ isLocal });
         let proof: Proof;
         try {
-          proof = await prover.generateProofRequest(file, externalInputs || []);
+          proof = await prover.generateProof(file, externalInputs || []);
           // save proof.props with blueprint.props.id as proof on useProofEmailStore here
         } catch (err) {
           console.error('Failed to generate a proof request');
