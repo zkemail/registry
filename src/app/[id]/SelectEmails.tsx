@@ -26,11 +26,12 @@ const SelectEmails = ({ id }: { id: string }) => {
   const { replace } = useRouter();
   const searchParams = useSearchParams();
 
-  const [isCreateProofLoading, setIsCreateProofLoading] = useState(false);
+  const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [hasExternalInputs, setHasExternalInputs] = useState(false);
   const { googleAuthToken } = useGoogleAuth();
 
   useEffect(() => {
@@ -42,6 +43,12 @@ const SelectEmails = ({ id }: { id: string }) => {
       reset();
     };
   }, []);
+
+  useEffect(() => {
+    setHasExternalInputs(
+      !!blueprint?.props.externalInputs && !!blueprint?.props.externalInputs.length
+    );
+  }, [blueprint]);
 
   const handleValidateEmail = async (content: string) => {
     try {
@@ -65,10 +72,10 @@ const SelectEmails = ({ id }: { id: string }) => {
     }
   };
 
-  const handleStartProofGeneration = async () => {
-    setIsCreateProofLoading(true);
+  const handleStartProofGeneration = async (isLocal = false) => {
+    setIsCreateProofLoading(isLocal ? 'local' : 'remote');
     try {
-      const proofId = await startProofGeneration();
+      const proofId = await startProofGeneration(isLocal);
       // setStep('3');
       const params = new URLSearchParams(searchParams);
       params.set('proofId', proofId);
@@ -78,7 +85,7 @@ const SelectEmails = ({ id }: { id: string }) => {
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
     } finally {
-      setIsCreateProofLoading(false);
+      setIsCreateProofLoading(null);
     }
   };
 
@@ -281,20 +288,42 @@ const SelectEmails = ({ id }: { id: string }) => {
             Load More Emails
           </Button>
 
-          <Button
-            className="flex w-max items-center gap-2"
-            disabled={selectedEmail === null}
-            loading={isCreateProofLoading}
-            onClick={() => {
-              if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
-                setStep('2');
-              } else {
-                handleStartProofGeneration();
-              }
-            }}
-          >
-            {blueprint?.props.externalInputs ? 'Add Inputs' : 'Create Proof Remotely'}
-          </Button>
+          {!hasExternalInputs && (
+            <div className="flex justify-center">Choose the mode of proof creation</div>
+          )}
+
+          <div className="flex justify-center">
+            <Button
+              className="flex items-center gap-2"
+              disabled={selectedEmail === null || !!isCreateProofLoading}
+              loading={isCreateProofLoading === 'remote'}
+              onClick={() => {
+                if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
+                  setStep('2');
+                } else {
+                  handleStartProofGeneration();
+                }
+              }}
+            >
+              {hasExternalInputs ? 'Add Inputs' : 'Remotely'}
+            </Button>
+            {!hasExternalInputs && (
+              <Button
+                className="ml-3 flex w-max items-center gap-2"
+                disabled={selectedEmail === null || !!isCreateProofLoading}
+                loading={isCreateProofLoading === 'local'}
+                onClick={() => {
+                  if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
+                    setStep('2');
+                  } else {
+                    handleStartProofGeneration(true);
+                  }
+                }}
+              >
+                Locally
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     );

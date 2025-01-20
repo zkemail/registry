@@ -11,12 +11,12 @@ const AddInputs = () => {
   const { replace } = useRouter();
   const searchParams = useSearchParams();
   const { blueprint, externalInputs, setExternalInputs, startProofGeneration } = useProofStore();
-  const [isCreateProofLoading, setIsCreateProofLoading] = useState(false);
+  const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
 
-  const handleStartProofGeneration = async () => {
-    setIsCreateProofLoading(true);
+  const handleStartProofGeneration = async (isLocal = false) => {
+    setIsCreateProofLoading(isLocal ? 'local' : 'remote');
     try {
-      const proofId = await startProofGeneration();
+      const proofId = await startProofGeneration(isLocal);
       const params = new URLSearchParams(searchParams);
       params.set('proofId', proofId);
       params.set('step', '3');
@@ -24,7 +24,7 @@ const AddInputs = () => {
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
     } finally {
-      setIsCreateProofLoading(false);
+      setIsCreateProofLoading(null);
     }
   };
 
@@ -52,13 +52,22 @@ const AddInputs = () => {
           />
         ))}
 
+        <div className="flex justify-center">Choose the mode of proof creation</div>
         <div className="flex justify-center">
           <Button
             onClick={handleStartProofGeneration}
-            disabled={isCreateProofLoading}
-            loading={isCreateProofLoading}
+            disabled={selectedEmail === null || !!isCreateProofLoading}
+            loading={isCreateProofLoading === 'remote'}
+            className="mr-3"
           >
-            Create Proof Remotely
+            Remotely
+          </Button>
+          <Button
+            onClick={() => handleStartProofGeneration(true)}
+            disabled={selectedEmail === null || !!isCreateProofLoading}
+            loading={isCreateProofLoading === 'local'}
+          >
+            Locally
           </Button>
         </div>
       </div>
