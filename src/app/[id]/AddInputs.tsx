@@ -56,7 +56,7 @@ const AddInputs = () => {
         <div className="flex justify-center">
           <Button
             onClick={handleStartProofGeneration}
-            disabled={selectedEmail === null || !!isCreateProofLoading}
+            disabled={!!isCreateProofLoading}
             loading={isCreateProofLoading === 'remote'}
             className="mr-3"
           >
@@ -64,7 +64,7 @@ const AddInputs = () => {
           </Button>
           <Button
             onClick={() => handleStartProofGeneration(true)}
-            disabled={selectedEmail === null || !!isCreateProofLoading}
+            disabled={!!isCreateProofLoading}
             loading={isCreateProofLoading === 'local'}
           >
             Locally

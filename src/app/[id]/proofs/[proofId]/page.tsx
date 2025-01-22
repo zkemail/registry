@@ -4,7 +4,7 @@ import sdk from '@/lib/sdk';
 import { useProofStore } from '../../store';
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import Image from "next/image";
+import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import PostalMime, { Email } from 'postal-mime';
@@ -14,6 +14,7 @@ import { formatDate, formatDateAndTime } from '@/app/utils';
 import Loader from '@/components/ui/loader';
 import Link from 'next/link';
 import { log } from 'console';
+import { useSearchParams } from 'next/navigation';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -21,11 +22,26 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   const { id, proofId } = use(params);
 
-  const emailProof = useProofEmailStore((state) => state.data[id!]?.[proofId]);
+  const searchParams = useSearchParams();
+  const localProofInfo = searchParams.get('emailProofInfo');
+
+  const emailProof = localProofInfo
+    ? JSON.parse(localProofInfo)
+    : useProofEmailStore((state) => state.data[id!]?.[proofId]);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
   const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
   const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
+
+  let urlProofParams = '';
+  if (emailProof) {
+    const { email, publicOutputs, input, ...emailProofData } = emailProof;
+
+    urlProofParams = new URLSearchParams({
+      emailProofInfo: JSON.stringify(emailProofData),
+    }).toString();
+    console.log(urlProofParams);
+  }
 
   if (!data[id!]) {
     getProofIdsForBlueprint(id);
@@ -131,9 +147,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     setIsVerifyingProofLoading(false);
   };
 
+  if (!blueprint || !emailProof) {
+    return <Loader />;
+  }
+
   return (
-    (<div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-      <div className="flex flex-row items-center justify-between flex-wrap gap-2">
+    <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+      <div className="flex flex-row flex-wrap items-center justify-between gap-2">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
         <div className="flex flex-row flex-wrap gap-2">
           <Button
@@ -145,13 +165,14 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             startIcon={
               <Image
                 src="/assets/VerifyOnChain.svg"
-                alt="Share proof"
+                alt="Verify proof"
                 width={16}
                 height={16}
                 style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
             }
           >
             Verify On-chain
@@ -160,18 +181,21 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             className="flex flex-row gap-2"
             size="sm"
             onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
+              navigator.clipboard.writeText(window.location.href + `?${urlProofParams}`);
               toast.success('Link successfully copied to clipboard');
             }}
-            startIcon={<Image
-              src="/assets/Share.svg"
-              alt="Share proof"
-              width={16}
-              height={16}
-              style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />}
+            startIcon={
+              <Image
+                src="/assets/Share.svg"
+                alt="Share proof"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+            }
           >
             Share Proof
           </Button>
@@ -197,9 +221,10 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
                   width={16}
                   height={16}
                   style={{
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
               </Button>
             </span>
           </div>
@@ -215,7 +240,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <Link
             target="_blank"
             href={`https://sepolia.basescan.org/address/${blueprint?.props.verifierContract?.address}`}
-            className="text-base font-medium text-grey-800 underline break-words"
+            className="break-words text-base font-medium text-grey-800 underline"
           >
             {blueprint?.props.verifierContract?.address || '-'}
           </Link>
@@ -283,7 +308,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           />
         </div>
       ) : null}
-    </div>)
+    </div>
   );
 };
 
