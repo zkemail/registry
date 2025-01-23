@@ -276,6 +276,181 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
+          <div>
+            <Label>Quick header extraction</Label>
+            <p className="text-gray-500">We auto-write the regexes for all the checked fields</p>
+            <div className="flex flex-col gap-2 pl-3 text-base">
+              <Checkbox
+                title="Subject"
+                checked={isExtractSubjectChecked}
+                onCheckedChange={(checked: boolean) => {
+                  setIsExtractSubjectChecked(checked);
+                  if (checked) {
+                    setField('decomposedRegexes', [
+                      ...(store.decomposedRegexes ?? []),
+                      {
+                        name: 'subject',
+                        location: 'header',
+                        parts: [
+                          {
+                            isPublic: false,
+                            regexDef: '(\r\n|^)subject:',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef: '[^\r\n]+',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '\r\n',
+                          },
+                        ],
+                        maxLength: 64,
+                      },
+                    ]);
+                  }
+                }}
+              />
+              <Checkbox
+                title="Receiver"
+                checked={isExtractReceiverChecked}
+                onCheckedChange={(checked: boolean) => {
+                  setIsExtractReceiverChecked(checked);
+                  if (checked) {
+                    setField('decomposedRegexes', [
+                      ...(store.decomposedRegexes ?? []),
+                      {
+                        name: 'email_recipient',
+                        parts: [
+                          {
+                            isPublic: false,
+                            regexDef: '(\r\n|^)to:',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '([^\r\n]+<)?',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef:
+                              '[a-zA-Z0-9!#$%&\\*\\+-/=\\\?\\^_`{\\|}~\\.]+@[a-zA-Z0-9_\\\.-]+',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '>?\r\n',
+                          },
+                        ],
+                        location: 'to',
+                        maxLength: 64,
+                      },
+                    ]);
+                  }
+                }}
+              />
+              <Checkbox
+                title="Sender name"
+                checked={isExtractSenderNameChecked}
+                onCheckedChange={(checked: boolean) => {
+                  setIsExtractSenderNameChecked(checked);
+                  if (checked) {
+                    setField('decomposedRegexes', [
+                      ...(store.decomposedRegexes ?? []),
+                      {
+                        name: 'email_sender',
+                        parts: [
+                          {
+                            isPublic: false,
+                            regexDef: '(\r\n|^)from:',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '([^\r\n]+<)?',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef:
+                              "[A-Za-z0-9!#$%&'\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '>?\r\n',
+                          },
+                        ],
+                        location: 'from',
+                        maxLength: 64,
+                      },
+                    ]);
+                  }
+                }}
+              />
+              <Checkbox
+                title="Sender domain"
+                checked={isExtractSenderDomainChecked}
+                onCheckedChange={(checked: boolean) => {
+                  setIsExtractSenderDomainChecked(checked);
+                  if (checked) {
+                    setField('decomposedRegexes', [
+                      ...(store.decomposedRegexes ?? []),
+                      {
+                        name: 'sender_domain',
+                        parts: [
+                          {
+                            isPublic: false,
+                            regexDef: '(\r\n|^)from:[^\r\n]*@',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+\\.[A-Za-z]{2,}',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '[>\r\n]',
+                          },
+                        ],
+                        location: 'from',
+                        maxLength: 64,
+                      },
+                    ]);
+                  }
+                }}
+              />
+              <Checkbox
+                title="Timestamp"
+                checked={isExtractTimestampChecked}
+                onCheckedChange={(checked: boolean) => {
+                  setIsExtractTimestampChecked(checked);
+                  if (checked) {
+                    setField('decomposedRegexes', [
+                      ...(store.decomposedRegexes ?? []),
+                      {
+                        name: 'email_timestamp',
+                        parts: [
+                          {
+                            isPublic: false,
+                            regexDef: '(\r\n|^)dkim-signature:',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '([a-z]+=[^;]+; )+t=',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef: '[0-9]+',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: ';',
+                          },
+                        ],
+                        location: 'timestamp',
+                        maxLength: 64,
+                      },
+                    ]);
+                  }
+                }}
+              />
+            </div>
+          </div>
           {store?.decomposedRegexes?.length === 0 ? (
             <Button
               variant="default"
