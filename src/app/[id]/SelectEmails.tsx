@@ -99,9 +99,15 @@ const SelectEmails = ({ id }: { id: string }) => {
         const selectedEmail = {
           emailMessageId: 'uploadedFile',
           subject,
-          internalDate: file.match(/Date: (.*)/)?.[1]
-            ? new Date(file.match(/Date: (.*)/)?.[1] as string).toISOString()
-            : 'Invalid Date',
+          internalDate: (() => {
+            const dateMatches = file.match(/Date: (.*)/g); // Find all "Date:" occurrences
+            if (dateMatches && dateMatches.length > 0) {
+              const lastDateMatch = dateMatches[dateMatches.length - 1]; // Take the last match
+              const dateValue = lastDateMatch.split('Date: ')[1]; // Extract the actual date string
+              return new Date(dateValue).toISOString(); // Convert to ISO format
+            }
+            return 'Invalid Date';
+          })(),
           decodedContents: file,
           valid: valid ?? false,
         };
