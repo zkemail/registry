@@ -27,17 +27,17 @@ const PatternDetails = ({
   const { setField } = store;
 
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
-    const results = await sdk.listBlueprints({
-      search: circuitName,
-    });
+    const existingBlueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
 
-    if (
-      results.length === 0 ||
-      results.filter((bp) => bp.props.slug === `${githubUserName}/${circuitName}`).length === 0
-    ) {
+    if (existingBlueprint) {
       setField('circuitName', `${circuitName}`);
       setField('slug', `${githubUserName}/${circuitName}`);
     } else {
+      // need to check the number of circuits that exists with same name
+      const results = await sdk.listBlueprints({
+        search: circuitName,
+      });
+
       const incrementedCircuitName = `${circuitName}_${
         results.filter((bp) => bp.props.slug?.split('_')[0] === `${githubUserName}/${circuitName}`)
           .length
