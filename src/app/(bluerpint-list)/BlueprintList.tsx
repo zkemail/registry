@@ -46,7 +46,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         sortBy: 'stars',
       });
 
-      setBlueprints(results);
+      setBlueprints([...blueprints, ...results]);
 
       // If we got fewer results than the limit, we've reached the end
       setHasMore(results.length === PAGINATION_LIMIT);
