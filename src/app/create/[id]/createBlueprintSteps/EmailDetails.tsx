@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength } from '@/app/utils';
+import { getMaxEmailBodyLength } from '@zk-email/sdk';
 import { getFileContent } from '@/lib/utils';
 import Image from 'next/image';
 
