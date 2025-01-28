@@ -65,7 +65,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                 height: 'auto',
               }}
             />{' '}
-            {(stars || 0) < 2 ? 'Star' : 'Stars'} | {stars}
+            {(stars || 0) < 2 ? 'Star' : 'Stars'} | {stars ?? 0}
           </button>
         </div>
       </div>
