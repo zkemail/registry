@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 import { Blueprint } from '@zk-email/sdk';
 import { getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { toast } from 'react-toastify';
@@ -32,7 +32,7 @@ export const BlueprintTitle = ({
   };
 
   return (
-    (<div>
+    <div>
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
@@ -47,9 +47,10 @@ export const BlueprintTitle = ({
               src={getStatusIcon(blueprint.props.status)}
               alt={getStatusName(blueprint.props.status)}
               style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
             {getStatusName(blueprint.props.status)}
           </span>
         </div>
@@ -67,16 +68,15 @@ export const BlueprintTitle = ({
               src={isUserStarred ? '/assets/StarFilled.svg' : '/assets/Star.svg'}
               alt="⭐"
               style={{
-                maxWidth: "100%",
-                height: "auto"
-              }} />{' '}
-            {blueprint.stars < 2 ? 'Star' : 'Stars'} | {blueprint.stars || 0}
+                maxWidth: '100%',
+                height: 'auto',
+              }}
             />{' '}
             {(blueprint.props.stars || 0) < 2 ? 'Star' : 'Stars'} | {blueprint.props.stars || 0}
           </button>
         </div>
       </div>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
-    </div>)
+    </div>
   );
 };
