@@ -27,9 +27,15 @@ const PatternDetails = ({
   const { setField } = store;
 
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
-    const existingBlueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
+    let existingBlueprint = false;
+    try {
+      const blueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
+      existingBlueprint = !!blueprint;
+    } catch {
+      console.log('Blueprint does not exist yet');
+    }
 
-    if (existingBlueprint) {
+    if (!existingBlueprint) {
       setField('circuitName', `${circuitName}`);
       setField('slug', `${githubUserName}/${circuitName}`);
     } else {
