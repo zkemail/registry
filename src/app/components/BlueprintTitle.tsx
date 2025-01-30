@@ -3,6 +3,7 @@ import { Blueprint } from '@zk-email/sdk';
 import { getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useEffect, useState } from 'react';
 
 interface BlueprintTitleProps {
   blueprint: Blueprint;
@@ -18,6 +19,19 @@ export const BlueprintTitle = ({
   starBlueprint,
 }: BlueprintTitleProps) => {
   const token = useAuthStore((state) => state.token);
+  const [numProofs, setNumProofs] = useState(0);
+
+  useEffect(() => {
+    if (!blueprint || !blueprint.getNumOfRemoteProofs) return;
+    blueprint
+      .getNumOfRemoteProofs()
+      .then((remoteProofs) => {
+        setNumProofs(remoteProofs + (blueprint.props.numLocalProofs || 0));
+      })
+      .catch((err) => {
+        console.error('Failed to get remote proofs for blueprint: ', err);
+      });
+  }, [blueprint]);
 
   const handleStarClick = () => {
     if (!token) {
@@ -55,9 +69,9 @@ export const BlueprintTitle = ({
           </span>
         </div>
         <div className="flex items-center gap-4 text-sm text-grey-600">
-          {/* <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1 font-medium text-grey-800">
-            <Image width={16} height={16} src="assets/Users.svg" alt="views" /> 0
-          </span> */}
+          <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1 font-medium text-grey-800">
+            <Image width={16} height={16} src="assets/Users.svg" alt="views" /> {numProofs}
+          </span>
           <button
             onClick={handleStarClick}
             className="flex flex-row gap-1 rounded border border-grey-500 bg-white px-2 py-1 font-semibold text-grey-800"
