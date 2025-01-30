@@ -66,7 +66,7 @@ const PatternDetails = ({
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
       />
-      <Input title="Slug" disabled value={`${githubUserName}/${store.circuitName}`} />
+      <Input title="Slug" disabled value={store.slug} />
       {/* TODO: Add check for email body max length */}
       <DragAndDropFile
         accept=".eml"
