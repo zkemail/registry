@@ -227,6 +227,7 @@ const ExtractFields = ({
       updatedRegexes[index] = {
         name: data[0].name,
         location: data[0].location === 'body' ? 'body' : 'header',
+        // @ts-ignore
         parts: JSON.stringify(data[0].parts, null, 2),
       };
 
