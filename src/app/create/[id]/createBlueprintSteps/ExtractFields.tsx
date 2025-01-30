@@ -7,7 +7,14 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { DecomposedRegex, DecomposedRegexPart, ExternalInput, testBlueprint } from '@zk-email/sdk';
+import {
+  DecomposedRegex,
+  DecomposedRegexPart,
+  ExternalInput,
+  parseEmail,
+  testBlueprint,
+  testDecomposedRegex,
+} from '@zk-email/sdk';
 import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
@@ -78,7 +85,17 @@ const AIPromptInput = ({
   );
 };
 
-const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean }) => {
+const ExtractFields = ({
+  file,
+  optOut,
+  generatedOutput,
+  setGeneratedOutput,
+}: {
+  file: File | null;
+  optOut: boolean;
+  generatedOutput: string;
+  setGeneratedOutput: (generatedOutput: string) => void;
+}) => {
   const store = useCreateBlueprintStore();
 
   const { setField, getParsedDecomposedRegexes } = store;
@@ -87,11 +104,14 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
     Array(store.decomposedRegexes?.length ?? 0).fill(false)
   );
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
-  const [generatedOutput, setGeneratedOutput] = useState<string>('');
   const [errors, setErrors] = useState<string[]>([]);
   const [aiPrompts, setAiPrompts] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
+  const [regexGeneratedOutputs, setRegexGeneratedOutputs] = useState<string[]>(
+    Array(store.decomposedRegexes?.length ?? 0).fill('')
+  );
+
   const [isExtractSubjectChecked, setIsExtractSubjectChecked] = useState(false);
   const [isExtractReceiverChecked, setIsExtractReceiverChecked] = useState(false);
   const [isExtractSenderNameChecked, setIsExtractSenderNameChecked] = useState(false);
@@ -103,6 +123,44 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
       handleTestEmail();
     }
   }, [file, store.decomposedRegexes, store.externalInputs]);
+
+  useEffect(() => {
+    console.log(store.decomposedRegexes);
+    if (store.decomposedRegexes?.length === 0) {
+      setField('decomposedRegexes', [...(store.decomposedRegexes ?? []), { maxLength: 64 }]);
+    }
+  }, []);
+
+  const generateRegexOutputs = async (regex: DecomposedRegex, index: number) => {
+    if (!file) {
+      return;
+    }
+
+    const content = await getFileContent(file);
+    const parsedEmail = await parseEmail(content);
+    let body = parsedEmail.cleanedBody;
+    const header = parsedEmail.canonicalizedHeader;
+    console.log(regex, store.decomposedRegexes, parsedEmail);
+
+    const regexOutputs = await testDecomposedRegex(body, header, regex, revealPrivateFields);
+
+
+    // const regexOutputs = await Promise.all(
+    //   store.decomposedRegexes.map(async (regex) => {
+    //     console.log(regex);
+    //     const output = await testDecomposedRegex(body, header, regex, revealPrivateFields);
+    //     return { name: regex.name, value: output };
+    //   })
+    // );
+    console.log(regex, regexOutputs, store.decomposedRegexes);
+    const updatedRegexGeneratedOutputs = [...regexGeneratedOutputs];
+    updatedRegexGeneratedOutputs[index] = regexOutputs;
+    setRegexGeneratedOutputs(updatedRegexGeneratedOutputs);
+
+    console.log(regexGeneratedOutputs);
+
+    // setRegexGeneratedOutputs(regexOutputs);
+  };
 
   const handleTestEmail = async () => {
     if (!file) {
@@ -203,7 +261,7 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
     } finally {
       updatedIsGeneratingFieldsLoading[index] = false;
       setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
-      handleTestEmail();
+      // handleTestEmail();
     }
   };
 
@@ -642,8 +700,9 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                       <Input
                         value={part.regexDef}
                         onChange={(e) => {
+                          const regexValue = e.target.value;
                           const parts = parseRegexParts(regex.parts);
-                          parts[partIndex].regexDef = e.target.value;
+                          parts[partIndex].regexDef = regexValue;
                           const updatedRegexes = [...store.decomposedRegexes];
                           updatedRegexes[index] = {
                             ...regex,
@@ -651,7 +710,8 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                             parts: parts,
                           };
                           setField('decomposedRegexes', updatedRegexes);
-                          handleTestEmail();
+                          // handleTestEmail();
+                          generateRegexOutputs(regex, index);
                         }}
                         placeholder="Enter regex definition"
                       />
@@ -700,6 +760,11 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
                   Add Regex Part
                 </Button>
               </div>
+              <Input
+                disabled
+                className="border-grey-500 bg-neutral-100"
+                value={`${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`}
+              />
             </div>
           </div>
         ))}
@@ -851,25 +916,6 @@ const ExtractFields = ({ file, optOut }: { file: File | null; optOut: boolean })
             </Button>
           </div>
         ) : null}
-      </div>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
-          <Label>Generated output</Label>
-          <div className="flex items-center gap-2">
-            <Switch
-              title="Private output"
-              checked={revealPrivateFields}
-              onCheckedChange={(checked) => setRevealPrivateFields(checked)}
-            />
-            <Label>Private output</Label>
-          </div>
-        </div>
-        <Textarea
-          disabled
-          rows={3}
-          className="border-grey-500 bg-neutral-100"
-          value={generatedOutput}
-        />
       </div>
       <Status />
     </div>

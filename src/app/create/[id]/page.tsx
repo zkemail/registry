@@ -16,7 +16,13 @@ import { useCreateBlueprintStore } from './store';
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { extractEMLDetails, DecomposedRegex, testBlueprint, getDKIMSelector } from '@zk-email/sdk';
+import {
+  extractEMLDetails,
+  DecomposedRegex,
+  testBlueprint,
+  getDKIMSelector,
+  parseEmail,
+} from '@zk-email/sdk';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
@@ -161,7 +167,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
-      const { parsedEmail, senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
+      const parsedEmail = await parseEmail(content);
+      const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
         await extractEMLDetails(content);
       setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
       setCanonicalizedBody(parsedEmail.canonicalizedBody);
@@ -181,7 +188,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
       }
-      console.error('Failed to get content from email');
+      console.error('Failed to get content from email', err);
       return;
     }
 
@@ -235,7 +242,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return;
     }
 
-    fetch(`https://archive.zk.email/api/key?domain=${store.senderDomain}&selector=${dkimSelector}`)
+    const url = new URL(`https://archive.zk.email/api/key`);
+    const params = new URLSearchParams({
+      domain: store.senderDomain,
+      selector: dkimSelector || '',
+    });
+
+    url.search = params.toString();
+
+    fetch(url)
       .then((res) => res.json())
       .then((data) => {
         if (file) {
@@ -381,7 +396,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   return (
     <div className="flex flex-row justify-center gap-2">
       <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-        <div className="border-grey-200 mb-4 rounded-md border bg-neutral-100 p-2">
+        <div className="mb-4 rounded-md border border-grey-200 bg-neutral-100 p-2">
           <div className="flex items-center">
             <Switch
               title="Private output"
@@ -444,7 +459,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
         )}
         {step === '1' && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
-        {step === '2' && <ExtractFields file={file} optOut={optOut} />}
+        {step === '2' && (
+          <ExtractFields
+            generatedOutput={generatedOutput}
+            file={file}
+            optOut={optOut}
+            setGeneratedOutput={setGeneratedOutput}
+          />
+        )}
         <div
           style={{
             width: '100%',
@@ -510,7 +532,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!file || !!errors.length || isDKIMMissing}
+                  disabled={!file || !!errors.length || isDKIMMissing || !generatedOutput}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"
@@ -535,7 +557,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         <div className="my-16 flex w-96 min-w-96 flex-col gap-2 transition-all duration-300">
           <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] transition-all duration-300">
             <div>
-              <div className={`flex flex-row items-center justify-between border-b border-grey-500  ${isHeaderExpanded ? 'pb-3 mb-3' : 'border-b-0'}`}>
+              <div
+                className={`flex flex-row items-center justify-between border-b border-grey-500 ${isHeaderExpanded ? 'mb-3 pb-3' : 'border-b-0'}`}
+              >
                 <h4 className="text-base font-bold text-grey-800">Header</h4>
                 <Button
                   size={'smIcon'}
@@ -563,7 +587,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
           <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
             <div>
-              <div className={`flex flex-row items-center justify-between border-b border-grey-500  ${isBodyExpanded ? 'pb-3 mb-3' : 'border-b-0'}`}>
+              <div
+                className={`flex flex-row items-center justify-between border-b border-grey-500 ${isBodyExpanded ? 'mb-3 pb-3' : 'border-b-0'}`}
+              >
                 <h4 className="text-base font-bold text-grey-800">Body</h4>
                 <Button
                   size={'smIcon'}
@@ -573,7 +599,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                   <Image src="/assets/Add.svg" alt="expand" width={16} height={16} />
                 </Button>
               </div>
-              <div className="max-h-[75vh] overflow-y-auto no-scrollbar">
+              <div className="no-scrollbar max-h-[75vh] overflow-y-auto">
                 {isBodyExpanded && (
                   <p className="break-words">
                     <HighlightText text={canonicalizedBody} regexList={bodyRegexList} />
