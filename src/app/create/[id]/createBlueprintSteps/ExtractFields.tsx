@@ -108,7 +108,7 @@ const ExtractFields = ({
   const [aiPrompts, setAiPrompts] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
-  const [regexGeneratedOutputs, setRegexGeneratedOutputs] = useState<string[]>(
+  const [regexGeneratedOutputs, setRegexGeneratedOutputs] = useState<Array<string[]>>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
 
@@ -140,26 +140,12 @@ const ExtractFields = ({
     const parsedEmail = await parseEmail(content);
     let body = parsedEmail.cleanedBody;
     const header = parsedEmail.canonicalizedHeader;
-    console.log(regex, store.decomposedRegexes, parsedEmail);
 
     const regexOutputs = await testDecomposedRegex(body, header, regex, revealPrivateFields);
 
-
-    // const regexOutputs = await Promise.all(
-    //   store.decomposedRegexes.map(async (regex) => {
-    //     console.log(regex);
-    //     const output = await testDecomposedRegex(body, header, regex, revealPrivateFields);
-    //     return { name: regex.name, value: output };
-    //   })
-    // );
-    console.log(regex, regexOutputs, store.decomposedRegexes);
     const updatedRegexGeneratedOutputs = [...regexGeneratedOutputs];
     updatedRegexGeneratedOutputs[index] = regexOutputs;
     setRegexGeneratedOutputs(updatedRegexGeneratedOutputs);
-
-    console.log(regexGeneratedOutputs);
-
-    // setRegexGeneratedOutputs(regexOutputs);
   };
 
   const handleTestEmail = async () => {
