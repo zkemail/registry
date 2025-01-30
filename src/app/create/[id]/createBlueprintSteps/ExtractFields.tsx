@@ -9,10 +9,13 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import {
   DecomposedRegex,
+  DecomposedRegexPart,
   ExternalInput,
   parseEmail,
+  testBlueprint,
   testDecomposedRegex,
 } from '@zk-email/sdk';
+import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { posthog } from 'posthog-js';
@@ -104,7 +107,7 @@ const ExtractFields = ({
   const [aiPrompts, setAiPrompts] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
-  const [regexGeneratedOutputs, setRegexGeneratedOutputs] = useState<Array<string[]>>(
+  const [regexGeneratedOutputs, setRegexGeneratedOutputs] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
 
@@ -508,7 +511,8 @@ const ExtractFields = ({
           {store?.decomposedRegexes?.length === 0 ? (
             <Button
               variant="default"
-              size="sm" className='ml-auto'
+              size="sm"
+              className="ml-auto"
               startIcon={
                 <Image
                   src="/assets/Plus.svg"
