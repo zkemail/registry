@@ -26,7 +26,7 @@ export const BlueprintTitle = ({
     blueprint
       .getNumOfRemoteProofs()
       .then((remoteProofs) => {
-        setNumProofs(remoteProofs + (blueprint.props.numLocalProofs || 0));
+        setNumProofs(remoteProofs + (blueprint.props.numLocalProofs || 0) || 0);
       })
       .catch((err) => {
         console.error('Failed to get remote proofs for blueprint: ', err);
