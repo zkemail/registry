@@ -245,7 +245,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         window.location.href = '/';
       },
       reset: () => {
-        return set({ ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps), file: null });
+        return set({
+          ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps),
+          file: null,
+          blueprint: null,
+          validationErrors: {},
+        });
       },
       setFile: (file: File | null) => {
         set({ file });
