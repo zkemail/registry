@@ -42,7 +42,7 @@ const EmailDetails = ({
         store.shaPrecomputeSelector || ''
       );
 
-      setField('emailBodyMaxLength', (Math.ceil(maxEmailBodyLength / 64) + 5) * 64);
+      setField('emailBodyMaxLength', (Math.ceil(maxEmailBodyLength / 512) + 1) * 512);
     };
 
     updateEmailBodyMaxLength();
