@@ -186,7 +186,6 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="flex flex-row gap-0.5 rounded-md border border-red-300 bg-red-100 px-2 py-1 text-red-500"
                   variant="destructive"
                   startIcon={
                     <Image
