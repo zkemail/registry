@@ -52,11 +52,11 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">v {blueprint.props.version}</h2>
           <span
-            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
+            className={`flex flex-row gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
               blueprint.props.status
             )}`}
           >
-            <Image
+            {/* <Image
               width={12}
               height={12}
               src={getStatusIcon(blueprint.props.status)}
@@ -65,12 +65,12 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 maxWidth: '100%',
                 height: 'auto',
               }}
-            />
+            /> */}
             {getStatusName(blueprint.props.status)}
           </span>
         </div>
         <p
-          className="text-sm font-medium text-grey-700"
+          className="text-sm font-regular text-grey-700"
           title={blueprint.props.updatedAt!.toLocaleString()}
         >
           Updated {getDateToNowStr(blueprint.props.updatedAt)}
@@ -106,6 +106,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
           </Link>
           <Button
             className="hidden md:inline-flex"
+            title="Download zkey + project"
             variant="secondary"
             size="smIcon"
             disabled={blueprint.props.status !== Status.Done}
@@ -123,7 +124,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             />
           </Button>
           <Link className="hidden md:block" href={`/${blueprint.props.id}/parameters`}>
-            <Button variant="secondary" size="smIcon">
+            <Button variant="secondary" size="smIcon" title="View parameters">
               <Image
                 src="/assets/ParametersIcon.svg"
                 alt="Download"
@@ -185,6 +186,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
+                  className="flex flex-row gap-0.5 rounded-md border border-red-300 bg-red-100 px-2 py-1 text-red-500"
                   variant="destructive"
                   startIcon={
                     <Image

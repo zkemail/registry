@@ -37,11 +37,11 @@ export const BlueprintTitle = ({
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           <span
-            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold ${getStatusColorLight(
+            className={`flex flex-row gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
               blueprint.props.status
             )}`}
           >
-            <Image
+            {/* <Image
               width={12}
               height={12}
               src={getStatusIcon(blueprint.props.status)}
@@ -50,7 +50,7 @@ export const BlueprintTitle = ({
                 maxWidth: '100%',
                 height: 'auto',
               }}
-            />
+            /> */}
             {getStatusName(blueprint.props.status)}
           </span>
         </div>
@@ -76,7 +76,7 @@ export const BlueprintTitle = ({
           </button>
         </div>
       </div>
-      <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
+      <p className="text-md mb-4 font-medium text-neutral-600">{blueprint.props.description}</p>
     </div>
   );
 };
