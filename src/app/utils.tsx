@@ -3,13 +3,13 @@ import { parseEmail, Status } from '@zk-email/sdk';
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
     case Status.Done:
-      return 'border border-success text-success';
+      return 'border border-green-200 text-success bg-green-100';
     case Status.InProgress:
-      return 'border border-info text-info';
+      return 'border border-purple-200 text-purple-300 bg-purple-100';
     case Status.Draft:
-      return 'border border-warning text-warning';
+      return 'border border-yellow-200 text-yellow-300 bg-yellow-100';
     case Status.Failed:
-      return 'border border-red-400 text-red-400';
+      return 'border border-red-200 text-red-500 bg-red-100';
     default:
       return 'border border-grey-100 text-grey-800';
   }
