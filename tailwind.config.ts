@@ -27,19 +27,34 @@ const config: Config = {
         warning: '#D7AE0B',
         neutral: {
           '100': '#F5F3EF',
+          '200': '#F9F9F9',
+          '300': 'EDEDED',
         },
-        success: '#34C759',
+        success: '#3AA345',
         green: {
           '100': '#EDFFF1',
+          '200': '#C2F6C7',
           '300': '#278266',
         },
         brand: {
           '400': '#68A3E9',
         },
+        yellow: {
+          '100': '#FFFAF3',
+          '200': '#FCE0B9',
+          '300': '#F38E00',
+        },
+        purple: {
+          '100': '#F4F4FF',
+          '200': '#DDDDFE',
+          '300': '#4D49F8',
+        },
         info: '#007AFF',
         red: {
-          '100': '#FDC8C5',
+          '100': '#FFF6F7',
+          '200': '#FFDBDE',
           '400': '#C72C22',
+          '500': '#C71B16',
         },
         card: {
           DEFAULT: 'hsl(var(--card))',

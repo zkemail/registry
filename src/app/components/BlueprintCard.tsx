@@ -32,11 +32,11 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
           {isLoggedIn && (
             <span
-              className={`hidden flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
+              className={`hidden flex-row gap-1 rounded-md px-2 py-1 text-xs font-semibold md:flex ${getStatusColorLight(
                 blueprint.props.status
               )}`}
             >
-              <Image
+              {/* <Image
                 width={12}
                 height={12}
                 src={getStatusIcon(blueprint.props.status)}
@@ -45,7 +45,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                   maxWidth: '100%',
                   height: 'auto',
                 }}
-              />
+              /> */}
               {getStatusName(blueprint.props.status)}
             </span>
           )}
@@ -53,7 +53,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         <div className="flex items-center gap-4 text-sm text-grey-600">
           <button
             onClick={onStar}
-            className="flex flex-row gap-1 rounded border border-grey-500 bg-grey-100 px-2 py-1 text-grey-800"
+            className="flex flex-row gap-1 rounded-md border border-grey-500 bg-neutral-200 px-2 py-1 text-grey-800"
           >
             <Image
               width={16}
@@ -73,7 +73,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         <p className="text-md overflow-hidden text-ellipsis font-medium text-grey-800">
           {blueprint.props.slug}
         </p>
-        <div
+        {/* <div
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -94,16 +94,16 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               height: 'auto',
             }}
           />
-        </div>
+        </div> */}
       </div>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
       <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-end">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-md font-medium text-grey-800">Extractable values:</p>
+          <p className="text-md font-medium text-grey-800">Values extracted:</p>
           {blueprint.props.decomposedRegexes?.map((dr, index) => (
             <div
               key={index}
-              className="h-fit rounded-md border border-grey-500 px-2 py-[1px] text-sm font-light leading-[18px] text-grey-900"
+              className="h-fit rounded-md border border-neutral-300 bg-neutral-200 px-2 py-[1px] text-sm font-light leading-[18px] text-grey-900"
             >
               {dr.name}
             </div>
@@ -111,11 +111,11 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         </div>
         <div className="mt-2 flex w-full flex-row items-center justify-between gap-2 md:mt-0 md:w-auto">
           <span
-            className={`flex flex-row gap-1 rounded-full px-2 py-1 text-xs font-semibold md:hidden ${getStatusColorLight(
+            className={`flex flex-row gap-1 rounded-lg px-2 py-1 text-xs font-semibold md:hidden ${getStatusColorLight(
               blueprint.props.status
             )}`}
           >
-            <Image
+            {/* <Image
               width={12}
               height={12}
               src={getStatusIcon(blueprint.props.status)}
@@ -124,7 +124,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                 maxWidth: '100%',
                 height: 'auto',
               }}
-            />
+            /> */}
             {getStatusName(blueprint.props.status)}
           </span>
           <p
