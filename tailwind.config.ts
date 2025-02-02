@@ -28,7 +28,8 @@ const config: Config = {
         neutral: {
           '100': '#F5F3EF',
           '200': '#F9F9F9',
-          '300': 'EDEDED',
+          '300': '#EDEDED',
+          '600': '#7A7A7A',
         },
         success: '#3AA345',
         green: {

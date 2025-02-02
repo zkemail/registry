@@ -91,7 +91,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
               <h2 className="text-xl font-bold">Version History</h2>
               <div className="flex flex-row gap-3">
                 <Button
-                  variant="outline"
+                  variant="tag"
                   size="sm"
                   startIcon={
                     <Image
@@ -121,7 +121,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                         height: "auto"
                       }} />}
                   >
-                    Create from scratch
+                    Start fresh
                   </Button>
                 </Link>
               </div>

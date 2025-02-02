@@ -219,7 +219,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
             </span>
             <span>
               <span
-                className={`flex flex-row gap-1 rounded-full border border-[#34C759] bg-white px-2 py-1 text-xs font-semibold text-[#34C759]`}
+                className={`flex flex-row gap-1 rounded-lg border border-green-200 bg-green-100 px-2 py-1 text-xs font-semibold text-green-300`}
               >
                 Latest
               </span>
