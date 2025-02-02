@@ -9,13 +9,10 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import {
   DecomposedRegex,
-  DecomposedRegexPart,
   ExternalInput,
   parseEmail,
-  testBlueprint,
   testDecomposedRegex,
 } from '@zk-email/sdk';
-import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { posthog } from 'posthog-js';
