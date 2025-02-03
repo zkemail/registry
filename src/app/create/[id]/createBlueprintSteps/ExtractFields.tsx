@@ -7,12 +7,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import {
-  DecomposedRegex,
-  ExternalInput,
-  parseEmail,
-  testDecomposedRegex,
-} from '@zk-email/sdk';
+import { DecomposedRegex, ExternalInput, parseEmail, testDecomposedRegex } from '@zk-email/sdk';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { posthog } from 'posthog-js';
@@ -606,14 +601,15 @@ const ExtractFields = ({
                 />
               </div>
               <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3">
-                <div className="flex flex-row items-center justify-between">
-                  <p className="text-base font-medium text-gray-900">Regex Definition</p>
-                  <Link
-                    href="/docs/regex-definition"
-                    className="text-base font-medium text-brand-400 underline"
-                  >
-                    Our guide to regexes
-                  </Link>
+                  <div className="flex items-center justify-between">
+                    <p className="text-base font-medium text-gray-900">Regex Definition</p>
+                    <Link
+                      href="https://docs.zk.email/zk-email-sdk/regex"
+                      className="cursor-pointer text-base text-brand-400 underline"
+                      target="_blank"
+                    >
+                      Our guide to regexes
+                    </Link>
                 </div>
                 <Separator />
                 <AIPromptInput
