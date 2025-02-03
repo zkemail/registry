@@ -39,6 +39,7 @@ import { usePostHog } from 'posthog-js/react';
 import { Switch } from '@/components/ui/switch';
 import HighlightText from '@/app/components/HighlightRegex';
 import { REGEX_COLORS } from '@/app/constants';
+import { debounce } from '@/app/utils';
 
 type Step = '0' | '1' | '2';
 
@@ -78,6 +79,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [bodyRegexList, setBodyRegexList] = useState<any[]>([]);
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
+  const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -237,28 +239,44 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [file, revealPrivateFields]);
 
+  // Create a debounced version of the DKIM verification
+  const debouncedVerifyDKIM = debounce(async (domain: string, selector: string | null) => {
+    setIsVerifyDKIMLoading(true);
+
+    const url = new URL(`https://archive.zk.email/api/key`);
+    const params = new URLSearchParams({
+      domain: domain,
+      selector: selector || '',
+    });
+
+    url.search = params.toString();
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      if (file) {
+        const content = await getFileContent(file);
+        setIsDKIMMissing(!data.length);
+      }
+    } catch (error) {
+      console.error('Failed to verify DKIM:', error);
+    } finally {
+      setIsVerifyDKIMLoading(false);
+    }
+  }, 500); // 500ms delay
+
   useEffect(() => {
     if (step !== '1' || !store.senderDomain) {
       return;
     }
 
-    const url = new URL(`https://archive.zk.email/api/key`);
-    const params = new URLSearchParams({
-      domain: store.senderDomain,
-      selector: dkimSelector || '',
-    });
+    debouncedVerifyDKIM(store.senderDomain, dkimSelector);
 
-    url.search = params.toString();
-
-    fetch(url)
-      .then((res) => res.json())
-      .then((data) => {
-        if (file) {
-          getFileContent(file).then((content) => {
-            setIsDKIMMissing(!data.length);
-          });
-        }
-      });
+    // Cleanup function to cancel pending debounced calls
+    return () => {
+      debouncedVerifyDKIM.cancel();
+    };
   }, [store.senderDomain, dkimSelector, step]);
 
   const isNextButtonDisabled = () => {
@@ -458,7 +476,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         {step === '0' && (
           <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
         )}
-        {step === '1' && <EmailDetails file={file} isDKIMMissing={isDKIMMissing} />}
+        {step === '1' && (
+          <EmailDetails
+            file={file}
+            isDKIMMissing={isDKIMMissing}
+            isVerifyDKIMLoading={isVerifyDKIMLoading}
+          />
+        )}
         {step === '2' && (
           <ExtractFields
             generatedOutput={generatedOutput}
