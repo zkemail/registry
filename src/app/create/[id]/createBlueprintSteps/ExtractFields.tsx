@@ -628,6 +628,7 @@ const ExtractFields = ({
                   isGeneratingFieldsLoading={isGeneratingFieldsLoading[index]}
                 />
                 {parseRegexParts(regex.parts).map((part: any, partIndex: any) => {
+                  console.log(JSON.stringify(part.regexDef), part.regexDef);
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
@@ -696,19 +697,31 @@ const ExtractFields = ({
                       <div className="ml-3 flex flex-col gap-3">
                         <Label>Regex Definition</Label>
                         <Input
-                          value={part.regexDef}
+                          value={JSON.stringify(part.regexDef).slice(1, -1)}
                           onChange={(e) => {
                             const regexValue = e.target.value;
-                            const parts = parseRegexParts(regex.parts);
-                            parts[partIndex].regexDef = regexValue;
-                            const updatedRegexes = [...store.decomposedRegexes];
-                            updatedRegexes[index] = {
-                              ...regex,
-                              // @ts-ignore
-                              parts: parts,
-                            };
-                            setField('decomposedRegexes', updatedRegexes);
-                            // handleTestEmail();
+                            try {
+                              const parsedValue = JSON.parse(`"${regexValue}"`);
+                              const parts = parseRegexParts(regex.parts);
+                              parts[partIndex].regexDef = parsedValue;
+                              const updatedRegexes = [...store.decomposedRegexes];
+                              updatedRegexes[index] = {
+                                ...regex,
+                                // @ts-ignore
+                                parts: parts,
+                              };
+                              setField('decomposedRegexes', updatedRegexes);
+                            } catch (error) {
+                              const parts = parseRegexParts(regex.parts);
+                              parts[partIndex].regexDef = regexValue;
+                              const updatedRegexes = [...store.decomposedRegexes];
+                              updatedRegexes[index] = {
+                                ...regex,
+                                // @ts-ignore
+                                parts: parts,
+                              };
+                              setField('decomposedRegexes', updatedRegexes);
+                            }
                           }}
                           placeholder="Enter regex definition"
                         />
