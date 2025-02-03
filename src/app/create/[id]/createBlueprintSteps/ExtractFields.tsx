@@ -164,7 +164,9 @@ const ExtractFields = ({
       setIsGeneratingFields(false);
     };
 
-    generateRegexOutputs();
+    generateRegexOutputs().then(() => {
+      setIsGeneratingFields(false);
+    });
   }, [file, store.decomposedRegexes]);
 
   const handleGenerateFields = async (index: number) => {
