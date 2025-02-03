@@ -237,7 +237,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (!file) {
       setIsFileInvalid(false);
     }
-  }, [file, revealPrivateFields]);
+  }, [store.decomposedRegexes, file, revealPrivateFields]);
 
   // Create a debounced version of the DKIM verification
   const debouncedVerifyDKIM = debounce(async (domain: string, selector: string | null) => {
