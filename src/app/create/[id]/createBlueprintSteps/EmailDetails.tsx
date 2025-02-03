@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength } from '@zk-email/sdk';
+import { getMaxEmailBodyLength, parseEmail } from '@zk-email/sdk';
 import { getFileContent } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -22,6 +22,8 @@ const EmailDetails = ({
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
   const [showOptionalDetails, setShowOptionalDetails] = useState(false);
+  const [shaPrecomputeSelectorValidationErrors, setShaPrecomputeSelectorValidationErrors] =
+    useState('');
 
   useEffect(() => {
     const updateEmailBodyMaxLength = async () => {
@@ -157,8 +159,34 @@ const EmailDetails = ({
                 disabled={store.ignoreBodyHashCheck}
                 helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
                 value={store.shaPrecomputeSelector}
+                error={!!shaPrecomputeSelectorValidationErrors}
+                errorMessage={shaPrecomputeSelectorValidationErrors}
                 onChange={async (e) => {
                   setField('shaPrecomputeSelector', e.target.value);
+
+                  if (!file) {
+                    return;
+                  }
+
+                  const content = await getFileContent(file);
+                  const parsedEmail = await parseEmail(content);
+                  const value = e.target.value;
+
+                  if (!value) {
+                    setShaPrecomputeSelectorValidationErrors('');
+                    return;
+                  }
+
+                  const matches = parsedEmail.cleanedBody.split(value).length - 1;
+                  if (matches === 0) {
+                    setShaPrecomputeSelectorValidationErrors('Value not found in email body');
+                  } else if (matches > 1) {
+                    setShaPrecomputeSelectorValidationErrors(
+                      'Value appears multiple times in email body. Please use unique value else it will be cut off at the first occurrence'
+                    );
+                  } else {
+                    setShaPrecomputeSelectorValidationErrors('');
+                  }
                 }}
                 tooltipComponent={
                   <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
