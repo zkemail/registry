@@ -179,7 +179,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 5) * 64);
       if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector) {
         toast.warning(
-          'Email body is too long, max is 10000 bytes. Please add Email body cut off value else skip body hash check'
+          'Email body is too long, max is 9984 bytes. Please add Email body cut off value else skip body hash check'
         );
         store.setField('ignoreBodyHashCheck', true);
         store.setField('removeSoftLinebreaks', false);
@@ -274,7 +274,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return (
         !store.emailQuery ||
         !store.emailBodyMaxLength ||
-        (store.emailBodyMaxLength > 10000 && !store.ignoreBodyHashCheck) ||
+        (store.emailBodyMaxLength > 9984 && !store.ignoreBodyHashCheck) ||
         store.ignoreBodyHashCheck === undefined
       );
     }
