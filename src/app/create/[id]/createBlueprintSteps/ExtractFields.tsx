@@ -145,6 +145,7 @@ const ExtractFields = ({
             );
             setRegexGeneratedOutputs((prev) => {
               const updated = [...prev];
+              // @ts-ignore
               updated[index] = regexOutputs;
               return updated;
             });
@@ -152,6 +153,7 @@ const ExtractFields = ({
             console.error('Error testing decomposed regex:', error);
             setRegexGeneratedOutputs((prev) => {
               const updated = [...prev];
+              // @ts-ignore
               updated[index] = [];
               return updated;
             });
