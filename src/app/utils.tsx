@@ -196,6 +196,41 @@ const getDKIMSelector = (emlContent: string): string | null => {
   return null;
 };
 
+/**
+ * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed
+ * since the last time the debounced function was invoked.
+ * 
+ * @param func The function to debounce
+ * @param wait The number of milliseconds to delay
+ * @returns A debounced version of the function
+ */
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): T & { cancel: () => void } {
+  let timeout: NodeJS.Timeout | null = null;
+
+  const debounced = (...args: Parameters<T>) => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      timeout = null;
+      func(...args);
+    }, wait);
+  };
+
+  debounced.cancel = () => {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  };
+
+  return debounced as T & { cancel: () => void };
+}
+
 export {
   getStatusColorLight,
   getStatusIcon,
@@ -203,4 +238,5 @@ export {
   getStatusName,
   formatDate,
   formatDateAndTime,
+  debounce,
 };

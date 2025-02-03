@@ -9,7 +9,15 @@ import { getMaxEmailBodyLength } from '@zk-email/sdk';
 import { getFileContent } from '@/lib/utils';
 import Image from 'next/image';
 
-const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: File | null }) => {
+const EmailDetails = ({
+  isDKIMMissing,
+  file,
+  isVerifyDKIMLoading,
+}: {
+  isDKIMMissing: boolean;
+  file: File | null;
+  isVerifyDKIMLoading: boolean;
+}) => {
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
@@ -68,15 +76,18 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
       />
       <Input
         title="Sender domain"
+        loading={isVerifyDKIMLoading}
         placeholder="twitter.com"
         helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
         value={store.senderDomain}
         onChange={(e) => setField('senderDomain', e.target.value)}
-        error={!!validationErrors.senderDomain || isDKIMMissing}
+        error={(!!validationErrors.senderDomain || isDKIMMissing) && !isVerifyDKIMLoading}
         errorMessage={
-          isDKIMMissing
-            ? 'DKIM is missing. Please add a DKIM record at https://archive.zk.email'
-            : validationErrors.senderDomain
+          isVerifyDKIMLoading
+            ? 'Finding DKIM in archive...'
+            : isDKIMMissing
+              ? 'DKIM is missing. Please add a DKIM record at https://archive.zk.email'
+              : validationErrors.senderDomain
         }
         tooltipComponent={
           <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
@@ -163,6 +174,7 @@ const EmailDetails = ({ isDKIMMissing, file }: { isDKIMMissing: boolean; file: F
                 errorMessage={validationErrors.emailBodyMaxLength}
                 max={9984}
                 min={0}
+                startIcon={<Image src="/assets/Info.svg" alt="info" width={16} height={16} />}
                 type="number"
                 helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
                 value={store.emailBodyMaxLength}
