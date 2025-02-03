@@ -9,7 +9,7 @@ import Image from 'next/image';
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   title?: string;
   error?: boolean;
-  errorMessage?: string;
+  errorMessage?: string | React.ReactNode;
   helpText?: string;
   size?: 'default' | 'sm' | 'lg';
   startIcon?: React.ReactNode;

@@ -83,11 +83,23 @@ const EmailDetails = ({
         onChange={(e) => setField('senderDomain', e.target.value)}
         error={(!!validationErrors.senderDomain || isDKIMMissing) && !isVerifyDKIMLoading}
         errorMessage={
-          isVerifyDKIMLoading
-            ? 'Finding DKIM in archive...'
-            : isDKIMMissing
-              ? 'DKIM is missing. Please add a DKIM record at https://archive.zk.email'
-              : validationErrors.senderDomain
+          isVerifyDKIMLoading ? (
+            'Finding DKIM in archive...'
+          ) : isDKIMMissing ? (
+            <span className="text-red-500">
+              DKIM publickey is missing. Please add a DKIM record at{' '}
+              <a
+                href="https://archive.zk.email"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                https://archive.zk.email
+              </a>
+            </span>
+          ) : (
+            validationErrors.senderDomain
+          )
         }
         tooltipComponent={
           <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
