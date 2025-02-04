@@ -614,7 +614,16 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                   variant={'secondary'}
                   onClick={() => setIsBodyExpanded(!isBodyExpanded)}
                 >
-                  <Image src="/assets/Add.svg" alt="expand" width={16} height={16} />
+                  <Image
+                    src={isBodyExpanded ? '/assets/Subtract.svg' : '/assets/Add.svg'}
+                    alt={isBodyExpanded ? 'collapse' : 'expand'}
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
                 </Button>
               </div>
               <div className="no-scrollbar max-h-[75vh] overflow-y-auto">
