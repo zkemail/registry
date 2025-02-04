@@ -80,6 +80,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
+  const [canCompile, setCanCompile] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -254,7 +255,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     try {
       const res = await fetch(url);
       const data = await res.json();
-      
+
       if (file) {
         const content = await getFileContent(file);
         setIsDKIMMissing(!data.length);
@@ -483,14 +484,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             isVerifyDKIMLoading={isVerifyDKIMLoading}
           />
         )}
-        {step === '2' && (
-          <ExtractFields
-            generatedOutput={generatedOutput}
-            file={file}
-            optOut={optOut}
-            setGeneratedOutput={setGeneratedOutput}
-          />
-        )}
+        {step === '2' && <ExtractFields file={file} optOut={optOut} setCanCompile={setCanCompile} />}
         <div
           style={{
             width: '100%',
@@ -556,7 +550,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!file || !!errors.length || isDKIMMissing || !generatedOutput}
+                  disabled={!file || isDKIMMissing || !canCompile}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"

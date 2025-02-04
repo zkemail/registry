@@ -79,13 +79,11 @@ const AIPromptInput = ({
 const ExtractFields = ({
   file,
   optOut,
-  generatedOutput,
-  setGeneratedOutput,
+  setCanCompile,
 }: {
   file: File | null;
   optOut: boolean;
-  generatedOutput: string;
-  setGeneratedOutput: (generatedOutput: string) => void;
+  setCanCompile: (canCompile: boolean) => void;
 }) => {
   const store = useCreateBlueprintStore();
 
@@ -230,6 +228,7 @@ const ExtractFields = ({
 
   const Status = () => {
     if (errors.length || !file) {
+      setCanCompile(false);
       return errors.map((error) => (
         <div key={error} className="flex items-center gap-2 text-red-400">
           <Image
@@ -247,6 +246,7 @@ const ExtractFields = ({
       ));
     }
     if (isGeneratingFields) {
+      setCanCompile(false);
       return (
         <div className="flex items-center gap-2">
           <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
@@ -255,6 +255,7 @@ const ExtractFields = ({
       );
     }
     if (!regexGeneratedOutputs.length) {
+      setCanCompile(false);
       return (
         <div className="flex items-center gap-2 text-red-400">
           <Image
@@ -275,6 +276,7 @@ const ExtractFields = ({
       !regexGeneratedOutputs.length ||
       regexGeneratedOutputs.some((output) => output.length === 0)
     ) {
+      setCanCompile(false);
       return (
         <div className="flex items-center gap-2 text-red-400">
           <Image
@@ -291,6 +293,7 @@ const ExtractFields = ({
         </div>
       );
     } else {
+      setCanCompile(true);
       return (
         <div className="flex items-center gap-2 text-green-300">
           <Image
@@ -605,15 +608,15 @@ const ExtractFields = ({
                 />
               </div>
               <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3">
-                  <div className="flex items-center justify-between">
-                    <p className="text-base font-medium text-gray-900">Regex Definition</p>
-                    <Link
-                      href="https://docs.zk.email/zk-email-sdk/regex"
-                      className="cursor-pointer text-base text-brand-400 underline"
-                      target="_blank"
-                    >
-                      Our guide to regexes
-                    </Link>
+                <div className="flex items-center justify-between">
+                  <p className="text-base font-medium text-gray-900">Regex Definition</p>
+                  <Link
+                    href="https://docs.zk.email/zk-email-sdk/regex"
+                    className="cursor-pointer text-base text-brand-400 underline"
+                    target="_blank"
+                  >
+                    Our guide to regexes
+                  </Link>
                 </div>
                 <Separator />
                 <AIPromptInput
