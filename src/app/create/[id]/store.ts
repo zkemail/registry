@@ -193,9 +193,9 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         try {
           console.log('setting existing blueprint');
           const blueprint = await sdk.getBlueprintById(id);
-          blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
-            dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
-          });
+          // blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
+          //   dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
+          // });
 
           // TODO: sdk should not return undefined fields - workaround so we have sane defaults
           for (const [key, value] of Object.entries(blueprint.props)) {
