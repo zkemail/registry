@@ -226,8 +226,13 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           state.emailBodyMaxLength = 0;
         }
 
-        if (!state.validateAll()) {
-          throw new Error('Validation failed');
+        try {
+          if (!state.validateAll()) {
+            throw new Error('Validation failed');
+          }
+        } catch (err) {
+          console.error('Validation failed: ', err);
+          throw err;
         }
         // In theory we could also save before compiling here if we want, caling createBlueprint first
         if (!state.blueprint) {
