@@ -162,7 +162,7 @@ const ExtractFields = ({
       setIsGeneratingFields(false);
     };
 
-    generateRegexOutputs().then(() => {
+    generateRegexOutputs().finally(() => {
       setIsGeneratingFields(false);
     });
   }, [file, store.decomposedRegexes]);
@@ -313,7 +313,6 @@ const ExtractFields = ({
   };
 
   const parseRegexParts = (parts: any): any => {
-    console.log('parts', parts);
     if (typeof parts === 'string') {
       try {
         return JSON.parse(parts);
@@ -323,8 +322,6 @@ const ExtractFields = ({
     }
     return parts || [];
   };
-
-  console.log(store.decomposedRegexes, 'store.decomposedRegexes');
 
   return (
     <div className="flex flex-col gap-6">
@@ -636,7 +633,6 @@ const ExtractFields = ({
                   isGeneratingFieldsLoading={isGeneratingFieldsLoading[index]}
                 />
                 {regex.parts.map((part: any, partIndex: any) => {
-                  console.log(part, 'part', part.regexDef, typeof part.regexDef);
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
@@ -723,12 +719,6 @@ const ExtractFields = ({
                             }}
                             placeholder="Enter regex definition"
                           />
-                          {part.regexDef && (
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-gray-500">
-                              {/* Display the raw value without JSON.stringify */}
-                              {JSON.stringify(part.regexDef)}
-                            </div>
-                          )}
                         </div>
                       </div>
                     </div>
