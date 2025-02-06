@@ -151,7 +151,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       await compile();
     } catch (error) {
       console.error('Failed to compile:', error);
-      toast.error(`Failed to compile blueprint: ${error.toString()?.replace('Error: ', '')}`);
+      toast.error(`Failed to compile blueprint: ${error?.toString()?.replace('Error: ', '')}`);
     } finally {
       setIsCompileLoading(false);
     }
