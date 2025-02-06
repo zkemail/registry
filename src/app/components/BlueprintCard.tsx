@@ -73,7 +73,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         <p className="text-md overflow-hidden text-ellipsis font-medium text-grey-800">
           {blueprint.props.slug}
         </p>
-        {/* <div
+        <div
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
@@ -94,7 +94,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               height: 'auto',
             }}
           />
-        </div> */}
+        </div>
       </div>
       <p className="text-md mb-4 font-medium text-grey-800">{blueprint.props.description}</p>
       <div className="mt-4 flex flex-col items-start justify-between md:flex-row md:items-end">
