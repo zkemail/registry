@@ -1,7 +1,12 @@
 'use client';
 
 import React, { useEffect, useState, ReactNode } from 'react';
-import { hasGrantedAllScopesGoogle, useGoogleLogin, googleLogout } from '@react-oauth/google';
+import {
+  hasGrantedAllScopesGoogle,
+  useGoogleLogin,
+  googleLogout,
+  UseGoogleLoginOptionsImplicitFlow,
+} from '@react-oauth/google';
 
 import GoogleAuthContext from './GoogleAuthContext';
 import { fetchProfile } from '../hooks/useGmailClient';
@@ -91,7 +96,9 @@ const GoogleAuthProvider = ({ children }: ProvidersProps) => {
         // );
       },
       scope: 'email profile https://www.googleapis.com/auth/gmail.readonly',
-    });
+      flow: 'implicit',
+      ux_mode: 'redirect',
+    } as UseGoogleLoginOptionsImplicitFlow);
 
   const googleLogOut = () => {
     setIsScopesApproved(false);
