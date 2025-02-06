@@ -238,7 +238,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (!file) {
       setIsFileInvalid(false);
     }
-  }, [store.decomposedRegexes, file, revealPrivateFields]);
+  }, [JSON.stringify(store.decomposedRegexes), file, revealPrivateFields]);
 
   // Create a debounced version of the DKIM verification
   const debouncedVerifyDKIM = debounce(async (domain: string, selector: string | null) => {
@@ -278,7 +278,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     return () => {
       debouncedVerifyDKIM.cancel();
     };
-  }, [store.senderDomain, dkimSelector, step]);
+  }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
   const isNextButtonDisabled = () => {
     if (!file || isFileInvalid) {
@@ -350,7 +350,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (step === '2') {
       genrateHighlightRegexContent();
     }
-  }, [store.decomposedRegexes, file]);
+  }, [JSON.stringify(store.decomposedRegexes), file]);
 
   const genrateHighlightRegexContent = async () => {
     if (!file) {

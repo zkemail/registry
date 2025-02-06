@@ -48,7 +48,7 @@ const EmailDetails = ({
     };
 
     updateEmailBodyMaxLength();
-  }, [store.shaPrecomputeSelector, store.ignoreBodyHashCheck]);
+  }, [JSON.stringify(store.shaPrecomputeSelector), JSON.stringify(store.ignoreBodyHashCheck)]);
 
   return (
     <div className="flex flex-col gap-6">
