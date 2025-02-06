@@ -55,7 +55,7 @@ const AddInputs = () => {
         <div className="flex justify-center">Choose the mode of proof creation</div>
         <div className="flex justify-center">
           <Button
-            onClick={handleStartProofGeneration}
+            onClick={() => handleStartProofGeneration(false)}
             disabled={!!isCreateProofLoading}
             loading={isCreateProofLoading === 'remote'}
             className="mr-3"

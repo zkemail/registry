@@ -307,7 +307,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                 if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
                   setStep('2');
                 } else {
-                  handleStartProofGeneration();
+                  handleStartProofGeneration(false);
                 }
               }}
             >
