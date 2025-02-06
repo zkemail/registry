@@ -165,7 +165,7 @@ const ExtractFields = ({
     generateRegexOutputs().finally(() => {
       setIsGeneratingFields(false);
     });
-  }, [file, store.decomposedRegexes]);
+  }, [file, JSON.stringify(store.decomposedRegexes)]);
 
   const handleGenerateFields = async (index: number) => {
     const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
