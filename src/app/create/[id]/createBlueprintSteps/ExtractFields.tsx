@@ -609,6 +609,15 @@ const ExtractFields = ({
                     setField('decomposedRegexes', updatedRegexes);
                   }}
                 />
+                <Checkbox
+                  title="Hash Public Output"
+                  checked={regex.isHashed}
+                  onCheckedChange={(checked: boolean) => {
+                    const updatedRegexes = [...store.decomposedRegexes];
+                    updatedRegexes[index] = { ...regex, isHashed: checked };
+                    setField('decomposedRegexes', updatedRegexes);
+                  }}
+                />
               </div>
               <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3">
                 <div className="flex items-center justify-between">
