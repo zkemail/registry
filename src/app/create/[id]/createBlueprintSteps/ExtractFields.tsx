@@ -111,7 +111,10 @@ const ExtractFields = ({
 
   useEffect(() => {
     if (store.decomposedRegexes?.length === 0) {
-      setField('decomposedRegexes', [...(store.decomposedRegexes ?? []), { maxLength: 64 }]);
+      setField('decomposedRegexes', [
+        ...(store.decomposedRegexes ?? []),
+        { maxLength: 64, parts: [] },
+      ]);
     }
   }, []);
 
@@ -632,7 +635,7 @@ const ExtractFields = ({
                   file={file}
                   isGeneratingFieldsLoading={isGeneratingFieldsLoading[index]}
                 />
-                {regex.parts.map((part: any, partIndex: any) => {
+                {regex?.parts?.map((part: any, partIndex: any) => {
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
@@ -702,7 +705,9 @@ const ExtractFields = ({
                             onChange={(e) => {
                               const parts = [...parseRegexParts(regex.parts)];
                               // Convert displayed \r and \n back to actual escape sequences
-                              const rawValue = e.target.value.replace(/\\r/g, '\r').replace(/\\n/g, '\n');
+                              const rawValue = e.target.value
+                                .replace(/\\r/g, '\r')
+                                .replace(/\\n/g, '\n');
                               console.log(rawValue, 'rawValue');
                               parts[partIndex] = {
                                 ...parts[partIndex],
