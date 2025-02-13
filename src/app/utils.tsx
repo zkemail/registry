@@ -238,9 +238,6 @@ const findOrCreateDSP = async (file: File) => {
 
   const response = await fetch('https://archive.zk.email/api/dsp', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
     body: JSON.stringify({
       domain: senderDomain,
       selector: selector,
