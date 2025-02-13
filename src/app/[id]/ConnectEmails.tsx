@@ -63,7 +63,9 @@ const ConnectEmails = () => {
             try {
               const response = await findOrCreateDSP(files[0]);
             } catch (err) {
-              toast.error('Failed to find or create DSP');
+              toast.error(
+                'We were unable to locate the public key for this email. This typically happens with older emails. Please try with a more recent email.'
+              );
               return;
             }
 
