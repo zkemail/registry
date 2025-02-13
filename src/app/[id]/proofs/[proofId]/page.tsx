@@ -137,9 +137,9 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     }
 
     try {
-      console.log('verifying proof on chain');
-      await proof.verifyOnChain();
-      toast.success('Proof verified successfully on chain');
+      console.log('verifying proof');
+      await blueprint?.verifyProof(proof);
+      toast.success('Proof verified successfully');
     } catch (err) {
       console.error(`Failed to verify proof with id: ${proofId}: `, err);
       toast.error('Failed to verify proof');
