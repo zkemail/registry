@@ -16,11 +16,13 @@ const PatternDetails = ({
   isFileInvalid,
   file,
   setFile,
+  emlContent,
 }: {
   id: string;
   isFileInvalid: boolean;
   file: File | null;
   setFile: (file: File | null) => void;
+  emlContent: string;
 }) => {
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
@@ -70,37 +72,40 @@ const PatternDetails = ({
       />
       <Input title="Slug" disabled value={store.slug} />
       {/* TODO: Add check for email body max length */}
-      <DragAndDropFile
-        accept=".eml"
-        file={file}
-        tooltipComponent={
-          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
-            <Image src="/assets/emlInfo.svg" alt="emlInfo" width={360} height={80} />
-            <p className="mt-3 text-base font-medium text-grey-700">
-              The test .eml file is a sample email used to check if all the provided patterns
-              (regex) work correctly. This helps confirm everything is set up properly before
-              blueprint creation. We always store this file locally and never send it to our server.
-            </p>
-          </div>
-        }
-        title="Upload test .eml"
-        helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
-        setFile={async (e) => {
-          if (!e) return;
-
-          try {
-            const response = await findOrCreateDSP(e);
-            console.log(response);
-          } catch (error) {
-            toast.warning(
-              'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
-            );
+      {emlContent ? null : (
+        <DragAndDropFile
+          accept=".eml"
+          file={file}
+          tooltipComponent={
+            <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+              <Image src="/assets/emlInfo.svg" alt="emlInfo" width={360} height={80} />
+              <p className="mt-3 text-base font-medium text-grey-700">
+                The test .eml file is a sample email used to check if all the provided patterns
+                (regex) work correctly. This helps confirm everything is set up properly before
+                blueprint creation. We always store this file locally and never send it to our
+                server.
+              </p>
+            </div>
           }
+          title="Upload test .eml"
+          helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
+          setFile={async (e) => {
+            if (!e) return;
 
-          setFile(e);
-        }}
-        errorMessage={isFileInvalid ? 'File is invalid' : ''}
-      />
+            try {
+              const response = await findOrCreateDSP(e);
+              console.log(response);
+            } catch (error) {
+              toast.warning(
+                'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
+              );
+            }
+
+            setFile(e);
+          }}
+          errorMessage={isFileInvalid ? 'File is invalid' : ''}
+        />
+      )}
       <Textarea
         title="Description"
         placeholder="Enter a description"
