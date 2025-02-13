@@ -145,7 +145,7 @@ async function extractEMLDetails(emlContent: string) {
   });
 
   const senderDomain =
-    headers['From']
+    headers['DKIM-Signature']
       ?.match(/@([^\s>]+)/)?.[1]
       ?.split('.')
       .slice(-2)

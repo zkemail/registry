@@ -24,6 +24,7 @@ import ModalGenerator from '@/components/ModalGenerator';
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '@/app/create/[id]/store';
 import { Textarea } from '@/components/ui/textarea';
+import { getFileContent } from '@/lib/utils';
 import { Step } from '../store';
 import DragAndDropFile from '@/app/components/DragAndDropFile';
 
@@ -457,9 +458,18 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                     </div>
                   }
                   title="Upload test .eml"
-                  setFile={(e) => {
-                    console.log('setting the file');
-                    setFile(e);
+                  setFile={async (file: File | null) => {
+                    if (!file) return;
+
+                    setFile(file);
+                    const emlFileContent = await getFileContent(file);
+                    console.log('emlFileContent: ', emlFileContent);
+                    await localStorage.setItem(
+                      'blueprintEmls',
+                      JSON.stringify({
+                        [blueprint.props.id]: emlFileContent,
+                      })
+                    );
                     router.push(`/create/${blueprint.props.id}`);
                   }}
                 />
