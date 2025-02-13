@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { DecomposedRegex, ExternalInput, parseEmail, testDecomposedRegex } from '@zk-email/sdk';
-import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import { posthog } from 'posthog-js';
 import { Separator } from '@/components/ui/separator';
@@ -20,13 +19,13 @@ const AIPromptInput = ({
   aiPrompt,
   setAiPrompt,
   handleGenerateFields,
-  file,
+  emlContent,
   isGeneratingFieldsLoading,
 }: {
   aiPrompt: string;
   setAiPrompt: (aiPrompt: string) => void;
   handleGenerateFields: () => void;
-  file: File | null;
+  emlContent: string;
   isGeneratingFieldsLoading: boolean;
 }) => {
   return (
@@ -52,7 +51,7 @@ const AIPromptInput = ({
             className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
             variant="secondary"
             size="sm"
-            disabled={!file || isGeneratingFieldsLoading}
+            disabled={!emlContent || isGeneratingFieldsLoading}
             loading={isGeneratingFieldsLoading}
             startIcon={
               <Image
@@ -77,11 +76,11 @@ const AIPromptInput = ({
 };
 
 const ExtractFields = ({
-  file,
+  emlContent,
   optOut,
   setCanCompile,
 }: {
-  file: File | null;
+  emlContent: string;
   optOut: boolean;
   setCanCompile: (canCompile: boolean) => void;
 }) => {
@@ -121,13 +120,12 @@ const ExtractFields = ({
   useEffect(() => {
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
-      if (!file || !store.decomposedRegexes?.length) {
+      if (!emlContent || !store.decomposedRegexes?.length) {
         setIsGeneratingFields(false);
         return;
       }
 
-      const content = await getFileContent(file);
-      const parsedEmail = await parseEmail(content, store.ignoreBodyHashCheck);
+      const parsedEmail = await parseEmail(emlContent);
       const body = parsedEmail.cleanedBody;
       const header = parsedEmail.canonicalizedHeader;
 
@@ -174,24 +172,13 @@ const ExtractFields = ({
     generateRegexOutputs().finally(() => {
       setIsGeneratingFields(false);
     });
-  }, [
-    file,
-    revealPrivateFields,
-    JSON.stringify(
-      store.decomposedRegexes?.map((regex) => ({
-        name: regex.name,
-        location: regex.location,
-        parts: regex.parts,
-        isHashed: regex.isHashed,
-      }))
-    ),
-  ]);
+  }, [emlContent, JSON.stringify(store.decomposedRegexes)]);
 
   const handleGenerateFields = async (index: number) => {
     const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
     updatedIsGeneratingFieldsLoading[index] = true;
     setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
-    if (!file || !aiPrompts[index]) {
+    if (!emlContent || !aiPrompts[index]) {
       toast.error('Please provide both an email file and extraction goals');
       updatedIsGeneratingFieldsLoading[index] = false;
       setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
@@ -203,7 +190,7 @@ const ExtractFields = ({
     }
     try {
       const formData = new FormData();
-      formData.append('emlFile', file);
+      formData.append('emlFile', emlContent);
       formData.append('extractionGoals', aiPrompts[index]);
 
       const response = await fetch('/api/generateBlueprintFields', {
@@ -247,7 +234,7 @@ const ExtractFields = ({
   };
 
   const Status = () => {
-    if (errors.length || !file) {
+    if (errors.length || !emlContent) {
       setCanCompile(false);
       return errors.map((error) => (
         <div key={error} className="flex items-center gap-2 text-red-400">
@@ -660,7 +647,7 @@ const ExtractFields = ({
                   handleGenerateFields={() => {
                     handleGenerateFields(index);
                   }}
-                  file={file}
+                  emlContent={emlContent}
                   isGeneratingFieldsLoading={isGeneratingFieldsLoading[index]}
                 />
                 {regex?.parts?.map((part: any, partIndex: any) => {
