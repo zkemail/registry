@@ -155,7 +155,7 @@ For extracting the email recipient use exactly:
         },
         {
           "isPublic": false,
-          "regexDef": "([^\\r\\n]+<)?"
+          "regexDef": "([^<\r\n]*?\\s*)?<?"
         },
         {
           "isPublic": true,
