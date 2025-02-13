@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import Image from "next/image";
+import Image from 'next/image';
 
 const DragAndDropFile = ({
   accept,
@@ -18,12 +18,12 @@ const DragAndDropFile = ({
   title?: string;
   helpText?: string;
   file: File | null;
-  setFile: (file: File | null) => void;
+  setFile: (file: File | null) => void | Promise<void>;
   errorMessage: string;
   tooltipComponent?: React.ReactNode;
 }) => {
   return (
-    (<div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       {title ? (
         <div className="flex flex-row gap-2">
           <Label className="text-base text-grey-900" htmlFor={title}>
@@ -70,9 +70,10 @@ const DragAndDropFile = ({
                 width={40}
                 height={40}
                 style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
               <div className="flex flex-col items-center text-base font-semibold">
                 <p className="text-grey-800">
                   {file.name} <span className="text-grey-700">(Uploaded)</span>
@@ -87,9 +88,10 @@ const DragAndDropFile = ({
                       width={16}
                       height={16}
                       style={{
-                        maxWidth: "100%",
-                        height: "auto"
-                      }} />
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
                   }
                   onClick={() => {
                     setFile(null);
@@ -107,9 +109,10 @@ const DragAndDropFile = ({
                 width={40}
                 height={40}
                 style={{
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
               <div className="flex flex-col items-center text-base font-semibold">
                 <p className="text-brand-400">
                   Click to upload <span className="text-grey-700">or drag and drop</span>
@@ -138,7 +141,7 @@ const DragAndDropFile = ({
           {errorMessage || helpText}
         </p>
       ) : null}{' '}
-    </div>)
+    </div>
   );
 };
 
