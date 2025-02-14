@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import { testBlueprint } from '@zk-email/sdk';
+import { extractEMLDetails, testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
@@ -137,9 +137,47 @@ const SelectEmails = ({ id }: { id: string }) => {
         const emailIds = emailResponseMessages.map((message) => message.id);
         const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
 
-        const validatedEmails: Email[] = await Promise.all(
+        const validatedEmails: {
+          email: RawEmailResponse;
+          senderDomain: string;
+          selector: string;
+        }[] = await Promise.all(
           emails.map(async (email) => {
-            console.log('email', email);
+            const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
+            return {
+              email,
+              senderDomain,
+              selector,
+            };
+          })
+        );
+
+        // Get unique domain-selector pairs
+        const uniquePairs = Array.from(
+          new Set(
+            validatedEmails.map(({ senderDomain, selector }) => `${senderDomain}:${selector}`)
+          )
+        ).map((pair) => {
+          const [domain, selector] = pair.split(':');
+          return { domain, selector };
+        });
+
+        // Make API calls only for unique pairs
+        await Promise.all(
+          uniquePairs.map((pair) =>
+            fetch('https://archive.zk.email/api/dsp', {
+              method: 'POST',
+              body: JSON.stringify({
+                domain: pair.domain,
+                selector: pair.selector,
+              }),
+            })
+          )
+        );
+
+        // Process validation for all emails
+        const processedEmails: Email[] = await Promise.all(
+          validatedEmails.map(async ({ email }) => {
             const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
@@ -155,7 +193,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         }
 
         console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
-        setFetchedEmails([...fetchedEmails, ...validatedEmails]);
+        setFetchedEmails([...fetchedEmails, ...processedEmails]);
 
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
@@ -188,7 +226,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
     if (fetchedEmails.filter((email) => email.valid).length === 0) {
       return (
-        <div className="border-grey-200 rounded-lg border p-4 text-grey-700">
+        <div className="rounded-lg border border-grey-200 p-4 text-grey-700">
           No valid emails found. Please check your inbox
         </div>
       );
