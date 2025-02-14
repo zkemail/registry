@@ -1,5 +1,5 @@
 import { getFileContent } from '@/lib/utils';
-import { parseEmail, Status } from '@zk-email/sdk';
+import { parseEmail, Status, extractEMLDetails } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -113,52 +113,6 @@ const formatDateAndTime = (date: Date) => {
   });
 };
 
-async function extractEMLDetails(emlContent: string) {
-  const headers: Record<string, string> = {};
-  const lines = emlContent.split('\n');
-
-  let headerPart = true;
-  let headerLines = [];
-
-  // Parse headers
-  for (let line of lines) {
-    if (headerPart) {
-      if (line.trim() === '') {
-        headerPart = false; // End of headers
-      } else {
-        headerLines.push(line);
-      }
-    }
-  }
-
-  // Join multi-line headers and split into key-value pairs
-  const joinedHeaders = headerLines
-    .map((line) =>
-      line.startsWith(' ') || line.startsWith('\t') ? line.trim() : `\n${line.trim()}`
-    )
-    .join('')
-    .split('\n');
-
-  joinedHeaders.forEach((line) => {
-    const [key, ...value] = line.split(':');
-    if (key) headers[key.trim()] = value.join(':').trim();
-  });
-
-  const senderDomain =
-    headers['From']
-      ?.match(/@([^\s>]+)/)?.[1]
-      ?.split('.')
-      .slice(-2)
-      .join('.') || null;
-  const selector = getDKIMSelector(emlContent);
-  const emailQuery = `from:${senderDomain}`;
-  const parsedEmail = await parseEmail(emlContent);
-  const emailBodyMaxLength = parsedEmail.cleanedBody.length;
-  const headerLength = parsedEmail.canonicalizedHeader.length;
-
-  return { parsedEmail, senderDomain, headerLength, selector, emailQuery, emailBodyMaxLength };
-}
-
 const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {
   const parsedEmail = await parseEmail(emlContent);
 
@@ -232,6 +186,7 @@ function debounce<T extends (...args: any[]) => any>(
   return debounced as T & { cancel: () => void };
 }
 
+// TODO: might be unnecessary - parseEmail does this already
 const findOrCreateDSP = async (file: File) => {
   const content = await getFileContent(file);
   const { senderDomain, selector } = await extractEMLDetails(content);
@@ -255,5 +210,5 @@ export {
   formatDate,
   formatDateAndTime,
   debounce,
-  findOrCreateDSP
+  findOrCreateDSP,
 };
