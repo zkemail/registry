@@ -137,18 +137,47 @@ const SelectEmails = ({ id }: { id: string }) => {
         const emailIds = emailResponseMessages.map((message) => message.id);
         const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
 
-        const validatedEmails: Email[] = await Promise.all(
+        const validatedEmails: {
+          email: RawEmailResponse;
+          senderDomain: string;
+          selector: string;
+        }[] = await Promise.all(
           emails.map(async (email) => {
             const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
+            return {
+              email,
+              senderDomain,
+              selector,
+            };
+          })
+        );
 
-            const response = await fetch('https://archive.zk.email/api/dsp', {
+        // Get unique domain-selector pairs
+        const uniquePairs = Array.from(
+          new Set(
+            validatedEmails.map(({ senderDomain, selector }) => `${senderDomain}:${selector}`)
+          )
+        ).map((pair) => {
+          const [domain, selector] = pair.split(':');
+          return { domain, selector };
+        });
+
+        // Make API calls only for unique pairs
+        await Promise.all(
+          uniquePairs.map((pair) =>
+            fetch('https://archive.zk.email/api/dsp', {
               method: 'POST',
               body: JSON.stringify({
-                domain: senderDomain,
-                selector: selector,
+                domain: pair.domain,
+                selector: pair.selector,
               }),
-            });
+            })
+          )
+        );
 
+        // Process validation for all emails
+        const processedEmails: Email[] = await Promise.all(
+          validatedEmails.map(async ({ email }) => {
             const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
@@ -164,7 +193,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         }
 
         console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
-        setFetchedEmails([...fetchedEmails, ...validatedEmails]);
+        setFetchedEmails([...fetchedEmails, ...processedEmails]);
 
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
