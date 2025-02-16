@@ -95,7 +95,31 @@ const ConnectEmails = () => {
             </p>
             <p className="text-grey-700">(.eml format)</p>
           </div>
-          <Input id="email-file" type="file" accept=".eml" className="hidden" />
+          <Input
+            id="email-file"
+            type="file"
+            accept=".eml"
+            className="hidden"
+            onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                try {
+                  const response = await findOrCreateDSP(file);
+                } catch (err) {
+                  toast.error(
+                    'We were unable to locate the public key for this email. This typically happens with older emails. Please try with a more recent email.'
+                  );
+                  return;
+                }
+
+                setFile(file)
+                  .then(() => setStep('1'))
+                  .catch((err) => {
+                    toast.error(err.message ?? err);
+                  });
+              }
+            }}
+          />
         </div>
       </div>
     </div>
