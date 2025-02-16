@@ -20,8 +20,8 @@ const ConnectEmails = () => {
           Connect your Gmail or upload an .eml file
         </p>
         <p className="text-base font-medium text-grey-700">
-          <span className="text-grey-900 underline">Note</span> - Your google API key is kept
-          locally and never sent out to any of our servers.
+          <span className="font-bold text-grey-900">Note:</span> All email processing occurs locally on your device. 
+          We never receive or store your email data.
         </p>
       </div>
       <Button
