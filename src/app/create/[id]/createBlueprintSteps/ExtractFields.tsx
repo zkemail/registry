@@ -302,6 +302,7 @@ const ExtractFields = ({
         </div>
       );
     } else {
+      console.log('canCompile', regexGeneratedOutputs);
       setCanCompile(true);
       return (
         <div className="flex items-center gap-2 text-green-300">
