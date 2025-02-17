@@ -553,7 +553,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!file || isDKIMMissing || !canCompile}
+                  disabled={!savedEmls[id] || !canCompile}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"
