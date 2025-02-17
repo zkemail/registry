@@ -110,9 +110,13 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
     try {
       // console.log('verifying proof on chain');
       console.log('verifying proof');
-      await blueprint.verifyProof(proof);
+      const verified = await blueprint.verifyProof(proof);
       // toast.success('Proof verified successfully on chain');
-      toast.success('Proof verified successfully');
+      if (verified) {
+        toast.success('Proof verified successfully');
+      } else {
+        toast.error('Failed to verify proof');
+      }
     } catch (err) {
       console.error(`Failed to verify proof with id: ${proofId}: `, err);
       toast.error('Failed to verify proof');
