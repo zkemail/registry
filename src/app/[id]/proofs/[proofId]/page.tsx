@@ -15,9 +15,13 @@ import Loader from '@/components/ui/loader';
 import Link from 'next/link';
 import { log } from 'console';
 import { useSearchParams } from 'next/navigation';
+import Confetti from 'react-confetti';
+import { useWindowSize } from 'react-use';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
+  const { width, height } = useWindowSize();
+
   const { getUpdatingStatus, data, getProofIdsForBlueprint, getProof } = useProofEmailStore();
 
   const { id, proofId } = use(params);
@@ -32,6 +36,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
   const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
   const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
+  const [isExploding, setIsExploding] = useState(false);
 
   let urlProofParams = '';
   if (emailProof) {
@@ -139,6 +144,10 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     try {
       console.log('verifying proof');
       await blueprint?.verifyProof(proof);
+      setIsExploding(true);
+      setTimeout(() => {
+        setIsExploding(false);
+      }, 5000);
       toast.success('Proof verified successfully');
     } catch (err) {
       console.error(`Failed to verify proof with id: ${proofId}: `, err);
@@ -172,6 +181,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+      {isExploding ? (
+        <Confetti
+          width={width}
+          height={height}
+        />
+      ) : null}
+
       <div className="flex flex-row flex-wrap items-center justify-between gap-2">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
         <div className="flex flex-row flex-wrap gap-2">
@@ -266,7 +282,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         <div className="flex flex-col justify-between gap-4 md:flex-row">
           <div className="text-base font-medium text-grey-700">Outputs</div>
-          <div className="text-base font-medium max-w-full overflow-x-auto text-grey-800">
+          <div className="max-w-full overflow-x-auto text-base font-medium text-grey-800">
             {emailProof?.publicData
               ? Object.entries(emailProof.publicData)
                   .map(
