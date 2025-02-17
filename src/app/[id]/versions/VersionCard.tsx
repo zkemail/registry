@@ -1,4 +1,4 @@
-import { getDateToNowStr, getStatusIcon } from '@/app/utils';
+import { debounce, getDateToNowStr, getStatusIcon } from '@/app/utils';
 
 import { getStatusColorLight, getStatusName } from '@/app/utils';
 import Image from 'next/image';
@@ -103,6 +103,42 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
       console.error('failed to save draft and move to next step: ', err);
     }
   };
+
+  // Create a debounced version of the DKIM verification
+  const debouncedVerifyDKIM = debounce(async (domain: string) => {
+    setIsVerifyDKIMLoading(true);
+
+    const url = new URL(`https://archive.zk.email/api/key`);
+    const params = new URLSearchParams({
+      domain: domain,
+    });
+
+    url.search = params.toString();
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+
+      setIsDKIMMissing(!data.length);
+    } catch (error) {
+      console.error('Failed to verify DKIM:', error);
+    } finally {
+      setIsVerifyDKIMLoading(false);
+    }
+  }, 500); // 500ms delay
+
+  useEffect(() => {
+    if (!store.senderDomain) {
+      return;
+    }
+
+    debouncedVerifyDKIM(store.senderDomain);
+
+    // Cleanup function to cancel pending debounced calls
+    return () => {
+      debouncedVerifyDKIM.cancel();
+    };
+  }, [JSON.stringify(store.senderDomain)]);
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border bg-white p-6 transition-shadow hover:shadow-md">
@@ -281,7 +317,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
         modalContent={
           <div className="flex flex-col items-center justify-center gap-4">
             {blueprintEditMethod === null ? (
-              <div className="flex flex-col items-center justify-center gap-4">
+              <div className="w-[calc(100vw-6rem)] md:w-[calc(768px-3rem)] flex flex-col items-center justify-center gap-4">
                 <div className="w-full">
                   <p>
                     {blueprint.props.title} (v{blueprint.props.version})
@@ -336,7 +372,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 </div>
               </div>
             ) : blueprintEditMethod === BlueprintEditMethod.Basic ? (
-              <div className="flex flex-col gap-4">
+              <div className="flex w-[calc(100vw-6rem)] md:w-[calc(768px-3rem)] flex-col gap-4">
                 <Input
                   title="Pattern Name"
                   value={store.title}
@@ -388,7 +424,9 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                   placeholder="twitter.com"
                   helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
                   value={store.senderDomain}
-                  onChange={(e) => setField('senderDomain', e.target.value)}
+                  onChange={(e) => {
+                    setField('senderDomain', e.target.value);
+                  }}
                   error={(!!validationErrors.senderDomain || isDKIMMissing) && !isVerifyDKIMLoading}
                   errorMessage={
                     isVerifyDKIMLoading ? (
@@ -432,7 +470,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 </Button>
               </div>
             ) : (
-              <div className="flex w-fit flex-col items-center justify-center gap-4">
+              <div className="flex w-[calc(100vw-6rem)] md:w-[calc(768px-3rem)] flex-col items-center justify-center gap-4">
                 <div className="w-full">
                   <p>
                     {blueprint.props.title} (v{blueprint.props.version})
