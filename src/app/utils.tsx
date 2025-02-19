@@ -145,10 +145,8 @@ async function extractEMLDetails(emlContent: string) {
 
   const senderDomain =
     headers['From']
-      ?.match(/@([^\s>]+)/)?.[1]
-      ?.split('.')
-      .slice(-2)
-      .join('.') || null;
+      ?.match(/@([^\s>]+)/)?.[1] || null;
+
   const selector = getDKIMSelector(emlContent);
   const emailQuery = `from:${senderDomain}`;
   const parsedEmail = await parseEmail(emlContent);
