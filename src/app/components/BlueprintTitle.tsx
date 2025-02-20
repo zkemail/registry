@@ -90,6 +90,7 @@ export const BlueprintTitle = ({
           </button>
         </div>
       </div>
+      <p className="text-sm mb-4 font-medium text-neutral-600">{blueprint.props.slug}</p>
       <p className="text-md mb-4 font-medium text-neutral-600">{blueprint.props.description}</p>
     </div>
   );
