@@ -6,11 +6,15 @@ import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import { toast } from 'react-toastify';
 import { findOrCreateDSP } from '../utils';
+import { useCreateBlueprintStore } from '../create/[id]/store';
 
 const ConnectEmails = () => {
   const { setFile, setStep } = useProofStore();
+  const store = useCreateBlueprintStore();
+  console.log(store)
 
   const { googleLogIn } = useGoogleAuth();
+
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -22,6 +26,33 @@ const ConnectEmails = () => {
         <p className="text-base font-medium text-grey-700">
           <span className="font-bold text-grey-900">Note:</span> All email processing occurs locally on your device. 
           We never receive or store your email data.
+        </p>
+        <p className="text-base font-medium text-grey-700">
+          <span className="font-bold text-grey-900">Email Query: </span>
+          <span className="inline-flex items-center gap-2">
+            <code>
+              {store?.emailQuery}
+            </code>
+            <Button
+              variant="outline"
+              size="smIcon"
+              onClick={() => {
+                navigator.clipboard.writeText(store?.emailQuery || '');
+                toast.success('Copied to clipboard!');
+              }}
+            >
+              <Image
+                src="/assets/LinkIcon.svg"
+                alt="Copy"
+                width={16}
+                height={16}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+            </Button>
+          </span>
         </p>
       </div>
       <Button
