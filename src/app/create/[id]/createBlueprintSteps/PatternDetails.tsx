@@ -25,7 +25,7 @@ const PatternDetails = ({
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
-
+  const { isAdmin } = useAuthStore();
   const { setField } = store;
 
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
@@ -68,7 +68,7 @@ const PatternDetails = ({
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
       />
-      <Input title="Slug" disabled value={store.slug} />
+      <Input title="Slug" disabled={!isAdmin} value={store.slug} onChange={(e) => setField('slug', e.target.value)} />
       {/* TODO: Add check for email body max length */}
       <DragAndDropFile
         accept=".eml"
