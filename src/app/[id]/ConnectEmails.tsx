@@ -10,8 +10,7 @@ import { useCreateBlueprintStore } from '../create/[id]/store';
 
 const ConnectEmails = () => {
   const { setFile, setStep } = useProofStore();
-  const store = useCreateBlueprintStore();
-  console.log(store)
+  const blueprint = useProofStore((state) => state.blueprint);
 
   const { googleLogIn } = useGoogleAuth();
 
@@ -31,13 +30,13 @@ const ConnectEmails = () => {
           <span className="font-bold text-grey-900">Email Query: </span>
           <span className="inline-flex items-center gap-2">
             <code>
-              {store?.emailQuery}
+              {blueprint?.props?.emailQuery}
             </code>
             <Button
               variant="outline"
               size="smIcon"
               onClick={() => {
-                navigator.clipboard.writeText(store?.emailQuery || '');
+                navigator.clipboard.writeText(blueprint?.props?.emailQuery || '');
                 toast.success('Copied to clipboard!');
               }}
             >
