@@ -3,9 +3,12 @@
 import { Input } from '@/components/ui/input';
 import { useProofStore } from './store';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import Loader from '@/components/ui/loader';
+import Image from 'next/image';
+import { Loader2 } from 'lucide-react';
 
 const AddInputs = () => {
   const pathname = usePathname();
@@ -13,9 +16,11 @@ const AddInputs = () => {
   const searchParams = useSearchParams();
   const { blueprint, externalInputs, setExternalInputs, startProofGeneration } = useProofStore();
   const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
+  const [areProvingButtonsDisabled, setAreProvingButtonsDisabled] = useState(true);
 
   const handleStartProofGeneration = async (isLocal = false) => {
     setIsCreateProofLoading(isLocal ? 'local' : 'remote');
+    setAreProvingButtonsDisabled(true);
     try {
       const proofId = await startProofGeneration(isLocal);
       const params = new URLSearchParams(searchParams);
@@ -26,8 +31,13 @@ const AddInputs = () => {
       console.error('Error in starting proof generation: ', error);
     } finally {
       setIsCreateProofLoading(null);
+      setAreProvingButtonsDisabled(false);
     }
   };
+  useEffect(() => {
+    const allInputsValid = externalInputs?.every(input => input.value) ?? false;
+    setAreProvingButtonsDisabled(!allInputsValid);
+  }, [externalInputs]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-6">
@@ -54,63 +64,72 @@ const AddInputs = () => {
         ))}
 
         <div className="flex justify-center">Choose the mode of proof creation</div>
-        <div className="flex justify-center">
-          <TooltipProvider>
-            <Tooltip
-              disableHoverableContent={
-                !!isCreateProofLoading ||
-                !externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-              }
-            >
-              <TooltipTrigger>
-                <Button
-                  onClick={() => handleStartProofGeneration(false)}
-                  disabled={
-                    !!isCreateProofLoading ||
-                    !externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                  }
-                  loading={isCreateProofLoading === 'remote'}
-                  className="mr-3"
-                >
-                  Remotely
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                className={
-                  externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                    ? 'pointer-events-none opacity-0'
-                    : ''
-                }
-              >
-                <p>You must enter all inputs to create a proof remotely</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button
-                  onClick={() => handleStartProofGeneration(true)}
-                  disabled={
-                    !!isCreateProofLoading ||
-                    !externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                  }
-                  loading={isCreateProofLoading === 'local'}
-                >
-                  Locally
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                className={
-                  externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                    ? 'pointer-events-none opacity-0'
-                    : ''
-                }
-              >
-                <p>You must enter all inputs to create a proof locally</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex flex-col gap-4">
+          <div
+            className={`rounded-2xl border border-grey-200 p-6 ${
+              areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
+            }`}
+            onClick={() => {
+              if (areProvingButtonsDisabled) return;
+              handleStartProofGeneration(false);
+            }}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="flex flex-row items-center justify-center gap-2 text-xl">
+                Remote Proving
+                {isCreateProofLoading === 'remote' && (
+                  <span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </span>
+                )}
+              </p>
+
+              <div className="flex flex-row gap-2">
+                <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
+                  Quick
+                </div>
+                <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
+                  Server Side
+                </div>
+              </div>
+            </div>
+            <p className="text-base text-grey-700">
+              This method is comparatively faster. But the email is sent to our servers temporarily
+              and then deleted right after the proof creation.
+            </p>
+          </div>
+          <div
+            className={`rounded-2xl border border-grey-200 p-6 ${
+              areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
+            }`}
+            onClick={() => {
+              if (areProvingButtonsDisabled) return;
+              handleStartProofGeneration(true);
+            }}
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="flex flex-row items-center justify-center gap-2 text-xl">
+                Local Proving{' '}
+                {isCreateProofLoading === 'local' && (
+                  <span>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </span>
+                )}
+              </p>
+              <div className="flex flex-row gap-2">
+                <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
+                  Private
+                </div>
+                <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
+                  Slow
+                </div>
+              </div>
+            </div>
+            <p className="text-base text-grey-700">
+              This method prioritizes your privacy by generating proofs directly on your device.
+              While it may take a bit more time, your email remains securely on your system.
+            </p>
+          </div>
         </div>
       </div>
     </div>
