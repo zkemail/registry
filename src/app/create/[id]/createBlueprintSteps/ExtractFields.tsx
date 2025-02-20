@@ -144,12 +144,18 @@ const ExtractFields = ({
               parsedRegex,
               revealPrivateFields
             );
+
             setRegexGeneratedOutputs((prev) => {
               const updated = [...prev];
               // @ts-ignore
               updated[index] = regexOutputs;
               return updated;
             });
+
+            // update the max length of the regex at that particular index
+            const decomposedRegexes = [...store.decomposedRegexes];
+            decomposedRegexes[index].maxLength = regexOutputs[0].length ?? 64;
+            setField('decomposedRegexes', decomposedRegexes);
           } catch (error) {
             console.error('Error testing decomposed regex:', error);
             setRegexGeneratedOutputs((prev) => {
@@ -168,7 +174,18 @@ const ExtractFields = ({
     generateRegexOutputs().finally(() => {
       setIsGeneratingFields(false);
     });
-  }, [file, JSON.stringify(store.decomposedRegexes)]);
+  }, [
+    file,
+    revealPrivateFields,
+    JSON.stringify(
+      store.decomposedRegexes?.map((regex) => ({
+        name: regex.name,
+        location: regex.location,
+        parts: regex.parts,
+        isHashed: regex.isHashed,
+      }))
+    ),
+  ]);
 
   const handleGenerateFields = async (index: number) => {
     const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
