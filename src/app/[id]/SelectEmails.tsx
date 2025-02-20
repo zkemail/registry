@@ -13,6 +13,7 @@ import { extractEMLDetails, testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -343,8 +344,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           {!hasExternalInputs && (
             <div className="flex justify-center">Choose the mode of proof creation</div>
           )}
-
-          <div className="flex justify-center">
+          {hasExternalInputs ? (
             <Button
               className="flex items-center gap-2"
               disabled={selectedEmail === null || !!isCreateProofLoading}
@@ -357,25 +357,81 @@ const SelectEmails = ({ id }: { id: string }) => {
                 }
               }}
             >
-              {hasExternalInputs ? 'Add Inputs' : 'Remotely'}
+              Add Inputs
             </Button>
-            {!hasExternalInputs && (
-              <Button
-                className="ml-3 flex w-max items-center gap-2"
-                disabled={selectedEmail === null || !!isCreateProofLoading}
-                loading={isCreateProofLoading === 'local'}
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div
+                className={`rounded-2xl border border-grey-200 p-6 ${
+                  selectedEmail === null || !!isCreateProofLoading
+                    ? 'cursor-not-allowed bg-neutral-100'
+                    : 'cursor-pointer'
+                }`}
                 onClick={() => {
-                  if (blueprint!.props.externalInputs && blueprint!.props.externalInputs.length) {
-                    setStep('2');
-                  } else {
-                    handleStartProofGeneration(true);
-                  }
+                  if (selectedEmail === null || !!isCreateProofLoading) return;
+                  handleStartProofGeneration(false);
                 }}
               >
-                Locally
-              </Button>
-            )}
-          </div>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex flex-row items-center justify-center gap-2 text-xl">
+                    Remote Proving
+                    {isCreateProofLoading === 'remote' && (
+                      <span>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </span>
+                    )}
+                  </p>
+
+                  <div className="flex flex-row gap-2">
+                    <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
+                      Quick
+                    </div>
+                    <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
+                      Server Side
+                    </div>
+                  </div>
+                </div>
+                <p className="text-base text-grey-700">
+                  This method is comparatively faster. But the email is sent to our servers
+                  temporarily and then deleted right after the proof creation.
+                </p>
+              </div>
+              <div
+                className={`rounded-2xl border border-grey-200 p-6 ${
+                  selectedEmail === null || !!isCreateProofLoading
+                    ? 'cursor-not-allowed bg-neutral-100'
+                    : 'cursor-pointer'
+                }`}
+                onClick={() => {
+                  if (selectedEmail === null || !!isCreateProofLoading) return;
+                  handleStartProofGeneration(true);
+                }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="flex flex-row items-center justify-center gap-2 text-xl">
+                    Local Proving{' '}
+                    {isCreateProofLoading === 'local' && (
+                      <span>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      </span>
+                    )}
+                  </p>
+                  <div className="flex flex-row gap-2">
+                    <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
+                      Private
+                    </div>
+                    <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
+                      Slow
+                    </div>
+                  </div>
+                </div>
+                <p className="text-base text-grey-700">
+                  This method prioritizes your privacy by generating proofs directly on your device.
+                  While it may take a bit more time, your email remains securely on your system.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -389,7 +445,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           Choose the emails you want to create proofs for.
         </p>
         <p className="text-base font-medium text-grey-700">
-          <span className="text-grey-900 font-bold">Note</span> - If you select to create the proofs
+          <span className="font-bold text-grey-900">Note</span> - If you select to create the proofs
           remotely, your emails will be sent to our secured service for proof generation. Emails
           will be deleted once the proofs are generated
         </p>
