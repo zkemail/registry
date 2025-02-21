@@ -61,7 +61,7 @@ const PatternDetails = ({
         value={store.title}
         onChange={(e) => {
           setField('title', e.target.value);
-          checkExistingBlueprint(e.target.value.replace(/\s+/g, '_'));
+          checkExistingBlueprint(e.target.value.replace(/\s+/g, '-'));
         }}
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
