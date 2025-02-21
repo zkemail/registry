@@ -130,8 +130,6 @@ const SelectEmails = ({ id }: { id: string }) => {
         q: blueprint?.props.emailQuery,
       });
 
-      console.log('emailQuery: ', blueprint?.props.emailQuery);
-
       const emailResponseMessages = emailListResponse.messages;
       if (emailResponseMessages?.length > 0) {
         const emailIds = emailResponseMessages.map((message) => message.id);
