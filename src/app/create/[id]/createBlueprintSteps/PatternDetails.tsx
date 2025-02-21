@@ -97,6 +97,7 @@ const PatternDetails = ({
             toast.warning(
               'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
             );
+            return;
           }
 
           setFile(e);
