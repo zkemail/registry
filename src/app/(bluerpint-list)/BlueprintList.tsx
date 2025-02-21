@@ -9,7 +9,7 @@ import Loader from '@/components/ui/loader';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { toast } from 'react-toastify';
 
-const PAGINATION_LIMIT = 150;
+const PAGINATION_LIMIT = 100;
 
 interface BlueprintListProps {
   search: string | null;
