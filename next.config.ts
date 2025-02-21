@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   experimental: {
     ppr: false,
   },
-  productionBrowserSourceMaps: true, // Enable source maps
   webpack: (config, { isServer }) => {
     // This is a browser-only package
     if (!isServer) {
