@@ -105,7 +105,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               key={index}
               className="h-fit rounded-md border border-neutral-300 bg-neutral-200 px-2 py-[1px] text-sm font-light leading-[18px] text-grey-900"
             >
-              {dr.name} {dr.isHashed ? '(hashed)' : ''}
+              {dr.name}
             </div>
           ))}
         </div>
