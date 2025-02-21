@@ -1,11 +1,10 @@
-import Image from 'next/image';
+import Image from "next/image";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import { toast } from 'react-toastify';
-import { findOrCreateDSP } from '../utils';
 
 const ConnectEmails = () => {
   const { setFile, setStep } = useProofStore();
@@ -13,7 +12,7 @@ const ConnectEmails = () => {
   const { googleLogIn } = useGoogleAuth();
 
   return (
-    <div className="flex flex-col items-center justify-center gap-6">
+    (<div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Connect emails</h4>
         <p className="text-base font-medium text-grey-700">
@@ -37,10 +36,9 @@ const ConnectEmails = () => {
           width={16}
           height={16}
           style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
+            maxWidth: "100%",
+            height: "auto"
+          }} />
         Connect Gmail Account
       </Button>
       <div className="flex w-full items-center">
@@ -55,18 +53,11 @@ const ConnectEmails = () => {
           e.preventDefault();
           e.stopPropagation();
         }}
-        onDrop={async (e) => {
+        onDrop={(e) => {
           e.preventDefault();
           e.stopPropagation();
           const files = e.dataTransfer.files;
           if (files?.[0]) {
-            try {
-              const response = await findOrCreateDSP(files[0]);
-            } catch (err) {
-              toast.error('Failed to find or create DSP');
-              return;
-            }
-
             setFile(files[0])
               .then(() => setStep('1'))
               .catch((err) => toast.error(err.message ?? err));
@@ -83,20 +74,35 @@ const ConnectEmails = () => {
             width={40}
             height={40}
             style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
+              maxWidth: "100%",
+              height: "auto"
+            }} />
           <div className="flex flex-col items-center text-base font-semibold">
             <p className="text-brand-400">
               Click to upload <span className="text-grey-700">or drag and drop</span>
             </p>
             <p className="text-grey-700">(.eml format)</p>
           </div>
-          <Input id="email-file" type="file" accept=".eml" className="hidden" />
+          <Input
+            id="email-file"
+            type="file"
+            accept=".eml"
+            className="hidden"
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              const file = e.target.files?.[0];
+
+              if (file) {
+                setFile(file)
+                  .then(() => setStep('1'))
+                  .catch((err) => {
+                    toast.error(err.message ?? err);
+                  });
+              }
+            }}
+          />
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 
