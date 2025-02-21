@@ -8,10 +8,6 @@ import { useCreateBlueprintStore } from '../store';
 import Image from 'next/image';
 import sdk from '@/lib/sdk';
 import { useDebouncedCallback } from 'use-debounce';
-import { getFileContent } from '@/lib/utils';
-import { extractEMLDetails } from '@zk-email/sdk';
-import { findOrCreateDSP } from '@/app/utils';
-import { toast } from 'react-toastify';
 
 const PatternDetails = ({
   id,
@@ -65,7 +61,7 @@ const PatternDetails = ({
         value={store.title}
         onChange={(e) => {
           setField('title', e.target.value);
-          checkExistingBlueprint(e.target.value.replace(/\s+/g, '_'));
+          checkExistingBlueprint(e.target.value.replace(/\s+/g, '-'));
         }}
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
@@ -87,18 +83,8 @@ const PatternDetails = ({
         }
         title="Upload test .eml"
         helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
-        setFile={async (e) => {
-          if (!e) return;
-
-          try {
-            const response = await findOrCreateDSP(e);
-            console.log(response);
-          } catch (error) {
-            toast.warning(
-              'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
-            );
-          }
-
+        setFile={(e) => {
+          console.log('setting the file');
           setFile(e);
         }}
         errorMessage={isFileInvalid ? 'File is invalid' : ''}

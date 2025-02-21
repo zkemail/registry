@@ -1,5 +1,4 @@
-import { getFileContent } from '@/lib/utils';
-import { parseEmail, Status, extractEMLDetails } from '@zk-email/sdk';
+import { parseEmail, Status } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -113,6 +112,50 @@ const formatDateAndTime = (date: Date) => {
   });
 };
 
+async function extractEMLDetails(emlContent: string) {
+  const headers: Record<string, string> = {};
+  const lines = emlContent.split('\n');
+
+  let headerPart = true;
+  let headerLines = [];
+
+  // Parse headers
+  for (let line of lines) {
+    if (headerPart) {
+      if (line.trim() === '') {
+        headerPart = false; // End of headers
+      } else {
+        headerLines.push(line);
+      }
+    }
+  }
+
+  // Join multi-line headers and split into key-value pairs
+  const joinedHeaders = headerLines
+    .map((line) =>
+      line.startsWith(' ') || line.startsWith('\t') ? line.trim() : `\n${line.trim()}`
+    )
+    .join('')
+    .split('\n');
+
+  joinedHeaders.forEach((line) => {
+    const [key, ...value] = line.split(':');
+    if (key) headers[key.trim()] = value.join(':').trim();
+  });
+
+  const senderDomain =
+    headers['From']
+      ?.match(/@([^\s>]+)/)?.[1] || null;
+
+  const selector = getDKIMSelector(emlContent);
+  const emailQuery = `from:${senderDomain}`;
+  const parsedEmail = await parseEmail(emlContent);
+  const emailBodyMaxLength = parsedEmail.cleanedBody.length;
+  const headerLength = parsedEmail.canonicalizedHeader.length;
+
+  return { parsedEmail, senderDomain, headerLength, selector, emailQuery, emailBodyMaxLength };
+}
+
 const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {
   const parsedEmail = await parseEmail(emlContent);
 
@@ -154,7 +197,7 @@ const getDKIMSelector = (emlContent: string): string | null => {
 /**
  * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed
  * since the last time the debounced function was invoked.
- *
+ * 
  * @param func The function to debounce
  * @param wait The number of milliseconds to delay
  * @returns A debounced version of the function
@@ -186,21 +229,6 @@ function debounce<T extends (...args: any[]) => any>(
   return debounced as T & { cancel: () => void };
 }
 
-const findOrCreateDSP = async (file: File) => {
-  const content = await getFileContent(file);
-  const { senderDomain, selector } = await extractEMLDetails(content);
-
-  const response = await fetch('https://archive.zk.email/api/dsp', {
-    method: 'POST',
-    body: JSON.stringify({
-      domain: senderDomain,
-      selector: selector,
-    }),
-  });
-
-  return response;
-};
-
 export {
   getStatusColorLight,
   getStatusIcon,
@@ -209,5 +237,4 @@ export {
   formatDate,
   formatDateAndTime,
   debounce,
-  findOrCreateDSP,
 };

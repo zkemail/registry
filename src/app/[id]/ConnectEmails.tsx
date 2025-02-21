@@ -1,57 +1,26 @@
-import Image from 'next/image';
+import Image from "next/image";
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import { toast } from 'react-toastify';
-import { findOrCreateDSP } from '../utils';
-import { useCreateBlueprintStore } from '../create/[id]/store';
 
 const ConnectEmails = () => {
   const { setFile, setStep } = useProofStore();
-  const blueprint = useProofStore((state) => state.blueprint);
 
   const { googleLogIn } = useGoogleAuth();
 
-
   return (
-    <div className="flex flex-col items-center justify-center gap-6">
+    (<div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Connect emails</h4>
         <p className="text-base font-medium text-grey-700">
           Connect your Gmail or upload an .eml file
         </p>
         <p className="text-base font-medium text-grey-700">
-          <span className="font-bold text-grey-900">Note:</span> All email processing occurs locally on your device. 
-          We never receive or store your email data.
-        </p>
-        <p className="text-base font-medium text-grey-700">
-          <span className="font-bold text-grey-900">Email Query: </span>
-          <span className="inline-flex items-center gap-2">
-            <code>
-              {blueprint?.props?.emailQuery}
-            </code>
-            <Button
-              variant="outline"
-              size="smIcon"
-              onClick={() => {
-                navigator.clipboard.writeText(blueprint?.props?.emailQuery || '');
-                toast.success('Copied to clipboard!');
-              }}
-            >
-              <Image
-                src="/assets/LinkIcon.svg"
-                alt="Copy"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
-                }}
-              />
-            </Button>
-          </span>
+          <span className="text-grey-900 underline">Note</span> - Your google API key is kept
+          locally and never sent out to any of our servers.
         </p>
       </div>
       <Button
@@ -67,10 +36,9 @@ const ConnectEmails = () => {
           width={16}
           height={16}
           style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
+            maxWidth: "100%",
+            height: "auto"
+          }} />
         Connect Gmail Account
       </Button>
       <div className="flex w-full items-center">
@@ -85,20 +53,11 @@ const ConnectEmails = () => {
           e.preventDefault();
           e.stopPropagation();
         }}
-        onDrop={async (e) => {
+        onDrop={(e) => {
           e.preventDefault();
           e.stopPropagation();
           const files = e.dataTransfer.files;
           if (files?.[0]) {
-            try {
-              const response = await findOrCreateDSP(files[0]);
-            } catch (err) {
-              toast.error(
-                'We were unable to locate the public key for this email. This typically happens with older emails. Please try with a more recent email.'
-              );
-              return;
-            }
-
             setFile(files[0])
               .then(() => setStep('1'))
               .catch((err) => toast.error(err.message ?? err));
@@ -115,10 +74,9 @@ const ConnectEmails = () => {
             width={40}
             height={40}
             style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
+              maxWidth: "100%",
+              height: "auto"
+            }} />
           <div className="flex flex-col items-center text-base font-semibold">
             <p className="text-brand-400">
               Click to upload <span className="text-grey-700">or drag and drop</span>
@@ -130,18 +88,10 @@ const ConnectEmails = () => {
             type="file"
             accept=".eml"
             className="hidden"
-            onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const file = e.target.files?.[0];
-              if (file) {
-                try {
-                  const response = await findOrCreateDSP(file);
-                } catch (err) {
-                  toast.error(
-                    'We were unable to locate the public key for this email. This typically happens with older emails. Please try with a more recent email.'
-                  );
-                  return;
-                }
 
+              if (file) {
                 setFile(file)
                   .then(() => setStep('1'))
                   .catch((err) => {
@@ -152,7 +102,7 @@ const ConnectEmails = () => {
           />
         </div>
       </div>
-    </div>
+    </div>)
   );
 };
 

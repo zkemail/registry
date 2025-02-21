@@ -5,7 +5,6 @@ import { useProofStore } from './store';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const AddInputs = () => {
   const pathname = usePathname();
@@ -55,62 +54,21 @@ const AddInputs = () => {
 
         <div className="flex justify-center">Choose the mode of proof creation</div>
         <div className="flex justify-center">
-          <TooltipProvider>
-            <Tooltip
-              disableHoverableContent={
-                !!isCreateProofLoading ||
-                !externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-              }
-            >
-              <TooltipTrigger>
-                <Button
-                  onClick={() => handleStartProofGeneration(false)}
-                  disabled={
-                    !!isCreateProofLoading ||
-                    !externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                  }
-                  loading={isCreateProofLoading === 'remote'}
-                  className="mr-3"
-                >
-                  Remotely
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                className={
-                  externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                    ? 'pointer-events-none opacity-0'
-                    : ''
-                }
-              >
-                <p>You must enter all inputs to create a proof remotely</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Button
-                  onClick={() => handleStartProofGeneration(true)}
-                  disabled={
-                    !!isCreateProofLoading ||
-                    !externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                  }
-                  loading={isCreateProofLoading === 'local'}
-                >
-                  Locally
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent
-                className={
-                  externalInputs?.reduce((acc, curr) => acc && !!curr.value, true)
-                    ? 'pointer-events-none opacity-0'
-                    : ''
-                }
-              >
-                <p>You must enter all inputs to create a proof locally</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Button
+            onClick={() => handleStartProofGeneration(false)}
+            disabled={!!isCreateProofLoading}
+            loading={isCreateProofLoading === 'remote'}
+            className="mr-3"
+          >
+            Remotely
+          </Button>
+          <Button
+            onClick={() => handleStartProofGeneration(true)}
+            disabled={!!isCreateProofLoading}
+            loading={isCreateProofLoading === 'local'}
+          >
+            Locally
+          </Button>
         </div>
       </div>
     </div>
