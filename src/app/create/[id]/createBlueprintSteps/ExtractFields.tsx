@@ -155,7 +155,7 @@ const ExtractFields = ({
             setRegexGeneratedOutputs((prev) => {
               const updated = [...prev];
               // @ts-ignore
-              updated[index] = [];
+              updated[index] = ['Error: ' + error];
               return updated;
             });
           }
@@ -609,6 +609,15 @@ const ExtractFields = ({
                     setField('decomposedRegexes', updatedRegexes);
                   }}
                 />
+                <Checkbox
+                  title="Hash Public Output"
+                  checked={regex.isHashed}
+                  onCheckedChange={(checked: boolean) => {
+                    const updatedRegexes = [...store.decomposedRegexes];
+                    updatedRegexes[index] = { ...regex, isHashed: checked };
+                    setField('decomposedRegexes', updatedRegexes);
+                  }}
+                />
               </div>
               <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3">
                 <div className="flex items-center justify-between">
@@ -774,15 +783,19 @@ const ExtractFields = ({
                 regexGeneratedOutputs[index].length > 0 ? (
                   <>
                     <Label>Output</Label>
-                    <Input
-                      disabled
-                      className="border-grey-500 bg-neutral-100"
-                      value={
-                        regexGeneratedOutputs
+                    <div
+                      className={`rounded-lg border p-2 text-sm ${
+                        JSON.stringify(regexGeneratedOutputs[index]).includes('Error:')
+                          ? 'border-red-500 bg-red-100'
+                          : 'border-grey-500 bg-neutral-100'
+                      }`}
+                    >
+                      {JSON.stringify(regexGeneratedOutputs[index]).includes('Error: ')
+                        ? JSON.stringify(regexGeneratedOutputs[index])
+                        : regexGeneratedOutputs
                           ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
-                          : ''
-                      }
-                    />
+                          : ''}
+                    </div>
                   </>
                 ) : null}
               </div>
