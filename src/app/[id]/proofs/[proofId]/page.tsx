@@ -143,15 +143,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
     try {
       console.log('verifying proof');
-      const verified = await blueprint?.verifyProof(proof);
-
-      // toast.success('Proof verified successfully on chain');
-      if (verified) {
-        toast.success('Proof verified successfully');
-      } else {
-        throw new Error('Failed to verify proof');
-      }
-
+      await blueprint?.verifyProof(proof);
       setIsExploding(true);
       setTimeout(() => {
         setIsExploding(false);
@@ -189,7 +181,12 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-      {isExploding ? <Confetti width={width} height={height} /> : null}
+      {isExploding ? (
+        <Confetti
+          width={width}
+          height={height}
+        />
+      ) : null}
 
       <div className="flex flex-row flex-wrap items-center justify-between gap-2">
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
