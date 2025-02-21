@@ -70,7 +70,7 @@ export const BlueprintTitle = ({
         </div>
         <div className="flex items-center gap-4 text-sm text-grey-600">
           <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1 font-medium text-grey-800">
-            <Image width={16} height={16} src="/assets/Users.svg" alt="views" /> {numProofs}
+            <Image width={16} height={16} src="assets/Users.svg" alt="views" /> {numProofs}
           </span>
           <button
             onClick={handleStarClick}
