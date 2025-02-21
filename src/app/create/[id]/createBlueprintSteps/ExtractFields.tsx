@@ -645,6 +645,7 @@ const ExtractFields = ({
                   isGeneratingFieldsLoading={isGeneratingFieldsLoading[index]}
                 />
                 {regex?.parts?.map((part: any, partIndex: any) => {
+                  console.log(JSON.stringify(regexGeneratedOutputs[index]).includes('Error: '));
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
@@ -784,10 +785,10 @@ const ExtractFields = ({
                   <>
                     <Label>Output</Label>
                     <div
-                      className={`rounded-lg border p-2 text-sm ${
+                      className={`rounded-lg border text-sm p-2 ${
                         JSON.stringify(regexGeneratedOutputs[index]).includes('Error:')
-                          ? 'border-red-500 bg-red-100'
-                          : 'border-grey-500 bg-neutral-100'
+                          ? ' border-red-500 bg-red-100'
+                          : ' border-grey-500 bg-neutral-100'
                       }`}
                     >
                       {JSON.stringify(regexGeneratedOutputs[index]).includes('Error: ')
