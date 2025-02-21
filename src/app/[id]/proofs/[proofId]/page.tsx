@@ -151,25 +151,6 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     return <Loader />;
   }
 
-  // TODO: should not be necessary
-  function cleanCharacters(inputs: string[]) {
-    if (!Array.isArray(inputs)) return inputs;
-    const result = [];
-    for (const input of inputs) {
-      // Find the first valid section (everything after '|')
-      let validIndex = input.indexOf('|');
-
-      // If '|' exists, keep everything after it
-      let cleaned = validIndex !== -1 ? input.substring(validIndex + 1) : input;
-
-      // Remove non-printable control characters (including \u0000 - \u001F and other invalid Unicode)
-      cleaned = cleaned.replace(/[\x00-\x1F\u007F-\u009F\uFFFD]/g, '');
-
-      result.push(cleaned.trim()); // Trim any trailing spaces
-    }
-    return result;
-  }
-
   return (
     <div className="mx-4 my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
       <div className="flex flex-row flex-wrap items-center justify-between gap-2">
@@ -269,10 +250,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <div className="text-base font-medium text-grey-800">
             {emailProof?.publicData
               ? Object.entries(emailProof.publicData)
-                  .map(
-                    ([key, value]) =>
-                      `{"${key}": ${JSON.stringify(cleanCharacters(value as string[]))}}`
-                  )
+                  .map(([key, value]) => `{"${key}": ${JSON.stringify(value)}}`)
                   .join('\n')
               : '-'}
           </div>
