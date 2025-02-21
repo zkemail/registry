@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import { extractEMLDetails, testBlueprint } from '@zk-email/sdk';
+import { testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
@@ -139,16 +139,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
         const validatedEmails: Email[] = await Promise.all(
           emails.map(async (email) => {
-            const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
-
-            const response = await fetch('https://archive.zk.email/api/dsp', {
-              method: 'POST',
-              body: JSON.stringify({
-                domain: senderDomain,
-                selector: selector,
-              }),
-            });
-
+            console.log('email', email);
             const validationResult = await handleValidateEmail(email.decodedContents);
             return {
               ...email,
@@ -197,7 +188,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
     if (fetchedEmails.filter((email) => email.valid).length === 0) {
       return (
-        <div className="rounded-lg border border-grey-200 p-4 text-grey-700">
+        <div className="border-grey-200 rounded-lg border p-4 text-grey-700">
           No valid emails found. Please check your inbox
         </div>
       );
