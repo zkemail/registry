@@ -386,10 +386,10 @@ const SelectEmails = ({ id }: { id: string }) => {
       <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Select Emails</h4>
         <p className="text-base font-medium text-grey-700">
-          Choose the emails you want to create proofs for.
+          Choose the emails you want to create proofs for. You can select multiple emails.
         </p>
         <p className="text-base font-medium text-grey-700">
-          <span className="text-grey-900 font-bold">Note</span> - If you select to create the proofs
+          <span className="text-grey-900 underline">Note</span> - If you select to create the proofs
           remotely, your emails will be sent to our secured service for proof generation. Emails
           will be deleted once the proofs are generated
         </p>
