@@ -146,12 +146,6 @@ const SelectEmails = ({ id }: { id: string }) => {
           })
         );
 
-        if (validatedEmails.length === 0 && emailListResponse.nextPageToken) {
-          setPageToken(emailListResponse.nextPageToken || null);
-          handleFetchEmails();
-          return;
-        }
-
         console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
         setFetchedEmails([...fetchedEmails, ...validatedEmails]);
 
