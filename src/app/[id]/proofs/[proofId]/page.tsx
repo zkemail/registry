@@ -264,9 +264,9 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             {blueprint?.props.verifierContract?.address || '-'}
           </Link>
         </div>
-        <div className="flex flex-col justify-between gap-4 md:flex-row">
+        <div className="flex flex-col justify-between gap-1 md:flex-row">
           <div className="text-base font-medium text-grey-700">Outputs</div>
-          <div className="text-base font-medium max-w-full overflow-x-auto text-grey-800">
+          <div className="text-base font-medium text-grey-800">
             {emailProof?.publicData
               ? Object.entries(emailProof.publicData)
                   .map(
