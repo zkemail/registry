@@ -276,9 +276,13 @@ const ExtractFields = ({
     }
     if (
       !regexGeneratedOutputs.length ||
+<<<<<<< HEAD
       regexGeneratedOutputs.some((output) =>
         Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error')
       )
+=======
+      regexGeneratedOutputs.some((output) => Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error'))
+>>>>>>> 51d4915 (chore: Fix build errors)
     ) {
       setCanCompile(false);
       return (
