@@ -9,7 +9,7 @@ import Loader from '@/components/ui/loader';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { toast } from 'react-toastify';
 
-const PAGINATION_LIMIT = 100;
+const PAGINATION_LIMIT = 20;
 
 interface BlueprintListProps {
   search: string | null;
@@ -33,27 +33,45 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
 
     setIsLoading(true);
     setError(null);
-
     try {
-      // NOTE: An admin will see blueprints of ALL statuses of ALL users
-      // A logged in non admin will only see his/her blueprints if status is not Done
-      const results = await sdk.listBlueprints({
-        search: search || '',
-        skip,
-        limit: PAGINATION_LIMIT,
-        status: filters.length > 0 ? filters : undefined,
-        sort: -1,
-        sortBy: 'stars',
-      });
+      let results;
+      let retryCount = 0;
+      const maxRetries = 3;
 
-      setBlueprints(results);
+      while (!results && retryCount < maxRetries) {
+        try {
+          // NOTE: An admin will see blueprints of ALL statuses of ALL users
+          // A logged in non admin will only see his/her blueprints if status is not Done
+          results = await sdk.listBlueprints({
+            search: search || '',
+            skip,
+            limit: PAGINATION_LIMIT,
+            status: filters.length > 0 ? filters : undefined,
+            sort: -1,
+            sortBy: 'stars',
+          });
+        } catch (err) {
+          retryCount++;
+          setSkip((prevSkip) => prevSkip + PAGINATION_LIMIT);
+          if (retryCount === maxRetries) {
+            throw err;
+          }
+          console.error('Error fetching blueprints: ', err);
+          // Wait a bit before retrying
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        }
+      }
 
-      // If we got fewer results than the limit, we've reached the end
-      setHasMore(results.length === PAGINATION_LIMIT);
-      setSkip((prevSkip) => prevSkip + PAGINATION_LIMIT);
+      if (results) {
+        setBlueprints(results);
+        // If we got fewer results than the limit, we've reached the end
+        setHasMore(results.length === PAGINATION_LIMIT);
+        setSkip((prevSkip) => prevSkip + PAGINATION_LIMIT);
+      }
     } catch (err) {
       // In React 19, errors are not re-thrown, so we handle them explicitly
       setError(err instanceof Error ? err : new Error('Failed to fetch blueprints'));
+      console.error('Failed to fetch blueprints:', err);
       setHasMore(false);
     } finally {
       setIsLoading(false);
@@ -112,13 +130,14 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
     }
   }, [token]);
 
-  if (error) {
-    return (
-      <div className="rounded-md bg-red-50 p-4 text-red-600">
-        Error loading blueprints: {error.message}
-      </div>
-    );
-  }
+  // Edited the message at the bottom to be a hotfix
+  // if (error) {
+  //   return (
+  //     <div className="rounded-md bg-red-50 p-4 text-red-600">
+  //       Error loading blueprints: {error.message}
+  //     </div>
+  //   );
+  // }
 
   const onStar = async (blueprint: Blueprint) => {
     if (!token) {
@@ -172,6 +191,8 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
       <div ref={loadingRef} className="flex h-10 w-full items-center justify-center">
         {isLoading ? (
           <Loader />
+        ) : error ? (
+          <div className="text-red-600">Error loading more blueprints: {error.message}</div>
         ) : !hasMore && blueprints.length > 0 ? (
           <div className="text-grey-500">No more blueprints to load</div>
         ) : blueprints.length === 0 && !isLoading ? (
