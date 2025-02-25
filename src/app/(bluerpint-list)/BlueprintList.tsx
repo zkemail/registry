@@ -63,7 +63,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
       }
 
       if (results) {
-        setBlueprints(results);
+        setBlueprints((prevBlueprints) => [...prevBlueprints, ...results]);
         // If we got fewer results than the limit, we've reached the end
         setHasMore(results.length === PAGINATION_LIMIT);
         setSkip((prevSkip) => prevSkip + PAGINATION_LIMIT);
