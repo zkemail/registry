@@ -8,8 +8,6 @@ import { useCreateBlueprintStore } from '../store';
 import Image from 'next/image';
 import sdk from '@/lib/sdk';
 import { useDebouncedCallback } from 'use-debounce';
-import { getFileContent } from '@/lib/utils';
-import { extractEMLDetails } from '@zk-email/sdk';
 import { findOrCreateDSP } from '@/app/utils';
 import { toast } from 'react-toastify';
 

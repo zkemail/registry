@@ -83,8 +83,11 @@ export const useProofStore = create<ProofState>()(
           // TODO: Notify user about this
         }
 
+        const { blueprint } = get();
+
         try {
-          await parseEmail(content);
+          // Use ignoreBodyHashCheck if already set
+          await parseEmail(content, blueprint?.props.ignoreBodyHashCheck);
         } catch (err) {
           console.error('Failed to parse email, email is invalid: ', err);
           throw err;
