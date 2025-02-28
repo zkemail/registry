@@ -169,7 +169,7 @@ const EmailDetails = ({
                   }
 
                   const content = await getFileContent(file);
-                  const parsedEmail = await parseEmail(content);
+                  const parsedEmail = await parseEmail(content, false);
                   const value = e.target.value;
 
                   if (!value) {
