@@ -127,7 +127,7 @@ const ExtractFields = ({
       }
 
       const content = await getFileContent(file);
-      const parsedEmail = await parseEmail(content);
+      const parsedEmail = await parseEmail(content, store.ignoreBodyHashCheck);
       const body = parsedEmail.cleanedBody;
       const header = parsedEmail.canonicalizedHeader;
 
@@ -277,7 +277,9 @@ const ExtractFields = ({
     }
     if (
       !regexGeneratedOutputs.length ||
-      regexGeneratedOutputs.some((output) => Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error'))
+      regexGeneratedOutputs.some((output) =>
+        Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error')
+      )
     ) {
       setCanCompile(false);
       return (
