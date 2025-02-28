@@ -113,44 +113,6 @@ const formatDateAndTime = (date: Date) => {
   });
 };
 
-const getMaxEmailBodyLength = async (emlContent: string, shaPrecomputeSelector: string) => {
-  const parsedEmail = await parseEmail(emlContent);
-
-  const body = parsedEmail.cleanedBody;
-  const index = body.indexOf(shaPrecomputeSelector);
-
-  if (index === -1) {
-    return body.length;
-  }
-
-  return body.length - index - shaPrecomputeSelector.length;
-};
-
-const getDKIMSelector = (emlContent: string): string | null => {
-  const headerLines: string[] = [];
-  const lines = emlContent.split('\n');
-  for (const line of lines) {
-    if (line.trim() === '') break;
-    // If line starts with whitespace, it's a continuation of previous header
-    if (line.startsWith(' ') || line.startsWith('\t')) {
-      headerLines[headerLines.length - 1] += line.trim();
-    } else {
-      headerLines.push(line);
-    }
-  }
-
-  // Then look for DKIM-Signature in the joined headers
-  for (const line of headerLines) {
-    if (line.includes('DKIM-Signature')) {
-      const match = line.match(/s=([^;]+)/);
-      if (match && match[1]) {
-        return match[1].trim();
-      }
-    }
-  }
-  return null;
-};
-
 /**
  * Creates a debounced function that delays invoking func until after wait milliseconds have elapsed
  * since the last time the debounced function was invoked.

@@ -16,13 +16,7 @@ import { useCreateBlueprintStore } from './store';
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import {
-  extractEMLDetails,
-  DecomposedRegex,
-  testBlueprint,
-  getDKIMSelector,
-  parseEmail,
-} from '@zk-email/sdk';
+import { extractEMLDetails, DecomposedRegex, testBlueprint, parseEmail } from '@zk-email/sdk';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
@@ -59,6 +53,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     compile,
     file,
     setFile,
+    blueprint,
   } = store;
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -170,9 +165,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     let content: string;
     try {
       content = await getFileContent(file);
-      const parsedEmail = await parseEmail(content);
+      const parsedEmail = await parseEmail(content, blueprint?.props.ignoreBodyHashCheck);
       const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
-        await extractEMLDetails(content);
+        await extractEMLDetails(content, parsedEmail);
       setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
       setCanonicalizedBody(parsedEmail.canonicalizedBody);
       setDkimSelector(selector);
@@ -192,8 +187,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
       }
       console.error('Failed to get content from email', err);
+      if (file) {
+        toast.error('Invalid email');
+      }
       return;
     }
+
+    // Bleurpint was not defined yet, skip testing email against blueprint
+    if (id === 'new') return;
 
     try {
       const parsed = getParsedDecomposedRegexes();
