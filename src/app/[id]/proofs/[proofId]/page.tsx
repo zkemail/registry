@@ -17,6 +17,7 @@ import { log } from 'console';
 import { useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -298,7 +299,25 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         </div>
         {emailProof?.externalInputs && Object.keys(emailProof.externalInputs).length ? (
           <div className="flex flex-col justify-between gap-1 md:flex-row">
-            <div className="text-base font-medium text-grey-700">External Inputs</div>
+            <div className="flex justify-center gap-2 text-base font-medium text-grey-700">
+              External Inputs{' '}
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Image src="/assets/Info.svg" alt="info" width={16} height={16} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+                      <p className="m-1 text-base font-medium text-grey-700">
+                        The external input is entered manually by the users and are not part of the
+                        email.
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
             <div className="text-base font-medium text-grey-800">
               {emailProof?.externalInputs
                 ? Object.entries(emailProof.externalInputs)
@@ -330,7 +349,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       {emailProof ? (
         <div>
           <h4 className="rounded text-base font-medium text-grey-900">Generated proof</h4>
-          <div className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-grey-600">
+          <div className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-gray-600">
             <pre>{JSON.stringify(emailProof.proofData, null, 2)}</pre>
           </div>
         </div>
