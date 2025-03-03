@@ -44,7 +44,7 @@ const initialState: BlueprintProps = {
   senderDomain: '',
   enableHeaderMasking: false,
   enableBodyMasking: false,
-  isPublic: false,
+  isPublic: true,
   verifierContract: {
     chain: 84532,
     address: '',
