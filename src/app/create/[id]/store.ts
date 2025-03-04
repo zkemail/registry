@@ -11,6 +11,7 @@ import {
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import posthog from 'posthog-js';
+import { getFileContent } from '@/lib/utils';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
@@ -130,6 +131,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       saveDraft: async (): Promise<string> => {
         const state = get();
 
+        // Page logic should already prevent saving a draft without having a file
+        if (!state.file) {
+          throw new Error('Can only save a draft with an example email provided');
+        }
+
         // Remove functions from the state data and clone
         const data = JSON.parse(
           JSON.stringify(
@@ -160,11 +166,17 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
 
         try {
           console.log('saving draft with state: ', state);
+          console.log('getting email content');
+          const emlStr = await getFileContent(state.file);
+          console.log('got email content');
           // Create a new blueprint
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
+            await blueprint.assignPreferredZkFramework(emlStr);
+            console.log('Assigned zkFramework: ', blueprint.props.zkFramework);
             await blueprint.submitDraft();
+            console.log('saved draft');
             set({ blueprint });
             return blueprint.props.id!;
           }
@@ -172,6 +184,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           // Update an existing blueprint
           if (state.blueprint && state.blueprint.canUpdate()) {
             console.log('updating');
+            await state.blueprint.assignPreferredZkFramework(emlStr);
             await state.blueprint.update(data);
             return state.blueprint.props.id!;
           }
@@ -179,6 +192,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           // Create a new version of an blueprint
           if (state.blueprint && !state.blueprint.canUpdate()) {
             console.log('creating new version');
+            await state.blueprint.assignPreferredZkFramework(emlStr);
             await state.blueprint.submitNewVersionDraft(data);
             return state.blueprint.props.id!;
           }
