@@ -19,7 +19,7 @@ const DragAndDropFile = ({
   helpText?: string;
   file: File | null;
   setFile: (file: File | null) => void | Promise<void>;
-  errorMessage: string;
+  errorMessage?: string;
   tooltipComponent?: React.ReactNode;
 }) => {
   return (
