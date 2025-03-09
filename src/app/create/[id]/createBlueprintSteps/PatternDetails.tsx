@@ -10,17 +10,23 @@ import sdk from '@/lib/sdk';
 import { useDebouncedCallback } from 'use-debounce';
 import { findOrCreateDSP } from '@/app/utils';
 import { toast } from 'react-toastify';
+import { useState } from 'react';
+import { getFileContent } from '@/lib/utils';
 
 const PatternDetails = ({
   id,
   isFileInvalid,
   file,
+  savedEmls,
+  setSavedEmls,
   setFile,
   emlContent,
 }: {
   id: string;
   isFileInvalid: boolean;
   file: File | null;
+  savedEmls: Record<string, string>;
+  setSavedEmls: (savedEmls: Record<string, string>) => void;
   setFile: (file: File | null) => void;
   emlContent: string;
 }) => {
@@ -30,7 +36,10 @@ const PatternDetails = ({
 
   const { setField } = store;
 
+  const [isCheckExistingBlueprintLoading, setIsCheckExistingBlueprintLoading] = useState(false);
+
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
+    setIsCheckExistingBlueprintLoading(true);
     let existingBlueprint = false;
     try {
       const blueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
@@ -55,6 +64,7 @@ const PatternDetails = ({
       setField('circuitName', incrementedCircuitName);
       setField('slug', `${githubUserName}/${incrementedCircuitName}`);
     }
+    setIsCheckExistingBlueprintLoading(false);
   }, 300);
 
   return (
@@ -70,9 +80,9 @@ const PatternDetails = ({
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
       />
-      <Input title="Slug" disabled value={store.slug} />
+      <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
       {/* TODO: Add check for email body max length */}
-      {emlContent ? null : (
+      {emlContent && id !== 'new' ? null : (
         <DragAndDropFile
           accept=".eml"
           file={file}
@@ -94,6 +104,9 @@ const PatternDetails = ({
 
             try {
               const response = await findOrCreateDSP(e);
+              const emlFileContent = await getFileContent(e);
+              // @ts-ignore
+              setSavedEmls({ ...savedEmls, [id]: emlFileContent });
               console.log(response);
             } catch (error) {
               toast.warning(
