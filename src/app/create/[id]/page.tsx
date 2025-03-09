@@ -43,7 +43,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const posthog = usePostHog();
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
-  const savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
+  const [savedEmls, setSavedEmls] = useState<Record<string, string>>(
+    JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
+  );
   console.log(savedEmls[id]);
 
   const {
@@ -201,7 +203,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       const parsed = getParsedDecomposedRegexes();
 
       const output = await testBlueprint(
-        content,
+        savedEmls[id],
         {
           ...store,
           decomposedRegexes: getParsedDecomposedRegexes(),
@@ -225,7 +227,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_test_decomposed_regex', {
           error: err,
-          content,
+          savedEmls: savedEmls[id],
         });
       }
       setErrors(['Failed to test decomposed regex on eml']);
@@ -475,6 +477,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             file={file}
             setFile={setFile}
             emlContent={savedEmls[id]}
+            savedEmls={savedEmls}
+            setSavedEmls={setSavedEmls}
           />
         )}
         {step === '1' && (
