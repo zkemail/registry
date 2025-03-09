@@ -52,6 +52,8 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       })
       .catch((err) => {
         console.error(`Failed to get blueprint with id ${id}: `, err);
+        toast.error('This blueprint could not be found');
+        router.push('/');
       });
   }, []);
 
