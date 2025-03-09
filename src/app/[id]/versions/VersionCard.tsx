@@ -497,7 +497,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                   }
                   title="Upload test .eml"
                   setFile={async (file: File | null) => {
-                    if (!file) return;
+                    if (!file || !blueprint.props.id) return;
 
                     setFile(file);
                     const emlFileContent = await getFileContent(file);
