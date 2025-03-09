@@ -10,17 +10,25 @@ import sdk from '@/lib/sdk';
 import { useDebouncedCallback } from 'use-debounce';
 import { findOrCreateDSP } from '@/app/utils';
 import { toast } from 'react-toastify';
+import { useState } from 'react';
+import { getFileContent } from '@/lib/utils';
 
 const PatternDetails = ({
   id,
   isFileInvalid,
   file,
+  savedEmls,
+  setSavedEmls,
   setFile,
+  emlContent,
 }: {
   id: string;
   isFileInvalid: boolean;
   file: File | null;
+  savedEmls: Record<string, string>;
+  setSavedEmls: (savedEmls: Record<string, string>) => void;
   setFile: (file: File | null) => void;
+  emlContent: string;
 }) => {
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
@@ -28,7 +36,10 @@ const PatternDetails = ({
 
   const { setField } = store;
 
+  const [isCheckExistingBlueprintLoading, setIsCheckExistingBlueprintLoading] = useState(false);
+
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
+    setIsCheckExistingBlueprintLoading(true);
     let existingBlueprint = false;
     try {
       const blueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
@@ -53,6 +64,7 @@ const PatternDetails = ({
       setField('circuitName', incrementedCircuitName);
       setField('slug', `${githubUserName}/${incrementedCircuitName}`);
     }
+    setIsCheckExistingBlueprintLoading(false);
   }, 300);
 
   return (
@@ -68,39 +80,45 @@ const PatternDetails = ({
         error={!!validationErrors.title}
         errorMessage={validationErrors.title}
       />
-      <Input title="Slug" disabled value={store.slug} />
+      <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
       {/* TODO: Add check for email body max length */}
-      <DragAndDropFile
-        accept=".eml"
-        file={file}
-        tooltipComponent={
-          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
-            <Image src="/assets/emlInfo.svg" alt="emlInfo" width={360} height={80} />
-            <p className="mt-3 text-base font-medium text-grey-700">
-              The test .eml file is a sample email used to check if all the provided patterns
-              (regex) work correctly. This helps confirm everything is set up properly before
-              blueprint creation. We always store this file locally and never send it to our server.
-            </p>
-          </div>
-        }
-        title="Upload test .eml"
-        helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
-        setFile={async (e) => {
-          if (!e) return;
-
-          try {
-            const response = await findOrCreateDSP(e);
-            console.log(response);
-          } catch (error) {
-            toast.warning(
-              'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
-            );
+      {emlContent && id !== 'new' ? null : (
+        <DragAndDropFile
+          accept=".eml"
+          file={file}
+          tooltipComponent={
+            <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+              <Image src="/assets/emlInfo.svg" alt="emlInfo" width={360} height={80} />
+              <p className="mt-3 text-base font-medium text-grey-700">
+                The test .eml file is a sample email used to check if all the provided patterns
+                (regex) work correctly. This helps confirm everything is set up properly before
+                blueprint creation. We always store this file locally and never send it to our
+                server.
+              </p>
+            </div>
           }
+          title="Upload test .eml"
+          helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
+          setFile={async (e) => {
+            if (!e) return;
 
-          setFile(e);
-        }}
-        errorMessage={isFileInvalid ? 'File is invalid' : ''}
-      />
+            try {
+              const response = await findOrCreateDSP(e);
+              const emlFileContent = await getFileContent(e);
+              // @ts-ignore
+              setSavedEmls({ ...savedEmls, [id]: emlFileContent });
+              console.log(response);
+            } catch (error) {
+              toast.warning(
+                'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
+              );
+            }
+
+            setFile(e);
+          }}
+          errorMessage={isFileInvalid ? 'File is invalid' : ''}
+        />
+      )}
       <Textarea
         title="Description"
         placeholder="Enter a description"

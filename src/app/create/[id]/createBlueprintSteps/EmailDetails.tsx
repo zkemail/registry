@@ -6,16 +6,15 @@ import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { getMaxEmailBodyLength, parseEmail } from '@zk-email/sdk';
-import { getFileContent } from '@/lib/utils';
 import Image from 'next/image';
 
 const EmailDetails = ({
+  emlContent,
   isDKIMMissing,
-  file,
   isVerifyDKIMLoading,
 }: {
+  emlContent: string;
   isDKIMMissing: boolean;
-  file: File | null;
   isVerifyDKIMLoading: boolean;
 }) => {
   const store = useCreateBlueprintStore();
@@ -27,20 +26,13 @@ const EmailDetails = ({
 
   useEffect(() => {
     const updateEmailBodyMaxLength = async () => {
-      if (!file) {
+      if (!emlContent) {
         return;
       }
 
-      let content: string;
-      try {
-        content = await getFileContent(file);
-      } catch (err) {
-        console.error('Failed to get content from email');
-        return;
-      }
-
+      const parsedEmail = await parseEmail(emlContent);
       const maxEmailBodyLength = await getMaxEmailBodyLength(
-        content,
+        parsedEmail.cleanedBody,
         store.shaPrecomputeSelector || ''
       );
 
@@ -164,12 +156,11 @@ const EmailDetails = ({
                 onChange={async (e) => {
                   setField('shaPrecomputeSelector', e.target.value);
 
-                  if (!file) {
+                  if (!emlContent) {
                     return;
                   }
 
-                  const content = await getFileContent(file);
-                  const parsedEmail = await parseEmail(content, false);
+                  const parsedEmail = await parseEmail(emlContent);
                   const value = e.target.value;
 
                   if (!value) {

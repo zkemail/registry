@@ -18,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { extractEMLDetails, DecomposedRegex, testBlueprint, parseEmail } from '@zk-email/sdk';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { getFileContent } from '@/lib/utils';
 import { toast } from 'react-toastify';
 import StepperMobile from '@/app/components/StepperMobile';
 import Stepper from '@/app/components/Stepper';
@@ -44,6 +43,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const posthog = usePostHog();
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
+  const [savedEmls, setSavedEmls] = useState<Record<string, string>>(
+    JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
+  );
+  console.log(savedEmls[id]);
 
   const {
     saveDraft,
@@ -101,13 +104,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [optOut]);
 
   useEffect(() => {
-    if (file) {
+    if (savedEmls[id]) {
       const parser = new PostalMime();
-      parser.parse(file!).then((email) => {
+
+      parser.parse(savedEmls[id]).then((email) => {
         setParsedEmail(email);
       });
     }
-  }, [file]);
+  }, [savedEmls[id]]);
 
   // Load data if an id is provided
   useEffect(() => {
@@ -164,10 +168,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     let content: string;
     try {
-      content = await getFileContent(file);
-      const parsedEmail = await parseEmail(content, blueprint?.props.ignoreBodyHashCheck);
+      const parsedEmail = await parseEmail(savedEmls[id]);
       const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
-        await extractEMLDetails(content, parsedEmail);
+        await extractEMLDetails(savedEmls[id]);
       setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
       setCanonicalizedBody(parsedEmail.canonicalizedBody);
       setDkimSelector(selector);
@@ -200,7 +203,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       const parsed = getParsedDecomposedRegexes();
 
       const output = await testBlueprint(
-        content,
+        savedEmls[id],
         {
           ...store,
           decomposedRegexes: getParsedDecomposedRegexes(),
@@ -224,7 +227,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_test_decomposed_regex', {
           error: err,
-          content,
+          savedEmls: savedEmls[id],
         });
       }
       setErrors(['Failed to test decomposed regex on eml']);
@@ -233,13 +236,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   useEffect(() => {
-    if (file) {
+    if (savedEmls[id]) {
       handleTestEmail();
     }
-    if (!file) {
+    if (!savedEmls[id]) {
       setIsFileInvalid(false);
     }
-  }, [JSON.stringify(store.decomposedRegexes), file, revealPrivateFields]);
+  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id], revealPrivateFields]);
 
   // Create a debounced version of the DKIM verification
   const debouncedVerifyDKIM = debounce(async (domain: string, selector: string | null) => {
@@ -257,8 +260,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       const res = await fetch(url);
       const data = await res.json();
 
-      if (file) {
-        const content = await getFileContent(file);
+      if (savedEmls[id]) {
         setIsDKIMMissing(!data.length);
       }
     } catch (error) {
@@ -282,7 +284,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
   const isNextButtonDisabled = () => {
-    if (!file || isFileInvalid) {
+    if (!savedEmls[id] || isFileInvalid) {
       return true;
     }
 
@@ -317,8 +319,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const SampleEMLPreview = () => {
     if (!showSampleEMLPreview) return <></>;
-    console.log('parsedEmail: ', parsedEmail);
+    console.log(parsedEmail, 'supermajkjsdka');
     if (parsedEmail?.html) {
+      console.log(parsedEmail, 'supermajkjsdka');
       return (
         <div
           className="m-6"
@@ -351,25 +354,17 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (step === '2') {
       genrateHighlightRegexContent();
     }
-  }, [JSON.stringify(store.decomposedRegexes), file]);
+  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
 
   const genrateHighlightRegexContent = async () => {
-    if (!file) {
-      return;
-    }
-
-    let content: string;
-    try {
-      content = await getFileContent(file);
-    } catch (err) {
-      console.error('Failed to get content from email');
+    if (!savedEmls[id]) {
       return;
     }
 
     const parsed = getParsedDecomposedRegexes();
 
     const output = await testBlueprint(
-      content,
+      savedEmls[id],
       {
         ...store,
         decomposedRegexes: getParsedDecomposedRegexes(),
@@ -476,17 +471,25 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         )}
         {step === '0' && (
-          <PatternDetails isFileInvalid={isFileInvalid} id={id} file={file} setFile={setFile} />
+          <PatternDetails
+            isFileInvalid={isFileInvalid}
+            id={id}
+            file={file}
+            setFile={setFile}
+            emlContent={savedEmls[id]}
+            savedEmls={savedEmls}
+            setSavedEmls={setSavedEmls}
+          />
         )}
         {step === '1' && (
           <EmailDetails
-            file={file}
+            emlContent={savedEmls[id]}
             isDKIMMissing={isDKIMMissing}
             isVerifyDKIMLoading={isVerifyDKIMLoading}
           />
         )}
         {step === '2' && (
-          <ExtractFields file={file} optOut={optOut} setCanCompile={setCanCompile} />
+          <ExtractFields emlContent={savedEmls[id]} optOut={optOut} setCanCompile={setCanCompile} />
         )}
         <div
           style={{
@@ -498,8 +501,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         />
         <div>
           <SampleEMLPreview />
-          <div className={`flex w-full flex-row ${file ? 'justify-between' : 'justify-center'}`}>
-            {file && (
+          <div
+            className={`flex w-full flex-row ${savedEmls[id] ? 'justify-between' : 'justify-center'}`}
+          >
+            {savedEmls[id] && (
               <div>
                 <Button
                   variant="secondary"
@@ -553,7 +558,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!file || isDKIMMissing || !canCompile}
+                  disabled={!savedEmls[id] || !canCompile}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"
