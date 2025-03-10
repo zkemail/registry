@@ -317,7 +317,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
         modalContent={
           <div className="flex flex-col items-center justify-center gap-4">
             {blueprintEditMethod === null ? (
-              <div className="w-[calc(100vw-6rem)] md:w-[calc(768px-3rem)] flex flex-col items-center justify-center gap-4">
+              <div className="flex w-[calc(100vw-6rem)] flex-col items-center justify-center gap-4 md:w-[calc(768px-3rem)]">
                 <div className="w-full">
                   <p>
                     {blueprint.props.title} (v{blueprint.props.version})
@@ -334,7 +334,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                   className="my-4"
                 />
                 <div
-                  className="rounded-2xl border border-grey-200 p-6"
+                  className="cursor-pointer rounded-2xl border border-grey-200 p-6 transition-colors hover:bg-gray-50"
                   onClick={() => {
                     setBlueprintEditMethod(BlueprintEditMethod.Basic);
                   }}
@@ -347,11 +347,11 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                   </div>
                   <p className="text-base text-grey-700">
                     Make changes in the blueprint description, email query and sender domain fields.
-                    Doesn’t require you to upload the test eml.
+                    Doesn't require you to upload the test eml.
                   </p>
                 </div>
                 <div
-                  className="rounded-2xl border border-grey-200 p-6"
+                  className="cursor-pointer rounded-2xl border border-grey-200 p-6 transition-colors hover:bg-gray-50"
                   onClick={() => setBlueprintEditMethod(BlueprintEditMethod.Advanced)}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -372,7 +372,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 </div>
               </div>
             ) : blueprintEditMethod === BlueprintEditMethod.Basic ? (
-              <div className="flex w-[calc(100vw-6rem)] md:w-[calc(768px-3rem)] flex-col gap-4">
+              <div className="flex w-[calc(100vw-6rem)] flex-col gap-4 md:w-[calc(768px-3rem)]">
                 <Input
                   title="Pattern Name"
                   value={store.title}
@@ -470,7 +470,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 </Button>
               </div>
             ) : (
-              <div className="flex w-[calc(100vw-6rem)] md:w-[calc(768px-3rem)] flex-col items-center justify-center gap-4">
+              <div className="flex w-[calc(100vw-6rem)] flex-col items-center justify-center gap-4 md:w-[calc(768px-3rem)]">
                 <div className="w-full">
                   <p>
                     {blueprint.props.title} (v{blueprint.props.version})
