@@ -165,9 +165,11 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href={`/${blueprint.props.id}`}>
-            <Button size="sm">Try it</Button>
-          </Link>
+          {blueprint.props.status === Status.Done ? (
+            <Link href={`/${blueprint.props.id}`}>
+              <Button size="sm">Try it</Button>
+            </Link>
+          ) : null}
           {/* <Link className="hidden md:block" href={`/create/${blueprint.props.id}`}> */}
           <Button
             onClick={() => setIsEditBlueprintModalOpen(true)}
