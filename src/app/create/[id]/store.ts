@@ -6,6 +6,7 @@ import {
   DecomposedRegex,
   DecomposedRegexPart,
   ValidationErrors,
+  ZkFramework,
   ZodError,
 } from '@zk-email/sdk';
 import { create } from 'zustand';
@@ -51,6 +52,7 @@ const initialState: BlueprintProps = {
   },
   externalInputs: [],
   decomposedRegexes: [],
+  zkFramework: ZkFramework.Circom,
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
