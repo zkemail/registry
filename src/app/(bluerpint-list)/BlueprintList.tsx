@@ -48,7 +48,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
             limit: PAGINATION_LIMIT,
             status: filters.length > 0 ? filters : undefined,
             sort: -1,
-            sortBy: 'stars',
+            sortBy: sort as 'stars' | 'updatedAt',
           });
         } catch (err) {
           retryCount++;
@@ -58,7 +58,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
           }
           console.error('Error fetching blueprints: ', err);
           // Wait a bit before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+          await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
         }
       }
 
