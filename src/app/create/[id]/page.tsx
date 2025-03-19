@@ -76,7 +76,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isCompileLoading, setIsCompileLoading] = useState(false);
   const [dkimSelector, setDkimSelector] = useState<string | null>(null);
-  const [optOut, setOptOut] = useState(false);
+  const [optOut, setOptOut] = useState(localStorage.getItem('optOut') === 'true' ? true : false);
   const [canonicalizedHeader, setCanonicalizedHeader] = useState<string>('');
   const [canonicalizedBody, setCanonicalizedBody] = useState<string>('');
   const [headerRegexList, setHeaderRegexList] = useState<any[]>([]);
@@ -425,7 +425,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               title="Private output"
               className="mr-2"
               checked={optOut}
-              onCheckedChange={(checked) => setOptOut(checked)}
+              onCheckedChange={(checked) => {
+                setOptOut(checked);
+                localStorage.setItem('optOut', checked.toString());
+              }}
             />
             <span className="text-base">
               You can help improve the registry by sharing the process data with the team for future
