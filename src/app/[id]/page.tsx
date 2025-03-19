@@ -1,6 +1,6 @@
 'use client';
 import { use, useEffect } from 'react';
-import Image from "next/image";
+import Image from 'next/image';
 import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Button } from '@/components/ui/button';
 import Stepper from '../components/Stepper';
@@ -83,21 +83,22 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const renderBlueprintComponent = () => {
     if (blueprint.props.status === Status.InProgress) {
       return (
-        (<div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+        <div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
           <h4 className="text-lg font-bold text-grey-800">Compilation in progress</h4>
           <p className="text-base font-medium text-grey-700">
             The blueprint compilation is in progress and will take few hours to complete{' '}
           </p>
           <Image
-            src="/assets/CompilationInProgress.png"
+            src="/assets/CompilationInProgress.svg"
             alt="compilation failed"
-            width={560}
-            height={340}
+            width={280}
+            height={280}
             style={{
               margin: 'auto',
-              maxWidth: "100%",
-              height: "auto"
-            }} />
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
           <Button
             startIcon={
               <Image
@@ -107,9 +108,10 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
                 height={16}
                 style={{
                   color: 'red',
-                  maxWidth: "100%",
-                  height: "auto"
-                }} />
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
             }
             variant="destructive"
             className="mx-auto w-max"
@@ -117,34 +119,56 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           >
             Cancel Compilation
           </Button>
-        </div>)
+        </div>
       );
     }
 
     if (blueprint.props.status === Status.Failed) {
       return (
-        (<div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+        <div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
           <h4 className="text-lg font-bold text-grey-800">Compilation Failed :(</h4>
           <p className="text-base font-medium text-grey-700">
             The blueprint failed due to some technical reasons. Please recompile again.
           </p>
           <Image
-            src="/assets/CompilationFailed.png"
+            src="/assets/CompilationFailed.svg"
             alt="compilation failed"
-            width={560}
-            height={340}
+            width={316}
+            height={316}
             style={{
               margin: 'auto',
-              maxWidth: "100%",
-              height: "auto"
-            }} />
-        </div>)
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
+          <div className="w-full flex justify-center">
+            <Button
+              onClick={() => router.push(`/create/${blueprint.props.id}`)}
+              variant="secondary"
+              startIcon={
+                <Image
+                  src="/assets/Edit.svg"
+                  alt="Edit"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
+              size="sm"
+            >
+              Edit blueprint
+            </Button>
+          </div>
+        </div>
       );
     }
 
     if (blueprint.props.status === Status.Done) {
       return (
-        (<div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+        <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
           <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
           <div className="flex flex-col items-center gap-6 md:hidden">
             <StepperMobile steps={steps} currentStep={step} />
@@ -165,15 +189,18 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
             <div className="flex w-auto">
               <Button
                 variant="ghost"
-                startIcon={<Image
-                  src="/assets/ArrowLeft.svg"
-                  alt="back"
-                  width={16}
-                  height={16}
-                  style={{
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />}
+                startIcon={
+                  <Image
+                    src="/assets/ArrowLeft.svg"
+                    alt="back"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
                 onClick={() => {
                   const newStep = parseInt(step) - 1;
                   if (steps.length === 3 && newStep === 2) {
@@ -191,13 +218,13 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           {step === '1' && <SelectEmails id={id} />}
           {step === '2' && <AddInputs />}
           {step === '3' && <ViewProof />}
-        </div>)
+        </div>
       );
     }
   };
 
   return (
-    (<div className="mx-auto flex flex-col gap-10 py-16">
+    <div className="mx-auto flex flex-col gap-10 py-16">
       {/* <div className="fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-lg bg-warning px-4 py-2 text-white shadow-lg">
         <p className="text-sm font-medium">
           🚧 This feature is currently in beta. Some functionality may be limited or subject to
@@ -241,9 +268,10 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
                     width={16}
                     height={16}
                     style={{
-                      maxWidth: "100%",
-                      height: "auto"
-                    }} />
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
                 }
               >
                 View all versions
@@ -255,15 +283,18 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
                 size="sm"
                 className="bg-white"
                 onClick={() => {}}
-                startIcon={<Image
-                  src="/assets/Files.svg"
-                  alt="commit"
-                  width={16}
-                  height={16}
-                  style={{
-                    maxWidth: "100%",
-                    height: "auto"
-                  }} />}
+                startIcon={
+                  <Image
+                    src="/assets/Files.svg"
+                    alt="commit"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
               >
                 Past proofs
               </Button>
@@ -272,7 +303,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
       </>
       {renderBlueprintComponent()}
-    </div>)
+    </div>
   );
 };
 
