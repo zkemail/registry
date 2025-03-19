@@ -157,7 +157,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   const handleTestEmail = async () => {
-    if (!file) {
+    if (!savedEmls[id]) {
       console.error('Add eml file first');
       return;
     }
@@ -168,6 +168,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     let content: string;
     try {
+      setErrors(errors.filter((error) => error !== 'Email parsing error'));
       const parsedEmail = await parseEmail(savedEmls[id]);
       const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
         await extractEMLDetails(savedEmls[id]);
@@ -186,6 +187,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         store.setField('removeSoftLinebreaks', false);
       }
     } catch (err) {
+      console.log(err, 'err');
+      setErrors(['Email parsing error']);
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
       }
@@ -236,6 +239,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   useEffect(() => {
+    if (savedEmls[id] && step === '1') {
+      handleTestEmail();
+    }
+  }, [step]);
+
+  useEffect(() => {
     if (savedEmls[id]) {
       handleTestEmail();
     }
@@ -283,6 +292,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     };
   }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
+  console.log(errors, 'errors', errors.includes('Email parsing error'));
+
   const isNextButtonDisabled = () => {
     if (!savedEmls[id] || isFileInvalid) {
       return true;
@@ -297,7 +308,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         !store.emailQuery ||
         !store.emailBodyMaxLength ||
         (store.emailBodyMaxLength > 9984 && !store.ignoreBodyHashCheck) ||
-        store.ignoreBodyHashCheck === undefined
+        store.ignoreBodyHashCheck === undefined ||
+        errors.includes('Email parsing error')
       );
     }
 
