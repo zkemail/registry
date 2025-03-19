@@ -127,7 +127,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setIsSaveDraftLoading(true);
     try {
       const newId = await saveDraft();
-      setErrors([]);
+      if (step === '0') {
+        localStorage.setItem(
+          'blueprintEmls',
+          JSON.stringify({
+            ...savedEmls,
+            [newId]: savedEmls[id],
+          })
+        );
+      }
       if (notify) {
         toast.success('Successfully saved draft');
       }
