@@ -182,6 +182,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     let content: string;
     try {
+      setErrors(errors.filter((error) => error !== 'Email parsing error'));
       const parsedEmail = await parseEmail(savedEmls[id]);
       const { senderDomain, selector, emailQuery, headerLength, emailBodyMaxLength } =
         await extractEMLDetails(savedEmls[id]);
@@ -205,6 +206,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
     } catch (err) {
+      console.log(err, 'err');
+      setErrors(['Email parsing error']);
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
       }
@@ -255,6 +258,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   useEffect(() => {
+    if (savedEmls[id] && step === '1') {
+      handleTestEmail();
+    }
+  }, [step]);
+
+  useEffect(() => {
     if (savedEmls[id]) {
       handleTestEmail();
     }
@@ -302,6 +311,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     };
   }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
+  console.log(errors, 'errors', errors.includes('Email parsing error'));
+
   const isNextButtonDisabled = () => {
     if (!savedEmls[id] || isFileInvalid) {
       return true;
@@ -313,7 +324,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (step === '1') {
       return (
-        !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
+        !store.emailQuery ||
+        !store.emailBodyMaxLength ||
+        (store.emailBodyMaxLength > 9984 && !store.ignoreBodyHashCheck) ||
+        store.ignoreBodyHashCheck === undefined ||
+        errors.includes('Email parsing error')
       );
     }
 
