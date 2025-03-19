@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Loader from '@/components/ui/loader';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
@@ -12,6 +13,7 @@ const DragAndDropFile = ({
   file,
   setFile,
   errorMessage,
+  loading,
   tooltipComponent,
 }: {
   accept: string;
@@ -21,6 +23,7 @@ const DragAndDropFile = ({
   setFile: (file: File | null) => void | Promise<void>;
   errorMessage?: string;
   tooltipComponent?: React.ReactNode;
+  loading?: boolean;
 }) => {
   return (
     <div className="flex w-full flex-col gap-4">
@@ -62,7 +65,9 @@ const DragAndDropFile = ({
         }}
       >
         <div className="flex flex-col items-center justify-center gap-4">
-          {file ? (
+          {loading ? (
+            <Loader />
+          ) : file ? (
             <>
               <Image
                 src="/assets/CheckCircle.svg"

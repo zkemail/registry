@@ -33,6 +33,7 @@ const PatternDetails = ({
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
+  const [isFileUploading, setIsFileUploading] = useState(false);
 
   const { setField } = store;
 
@@ -86,6 +87,7 @@ const PatternDetails = ({
         <DragAndDropFile
           accept=".eml"
           file={file}
+          loading={isFileUploading}
           tooltipComponent={
             <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
               <Image src="/assets/emlInfo.svg" alt="emlInfo" width={360} height={80} />
@@ -103,6 +105,7 @@ const PatternDetails = ({
             if (!e) return;
 
             try {
+              setIsFileUploading(true);
               const response = await findOrCreateDSP(e);
               const emlFileContent = await getFileContent(e);
               // @ts-ignore
@@ -112,6 +115,8 @@ const PatternDetails = ({
               toast.warning(
                 'We were unable to locate the public key for this email. This typically happens with older emails. You can still make regexes without the DKIM signature passing.'
               );
+            } finally {
+              setIsFileUploading(false);
             }
 
             setFile(e);
