@@ -33,6 +33,7 @@ import { Switch } from '@/components/ui/switch';
 import HighlightText from '@/app/components/HighlightRegex';
 import { REGEX_COLORS } from '@/app/constants';
 import { debounce } from '@/app/utils';
+import ModalGenerator from '@/components/ModalGenerator';
 
 type Step = '0' | '1' | '2';
 
@@ -79,6 +80,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [canCompile, setCanCompile] = useState(false);
+  const [showOverrideModal, setShowOverrideModal] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -156,7 +158,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   };
 
-  const handleTestEmail = async () => {
+  const handleTestEmail = async (override = false) => {
     if (!file) {
       console.error('Add eml file first');
       return;
@@ -174,10 +176,21 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
       setCanonicalizedBody(parsedEmail.canonicalizedBody);
       setDkimSelector(selector);
-      store.setField('senderDomain', senderDomain);
-      store.setField('emailQuery', emailQuery);
-      store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
-      store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
+      if (
+        store.senderDomain !== senderDomain ||
+        store.emailQuery !== emailQuery ||
+        store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
+        store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64
+      ) {
+        if (override) {
+          store.setField('senderDomain', senderDomain);
+          store.setField('emailQuery', emailQuery);
+          store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
+          store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
+        } else {
+          setShowOverrideModal(true);
+        }
+      }
       if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector && !store.ignoreBodyHashCheck) {
         toast.warning(
           'Email body is too long, max is 9984 bytes. Please add Email body cut off value else skip body hash check'
@@ -645,6 +658,23 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       ) : null}
+      <ModalGenerator
+        isOpen={showOverrideModal}
+        onClose={() => {
+          setShowOverrideModal(false);
+        }}
+        title="Override data"
+        submitButtonText="Override"
+        onSubmit={() => {
+          handleTestEmail(true);
+          setShowOverrideModal(false);
+        }}
+        modalContent={
+          <div className="flex flex-col items-center justify-center gap-4">
+            We find some different data from the email. Do you want to override the existing data?
+          </div>
+        }
+      />
     </div>
   );
 };
