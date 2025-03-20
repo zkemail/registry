@@ -14,7 +14,7 @@ interface ProofProps {
   proofId: string;
 }
 
-export const handleGetStatusIcon = (status: ProofStatus) => {
+export const handleGetStatusIcon = (status: ProofStatus | undefined) => {
   switch (status) {
     case ProofStatus.None:
       return (
@@ -62,6 +62,19 @@ export const handleGetStatusIcon = (status: ProofStatus) => {
         <Image
           src="/assets/RedClose.svg"
           alt="❌"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+      );
+    default:
+      return (
+        <Image
+          src="/assets/Checks.svg"
+          alt="status"
           width={20}
           height={20}
           style={{
