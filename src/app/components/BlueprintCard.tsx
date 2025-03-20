@@ -58,7 +58,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
             <Image
               width={16}
               height={16}
-              src={starred ? 'assets/StarFilled.svg' : 'assets/Star.svg'}
+              src={starred ? '/assets/StarFilled.svg' : '/assets/Star.svg'}
               alt="stars"
               style={{
                 maxWidth: '100%',
