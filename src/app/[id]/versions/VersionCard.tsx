@@ -200,6 +200,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             onClick={() => {
               if (blueprint.props.zkFramework === ZkFramework.Circom) {
                 router.push(`/${blueprint.props.id}/download`);
+                // @ts-ignore
               } else if (blueprint.props.zkFramework === ZkFramework.Sp1) {
                 toast.warn('This blueprints was built using SP1 and does not have circuits');
               } else {
