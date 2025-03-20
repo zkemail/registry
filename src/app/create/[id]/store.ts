@@ -21,7 +21,7 @@ type CreateBlueprintState = BlueprintProps & {
   validateAll: () => boolean;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => void;
-  compile: () => Promise<void>;
+  compile: () => Promise<string>;
   saveDraft: () => Promise<string>;
   reset: () => void;
   file: File | null;
@@ -216,7 +216,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           throw err;
         }
       },
-      compile: async (): Promise<void> => {
+      compile: async (): Promise<string> => {
         const state = get();
 
         posthog.capture('$compile_blueprint', {
@@ -247,9 +247,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           throw err;
         }
 
-        // const status = await state.blueprint.checkStatus()
-
-        window.location.href = '/';
+        return state.blueprint.props.id!;
       },
       reset: () => {
         return set({

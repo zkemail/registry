@@ -161,7 +161,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setIsCompileLoading(true);
     try {
       await handleSaveDraft(false);
-      await compile();
+      const blueprintId = await compile();
+      router.push(`/${blueprintId}`);
     } catch (error) {
       console.error('Failed to compile:', error);
       toast.error(`Failed to compile blueprint: ${error?.toString()?.replace('Error: ', '')}`);
