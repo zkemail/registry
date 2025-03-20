@@ -77,15 +77,20 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   const { getUpdatingStatus, getProof } = useProofEmailStore();
   const emailProof = useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId]);
   const router = useRouter();
-  const [status, setStatus] = useState<ProofStatus>(emailProof.status!);
+  const [status, setStatus] = useState<ProofStatus | undefined>(emailProof?.status);
   const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    const statusPromise = getUpdatingStatus(emailProof, abortController);
-    statusPromise.then(setStatus);
+    try {
+      const abortController = new AbortController();
+      const statusPromise = getUpdatingStatus(emailProof, abortController);
+      statusPromise.then(setStatus);
 
-    return () => abortController.abort();
+      return () => abortController.abort();
+    } catch (err) {
+      console.error(`Failed to get status for proof with id: ${proofId}: `, err);
+      toast.error('Failed to get status');
+    }
   }, []);
 
   // TODO: Add blueprint information?
@@ -154,7 +159,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
           variant="ghost"
           size="icon"
           onClick={handleProofDownload}
-          disabled={!emailProof.publicData}
+          disabled={!emailProof?.publicData}
         >
           <Image
             src="/assets/Download.svg"
