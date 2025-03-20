@@ -61,21 +61,11 @@ export default function LoginButton() {
               {username}
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="h-0.5" />
-            <DropdownMenuItem
-              onClick={() => {
-                clearAuth();
-                window.location.reload();
-              }}
-            >
+            <DropdownMenuItem onClick={() => router.push('/user/proofs')}>
               <Image src="/assets/YourProofs.svg" alt="proof" width={16} height={16} />
               Your proofs
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                clearAuth();
-                window.location.reload();
-              }}
-            >
+            <DropdownMenuItem onClick={() => router.push('/user/blueprints')}>
               <Image src="/assets/YourBlueprints.svg" alt="blueprint" width={16} height={16} />
               Your blueprints
             </DropdownMenuItem>
