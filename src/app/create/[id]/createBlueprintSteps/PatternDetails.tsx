@@ -79,7 +79,7 @@ const PatternDetails = ({
           checkExistingBlueprint(e.target.value.replace(/\s+/g, '_'));
         }}
         error={!!validationErrors.title}
-        errorMessage={validationErrors.title}
+        // errorMessage={validationErrors.title}
       />
       <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
       {/* TODO: Add check for email body max length */}
