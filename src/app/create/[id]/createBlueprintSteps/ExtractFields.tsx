@@ -114,6 +114,9 @@ const ExtractFields = ({
   const [regexGeneratedOutputs, setRegexGeneratedOutputs] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
+  const [regexGeneratedOutputErrors, setRegexGeneratedOutputErrors] = useState<string[]>(
+    Array(store.decomposedRegexes?.length ?? 0).fill('')
+  );
 
   const [isExtractSubjectChecked, setIsExtractSubjectChecked] = useState(false);
   const [isExtractReceiverChecked, setIsExtractReceiverChecked] = useState(false);
@@ -149,6 +152,9 @@ const ExtractFields = ({
               revealPrivateFields
             );
 
+            const outputUpdated =
+              JSON.stringify(regexOutputs) !== JSON.stringify(regexGeneratedOutputs[index]);
+
             setRegexGeneratedOutputs((prev) => {
               const updated = [...prev];
               // @ts-ignore
@@ -156,25 +162,27 @@ const ExtractFields = ({
               return updated;
             });
 
-            // // update the max length of the regex at that particular index
-            // const decomposedRegexes = [...store.decomposedRegexes];
-            // decomposedRegexes[index].maxLength = regexOutputs[0].length ?? 64;
-            // setField('decomposedRegexes', decomposedRegexes);
+            setRegexGeneratedOutputErrors((prev) => {
+              const updated = [...prev];
+              // @ts-ignore
+              updated[index] = '';
+              return updated;
+            });
+
+            // update the max length of the regex at that particular index
+            // Only update when the output changes, so we can still set maxLength
+            if (outputUpdated) {
+              const totalLength = regexOutputs.reduce((acc, cur) => (acc += cur.length), 0);
+              const decomposedRegexes = [...store.decomposedRegexes];
+              decomposedRegexes[index].maxLength = totalLength ?? 64;
+              setField('decomposedRegexes', decomposedRegexes);
+            }
           } catch (error) {
             console.error('Error testing decomposed regex:', error);
-            setRegexGeneratedOutputs((prev) => {
+            setRegexGeneratedOutputErrors((prev) => {
               const updated = [...prev];
-
-              if (regex.parts.filter((part) => part.isPublic).length === 0) {
-                // @ts-ignore
-                updated[index] = [
-                  'Error: Empty regex — you must define at least one public part for each pattern.',
-                ];
-              } else {
-                // @ts-ignore
-                updated[index] = ['Error: ' + error];
-              }
-
+              // @ts-ignore
+              updated[index] = 'Error: ' + error;
               return updated;
             });
           }
@@ -615,6 +623,9 @@ const ExtractFields = ({
                     setField('decomposedRegexes', updatedRegexes);
 
                     setRegexGeneratedOutputs(regexGeneratedOutputs.filter((_, i) => i !== index));
+                    setRegexGeneratedOutputErrors(
+                      regexGeneratedOutputErrors.filter((_, i) => i !== index)
+                    );
                   }}
                 >
                   Delete
@@ -834,13 +845,13 @@ const ExtractFields = ({
                     <Label>Output</Label>
                     <div
                       className={`rounded-lg border p-2 text-sm ${
-                        JSON.stringify(regexGeneratedOutputs[index]).includes('Error:')
+                        regexGeneratedOutputErrors[index]
                           ? 'border-red-500 bg-red-100'
                           : 'border-grey-500 bg-neutral-100'
                       }`}
                     >
-                      {JSON.stringify(regexGeneratedOutputs[index]).includes('Error: ')
-                        ? JSON.stringify(regexGeneratedOutputs[index])
+                      {regexGeneratedOutputErrors[index]
+                        ? JSON.stringify(regexGeneratedOutputErrors[index])
                         : regexGeneratedOutputs
                           ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
                           : ''}
