@@ -52,7 +52,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [savedEmls, setSavedEmls] = useState<Record<string, string>>(
     JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
   );
-  console.log(savedEmls[id]);
 
   const {
     saveDraft,
