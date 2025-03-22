@@ -3,13 +3,12 @@
 import { Input } from '@/components/ui/input';
 import { useProofStore } from './store';
 import { Button } from '@/components/ui/button';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Loader from '@/components/ui/loader';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
-import { ZkFramework } from '@zk-email/sdk';
 
 const AddInputs = () => {
   const pathname = usePathname();
@@ -18,11 +17,6 @@ const AddInputs = () => {
   const { blueprint, externalInputs, setExternalInputs, startProofGeneration } = useProofStore();
   const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
   const [areProvingButtonsDisabled, setAreProvingButtonsDisabled] = useState(true);
-
-  const localProvingEnabled = useMemo(
-    () => blueprint?.props.zkFramework === ZkFramework.Circom,
-    [blueprint]
-  );
 
   const handleStartProofGeneration = async (isLocal = false) => {
     setIsCreateProofLoading(isLocal ? 'local' : 'remote');
@@ -41,7 +35,7 @@ const AddInputs = () => {
     }
   };
   useEffect(() => {
-    const allInputsValid = externalInputs?.every((input) => input.value) ?? false;
+    const allInputsValid = externalInputs?.every(input => input.value) ?? false;
     setAreProvingButtonsDisabled(!allInputsValid);
   }, [externalInputs]);
 
@@ -106,12 +100,10 @@ const AddInputs = () => {
           </div>
           <div
             className={`rounded-2xl border border-grey-200 p-6 ${
-              areProvingButtonsDisabled || !localProvingEnabled
-                ? 'cursor-not-allowed bg-neutral-100'
-                : 'cursor-pointer'
+              areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
             }`}
             onClick={() => {
-              if (areProvingButtonsDisabled || !localProvingEnabled) return;
+              if (areProvingButtonsDisabled) return;
               handleStartProofGeneration(true);
             }}
           >
@@ -124,21 +116,18 @@ const AddInputs = () => {
                   </span>
                 )}
               </p>
-              {localProvingEnabled && (
-                <div className="flex flex-row gap-2">
-                  <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
-                    Private
-                  </div>
-                  <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
-                    Slow
-                  </div>
+              <div className="flex flex-row gap-2">
+                <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
+                  Private
                 </div>
-              )}
+                <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
+                  Slow
+                </div>
+              </div>
             </div>
             <p className="text-base text-grey-700">
-              {localProvingEnabled
-                ? 'This method prioritizes your privacy by generating proofs directly on your device. While it may take a bit more time, your email remains securely on your system.'
-                : 'Local proving is not available for this blueprint.'}
+              This method prioritizes your privacy by generating proofs directly on your device.
+              While it may take a bit more time, your email remains securely on your system.
             </p>
           </div>
         </div>
