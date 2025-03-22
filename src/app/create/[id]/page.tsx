@@ -16,13 +16,7 @@ import { useCreateBlueprintStore } from './store';
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import {
-  extractEMLDetails,
-  DecomposedRegex,
-  testBlueprint,
-  parseEmail,
-  ZkFramework,
-} from '@zk-email/sdk';
+import { extractEMLDetails, DecomposedRegex, testBlueprint, parseEmail } from '@zk-email/sdk';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'react-toastify';
 import StepperMobile from '@/app/components/StepperMobile';
@@ -193,8 +187,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
       if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector && !store.ignoreBodyHashCheck) {
-        // @ts-ignore
-        store.setField('zkFramework', ZkFramework.Sp1);
+        toast.warning(
+          'Email body is too long, max is 9984 bytes. Please add Email body cut off value else skip body hash check'
+        );
+        store.setField('ignoreBodyHashCheck', true);
+        store.setField('removeSoftLinebreaks', false);
       }
     } catch (err) {
       if (!optOut) {
@@ -305,7 +302,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (step === '1') {
       return (
-        !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
+        !store.emailQuery ||
+        !store.emailBodyMaxLength ||
+        (store.emailBodyMaxLength > 9984 && !store.ignoreBodyHashCheck) ||
+        store.ignoreBodyHashCheck === undefined
       );
     }
 
@@ -313,7 +313,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return !store.decomposedRegexes.length;
     }
 
-    console.log('check 5');
     return !!errors.length || isDKIMMissing;
   };
 

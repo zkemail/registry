@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
 import useGoogleAuth from '../hooks/useGoogleAuth';
@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import { extractEMLDetails, testBlueprint, ZkFramework } from '@zk-email/sdk';
+import { extractEMLDetails, testBlueprint } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
@@ -34,11 +34,6 @@ const SelectEmails = ({ id }: { id: string }) => {
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [hasExternalInputs, setHasExternalInputs] = useState(false);
   const { googleAuthToken } = useGoogleAuth();
-
-  const localProvingEnabled = useMemo(
-    () => blueprint?.props.zkFramework === ZkFramework.Circom,
-    [blueprint]
-  );
 
   useEffect(() => {
     if (id !== 'new') {
@@ -403,13 +398,12 @@ const SelectEmails = ({ id }: { id: string }) => {
               </div>
               <div
                 className={`rounded-2xl border border-grey-200 p-6 ${
-                  selectedEmail === null || !!isCreateProofLoading || !localProvingEnabled
+                  selectedEmail === null || !!isCreateProofLoading
                     ? 'cursor-not-allowed bg-neutral-100'
                     : 'cursor-pointer'
                 }`}
                 onClick={() => {
-                  if (selectedEmail === null || !!isCreateProofLoading || !localProvingEnabled)
-                    return;
+                  if (selectedEmail === null || !!isCreateProofLoading) return;
                   handleStartProofGeneration(true);
                 }}
               >
@@ -422,21 +416,18 @@ const SelectEmails = ({ id }: { id: string }) => {
                       </span>
                     )}
                   </p>
-                  {localProvingEnabled && (
-                    <div className="flex flex-row gap-2">
-                      <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
-                        Private
-                      </div>
-                      <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
-                        Slow
-                      </div>
+                  <div className="flex flex-row gap-2">
+                    <div className="rounded-lg border border-[#C2F6C7] bg-[#ECFFEE] px-2 py-1 text-sm text-[#3AA345]">
+                      Private
                     </div>
-                  )}
+                    <div className="rounded-lg border border-[#FFDBDE] bg-[#FFF6F7] px-2 py-1 text-sm text-[#C71B16]">
+                      Slow
+                    </div>
+                  </div>
                 </div>
                 <p className="text-base text-grey-700">
-                  {localProvingEnabled
-                    ? 'This method prioritizes your privacy by generating proofs directly on your device. While it may take a bit more time, your email remains securely on your system.'
-                    : 'Local proving is not available for this blueprint.'}
+                  This method prioritizes your privacy by generating proofs directly on your device.
+                  While it may take a bit more time, your email remains securely on your system.
                 </p>
               </div>
             </div>
