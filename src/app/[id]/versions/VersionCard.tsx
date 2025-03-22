@@ -2,7 +2,7 @@ import { debounce, getDateToNowStr, getStatusIcon } from '@/app/utils';
 
 import { getStatusColorLight, getStatusName } from '@/app/utils';
 import Image from 'next/image';
-import { Blueprint, Status, ZkFramework } from '@zk-email/sdk';
+import { Blueprint, Status } from '@zk-email/sdk';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -197,16 +197,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             variant="secondary"
             size="smIcon"
             disabled={blueprint.props.status !== Status.Done}
-            onClick={() => {
-              if (blueprint.props.zkFramework === ZkFramework.Circom) {
-                router.push(`/${blueprint.props.id}/download`);
-                // @ts-ignore
-              } else if (blueprint.props.zkFramework === ZkFramework.Sp1) {
-                toast.warn('This blueprints was built using SP1 and does not have circuits');
-              } else {
-                toast.warn('This blueprints has no circuits');
-              }
-            }}
+            onClick={() => router.push(`/${blueprint.props.id}/download`)}
           >
             <Image
               src="/assets/Download.svg"
