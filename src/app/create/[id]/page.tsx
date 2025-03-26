@@ -435,8 +435,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               }}
             />
             <span className="text-base">
-              You can help improve the registry by sharing the process data with the team for future
-              improvements. Feel free to opt out of sharing.
+              We collect anonymous usage data to improve the registry. Toggle this switch to opt out.
             </span>
           </div>
         </div>
