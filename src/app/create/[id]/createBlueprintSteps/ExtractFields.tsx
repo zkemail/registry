@@ -353,10 +353,14 @@ const ExtractFields = ({
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center justify-between">
-          <div className="w-full">
-            <Label>Quick header extraction</Label>
-            <p className="text-gray-500">We auto-write the regexes for all the checked fields</p>
-            <div className="mt-2 border border-gray-200 rounded-lg p-4">
+          <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
+            <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
+              <div className="flex flex-col gap-1">
+                <Label className="font-medium">Quick header extraction</Label>
+                <p className="text-gray-500 text-sm">We auto-write the regexes for all the checked fields</p>
+              </div>
+            </div>
+            <div className="px-4 py-3">
               <div className="flex">
                 {/* Left column with 3 options */}
                 <div className="flex flex-col gap-2 w-1/2 pr-4">
