@@ -127,7 +127,7 @@ const ExtractFields = ({
     if (store.decomposedRegexes?.length === 0) {
       setField('decomposedRegexes', [
         ...(store.decomposedRegexes ?? []),
-        { maxLength: 64, parts: [] },
+        { maxLength: 64, parts: [], location: 'body' },
       ]);
     }
   }, []);
@@ -564,7 +564,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64 },
+                  { maxLength: 64, location: 'body' },
                 ]);
               }}
             >
@@ -865,7 +865,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64 },
+                  { maxLength: 64, location: 'body' },
                 ]);
               }}
             >
