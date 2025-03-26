@@ -685,16 +685,14 @@ const ExtractFields = ({
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-row gap-2 items-center">
-                          <div
-                            className="h-3 w-3 border border-grey-500"
+                          <span 
+                            className="flex items-center justify-center h-5 w-5 rounded-full text-xs font-medium text-white"
                             style={{
-                              borderRadius: '2px',
-                              background: part.isPublic
+                              backgroundColor: part.isPublic
                                 ? REGEX_COLORS[index % REGEX_COLORS.length].public
                                 : REGEX_COLORS[index % REGEX_COLORS.length].private,
                             }}
-                          />
-                          <span className="flex items-center justify-center h-5 w-5 rounded-full bg-gray-200 text-xs font-medium">
+                          >
                             {partIndex + 1}
                           </span>
                           <Label>Field</Label>
@@ -814,10 +812,12 @@ const ExtractFields = ({
                       setField('decomposedRegexes', updatedRegexes);
                     }}
                   >
-                    Add Regex Part
+                    Add regex manually
                   </Button>
                 </div>
-                {regexGeneratedOutputs[index] !== undefined &&
+                {/* Only show output if there are regex parts and valid outputs */}
+                {parseRegexParts(regex.parts).length > 0 && 
+                regexGeneratedOutputs[index] !== undefined &&
                 regexGeneratedOutputs[index] !== null &&
                 regexGeneratedOutputs[index].length > 0 ? (
                   <>
