@@ -73,6 +73,7 @@ const PatternDetails = ({
       <Input
         title="Pattern Name"
         disabled={id !== 'new'}
+        placeholder="Proof of Github Username"
         value={store.title}
         onChange={(e) => {
           setField('title', e.target.value);
@@ -126,7 +127,7 @@ const PatternDetails = ({
       )}
       <Textarea
         title="Description"
-        placeholder="Enter a description"
+        placeholder="Prove that you own a particular GitHub account"
         value={store.description}
         rows={3}
         onChange={(e) => setField('description', e.target.value)}
