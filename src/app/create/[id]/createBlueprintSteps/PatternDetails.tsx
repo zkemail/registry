@@ -132,7 +132,7 @@ const PatternDetails = ({
       )}
       <Textarea
         title="Description"
-        placeholder="Enter a description"
+        placeholder="Prove that you own a particular GitHub account"
         value={store.description}
         rows={3}
         onChange={(e) => setField('description', e.target.value)}

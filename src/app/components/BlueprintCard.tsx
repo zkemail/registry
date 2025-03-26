@@ -73,20 +73,22 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           </div>
         </div>
         <div className="mt-1 flex items-center">
-          <div className="flex items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800">
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              navigator.clipboard.writeText(
+                (blueprint?.props?.slug || '') + '@v' + (blueprint?.props?.version || '')
+              );
+              toast.success('Copied to clipboard');
+            }}
+            className="flex items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 cursor-pointer hover:bg-neutral-100 hover:border-grey-400 transition-all"
+          >
             <p className="overflow-hidden text-ellipsis">
               {blueprint.props.slug}
             </p>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                navigator.clipboard.writeText(
-                  (blueprint?.props?.slug || '') + '@v' + (blueprint?.props?.version || '')
-                );
-                toast.success('Copied to clipboard');
-              }}
-              className="ml-2 flex cursor-pointer items-center justify-center p-0.5 hover:opacity-70"
+            <div
+              className="ml-2 flex items-center justify-center p-0.5"
               aria-label="Copy blueprint reference"
             >
               <Image
@@ -99,7 +101,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                   height: 'auto',
                 }}
               />
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -138,7 +140,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               {getStatusName(blueprint.props.status)}
             </span>
             <p
-              className="w-max"
+              className="w-max text-grey-700"
               title={blueprint.props.updatedAt?.toLocaleString()}
             >
               Updated {getDateToNowStr(blueprint.props.updatedAt)}
