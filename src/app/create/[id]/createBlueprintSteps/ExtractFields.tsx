@@ -351,9 +351,9 @@ const ExtractFields = ({
   return (
     <div className="flex flex-col gap-6">
       {/* Decomposed Regexes */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center justify-between">
-          <div className="w-full border border-gray-200 rounded-lg overflow-hidden">
+          <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-4">
             <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
               <div className="flex flex-col gap-1">
                 <Label className="font-medium">Quick header extraction</Label>
@@ -579,7 +579,7 @@ const ExtractFields = ({
 
         {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => {
           return (
-            <div key={index} className="flex flex-col gap-3 border border-gray-200 rounded-lg overflow-hidden">
+            <div key={index} className="flex flex-col gap-3 border border-gray-200 rounded-lg overflow-hidden mb-2">
               <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 text-xs font-medium">
