@@ -353,14 +353,10 @@ const ExtractFields = ({
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center justify-between">
-          <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-4">
-            <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
-              <div className="flex flex-col gap-1">
-                <Label className="font-medium">Quick header extraction</Label>
-                <p className="text-gray-500 text-sm">We auto-write the regexes for all the checked fields</p>
-              </div>
-            </div>
-            <div className="px-4 py-3">
+          <div className="w-full">
+            <Label>Quick header extraction</Label>
+            <p className="text-gray-500">We auto-write the regexes for all the checked fields</p>
+            <div className="mt-2 border border-gray-200 rounded-lg p-4">
               <div className="flex">
                 {/* Left column with 3 options */}
                 <div className="flex flex-col gap-2 w-1/2 pr-4">
@@ -579,7 +575,7 @@ const ExtractFields = ({
 
         {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => {
           return (
-            <div key={index} className="flex flex-col gap-3 border border-gray-200 rounded-lg overflow-hidden mb-2">
+            <div key={index} className="flex flex-col gap-3 border border-gray-200 rounded-lg overflow-hidden">
               <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 text-xs font-medium">
@@ -689,14 +685,15 @@ const ExtractFields = ({
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
                         <div className="flex flex-row gap-2 items-center">
-                          <span 
-                            className="flex items-center justify-center h-5 w-5 rounded-full text-xs font-medium text-white"
+                          <div
+                            className="h-3 w-3 border border-grey-500"
                             style={{
                               backgroundColor: part.isPublic
                                 ? REGEX_COLORS[index % REGEX_COLORS.length].public
                                 : REGEX_COLORS[index % REGEX_COLORS.length].private,
                             }}
-                          >
+                          />
+                          <span className="flex items-center justify-center h-5 w-5 rounded-full bg-gray-200 text-xs font-medium">
                             {partIndex + 1}
                           </span>
                           <Label>Field</Label>
