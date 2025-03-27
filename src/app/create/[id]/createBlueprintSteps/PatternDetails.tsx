@@ -101,6 +101,8 @@ const PatternDetails = ({
             </div>
           }
           title="Upload test .eml"
+          id="drag-and-drop-emails"
+          data-testid="drag-and-drop-emails"
           helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
           setFile={async (e) => {
             if (!e) return;

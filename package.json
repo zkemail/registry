@@ -6,7 +6,15 @@
     "dev": "bunx --bun next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "bunx --bun next lint"
+    "lint": "bunx --bun next lint",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:coverage": "playwright test --coverage",
+    "test:report": "playwright show-report",
+    "test:codegen": "playwright codegen"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
@@ -35,9 +43,9 @@
     "next-themes": "^0.3.0",
     "postal-mime": "^2.3.2",
     "posthog-js": "^1.200.1",
-    "react": "19.0.0-rc-69d4b800-20241021",
+    "react": "^18.2.0",
     "react-confetti": "^6.2.2",
-    "react-dom": "19.0.0-rc-69d4b800-20241021",
+    "react-dom": "^18.2.0",
     "react-toastify": "^10.0.6",
     "react-use": "^17.6.0",
     "tailwind-merge": "^2.5.4",
@@ -46,6 +54,7 @@
     "zustand": "^5.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.51.1",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
