@@ -362,6 +362,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           ) : (
             <div className="flex flex-col gap-4">
               <div
+                data-testid="remote-proving"
                 className={`rounded-2xl border border-grey-200 p-6 ${
                   selectedEmail === null || !!isCreateProofLoading
                     ? 'cursor-not-allowed bg-neutral-100'
@@ -397,6 +398,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                 </p>
               </div>
               <div
+                data-testid="local-proving"
                 className={`rounded-2xl border border-grey-200 p-6 ${
                   selectedEmail === null ||
                   !!isCreateProofLoading ||

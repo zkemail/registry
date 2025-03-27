@@ -14,7 +14,6 @@ const ConnectEmails = () => {
 
   const { googleLogIn } = useGoogleAuth();
 
-
   return (
     <div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
@@ -23,15 +22,13 @@ const ConnectEmails = () => {
           Connect your Gmail or upload an .eml file
         </p>
         <p className="text-base font-medium text-grey-700">
-          <span className="font-bold text-grey-900">Note:</span> All email processing occurs locally on your device. 
-          We never receive or store your email data.
+          <span className="font-bold text-grey-900">Note:</span> All email processing occurs locally
+          on your device. We never receive or store your email data.
         </p>
         <p className="text-base font-medium text-grey-700">
           <span className="font-bold text-grey-900">Email Query: </span>
           <span className="inline-flex items-center gap-2">
-            <code>
-              {blueprint?.props?.emailQuery}
-            </code>
+            <code>{blueprint?.props?.emailQuery}</code>
             <Button
               variant="outline"
               size="smIcon"
@@ -104,6 +101,8 @@ const ConnectEmails = () => {
               .catch((err) => toast.error(err.message ?? err));
           }
         }}
+        id="drag-and-drop-emails"
+        data-testid="drag-and-drop-emails"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2FF' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
         }}
