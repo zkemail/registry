@@ -105,7 +105,11 @@ const SelectEmails = ({ id }: { id: string }) => {
             if (dateMatches && dateMatches.length > 0) {
               const lastDateMatch = dateMatches[dateMatches.length - 1]; // Take the last match
               const dateValue = lastDateMatch.split('Date: ')[1]; // Extract the actual date string
-              return new Date(dateValue).toISOString(); // Convert to ISO format
+              try {
+                return new Date(dateValue).toISOString(); // Convert to ISO format
+              } catch (err) {
+                console.warn('Found invalid date for ', dateValue, ': ', err);
+              }
             }
             return 'Invalid Date';
           })(),
