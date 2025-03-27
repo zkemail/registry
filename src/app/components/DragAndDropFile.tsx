@@ -12,6 +12,7 @@ const DragAndDropFile = ({
   helpText,
   file,
   setFile,
+  id,
   errorMessage,
   loading,
   tooltipComponent,
@@ -21,6 +22,7 @@ const DragAndDropFile = ({
   helpText?: string;
   file: File | null;
   setFile: (file: File | null) => void | Promise<void>;
+  id?: string;
   errorMessage?: string;
   tooltipComponent?: React.ReactNode;
   loading?: boolean;
@@ -52,6 +54,7 @@ const DragAndDropFile = ({
           e.preventDefault();
           e.stopPropagation();
         }}
+        id={id}
         onDrop={(e) => {
           e.preventDefault();
           e.stopPropagation();

@@ -35,6 +35,7 @@ const Navbar = () => {
               router.push('/create/new');
             }}
             className="rounded-xl"
+            data-testid="create-blueprint-button"
           >
             Create Blueprint
           </Button>

@@ -525,6 +525,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             {savedEmls[id] && (
               <div>
                 <Button
+                  id="sample-eml-preview-button"
+                  data-testid="sample-eml-preview-button"
                   variant="secondary"
                   onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
                 >
