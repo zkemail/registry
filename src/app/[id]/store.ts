@@ -103,7 +103,7 @@ export const useProofStore = create<ProofState>()(
           return;
         }
         const { blueprint } = get();
-        const userStarredSlugs = await sdk.getStarredBlueprints();
+        const userStarredSlugs = (await sdk.getStarredBlueprints()) || [];
         const isStared = userStarredSlugs.includes(blueprint!.props.slug!);
         set({ isUserStarred: isStared });
       },
@@ -114,7 +114,7 @@ export const useProofStore = create<ProofState>()(
         }
         const { blueprint } = get();
         await blueprint!.addStar();
-        const userStarredSlugs = await sdk.getStarredBlueprints();
+        const userStarredSlugs = (await sdk.getStarredBlueprints()) || [];
         const isStared = userStarredSlugs.includes(blueprint!.props.slug!);
         set({ isUserStarred: isStared });
       },
@@ -125,7 +125,7 @@ export const useProofStore = create<ProofState>()(
         }
         const { blueprint } = get();
         await blueprint!.removeStar();
-        const userStarredSlugs = await sdk.getStarredBlueprints();
+        const userStarredSlugs = (await sdk.getStarredBlueprints()) || [];
         const isStared = userStarredSlugs.includes(blueprint!.props.slug!);
         set({ isUserStarred: isStared });
       },
