@@ -378,13 +378,13 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
                 <Input
                   title="Pattern Name"
                   value={store.title}
-                  disabled
+                  // disabled
                   onChange={(e) => {
                     setField('title', e.target.value);
                     // checkExistingBlueprint(e.target.value.replace(/\s+/g, '_'));
                   }}
-                  error={!!validationErrors.title}
-                  errorMessage={validationErrors.title}
+                  // error={!!validationErrors.title}
+                  // errorMessage={validationErrors.title}
                 />
                 <Input title="Slug" disabled value={store.slug} />
                 <Textarea

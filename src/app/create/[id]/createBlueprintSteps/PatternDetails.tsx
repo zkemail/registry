@@ -72,13 +72,14 @@ const PatternDetails = ({
     <div className="flex flex-col gap-6">
       <Input
         title="Pattern Name"
-        disabled={id !== 'new'}
+        // disabled={id !== 'new'}
+        placeholder="Proof of Github Username"
         value={store.title}
         onChange={(e) => {
           setField('title', e.target.value);
           checkExistingBlueprint(e.target.value.replace(/\s+/g, '_'));
         }}
-        error={!!validationErrors.title}
+        // error={!!validationErrors.title}
         // errorMessage={validationErrors.title}
       />
       <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
