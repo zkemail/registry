@@ -417,6 +417,19 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           subjectRegex,
                         ]);
+                      } else {
+                        const updatedRegexes = store.decomposedRegexes.filter((regex) => {
+                          if (regex.name !== 'subject') return true;
+                          const isUnmodified = 
+                            regex.location === 'header' &&
+                            regex.maxLength === 64 &&
+                            regex.parts.length === 3 &&
+                            regex.parts[0].regexDef === '(\r\n|^)subject:' &&
+                            regex.parts[1].regexDef === '[^\r\n]+' &&
+                            regex.parts[2].regexDef === '\r\n';
+                          return !isUnmodified;
+                        });
+                        setField('decomposedRegexes', updatedRegexes);
                       }
                     }}
                   />
@@ -454,6 +467,26 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           receiverRegex,
                         ]);
+                      } else {
+                        // When unchecking, find the receiver regex and check if it's unmodified
+                        const updatedRegexes = store.decomposedRegexes.filter((regex) => {
+                          if (regex.name !== 'email_recipient') return true;
+                          
+                          // Check if the regex matches the default values
+                          const isUnmodified = 
+                            regex.location === 'header' &&
+                            regex.maxLength === 64 &&
+                            regex.parts.length === 4 &&
+                            regex.parts[0].regexDef === '(\r\n|^)to:' &&
+                            regex.parts[1].regexDef === '([^\r\n]+<)?' &&
+                            regex.parts[2].regexDef === '[a-zA-Z0-9!#$%&\\*\\+-/=\\\?\\^_`{\\|}~\\.]+@[a-zA-Z0-9_\\\.-]+' &&
+                            regex.parts[3].regexDef === '>?\r\n';
+                          
+                          // Keep the regex if it has been modified
+                          return !isUnmodified;
+                        });
+                        
+                        setField('decomposedRegexes', updatedRegexes);
                       }
                     }}
                   />
@@ -491,6 +524,20 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           senderNameRegex,
                         ]);
+                      } else {
+                        const updatedRegexes = store.decomposedRegexes.filter((regex) => {
+                          if (regex.name !== 'email_sender') return true;
+                          const isUnmodified = 
+                            regex.location === 'header' &&
+                            regex.maxLength === 64 &&
+                            regex.parts.length === 4 &&
+                            regex.parts[0].regexDef === '(\r\n|^)from:' &&
+                            regex.parts[1].regexDef === '([^\r\n]+<)?' &&
+                            regex.parts[2].regexDef === "[A-Za-z0-9!#$%&'\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+" &&
+                            regex.parts[3].regexDef === '>?\r\n';
+                          return !isUnmodified;
+                        });
+                        setField('decomposedRegexes', updatedRegexes);
                       }
                     }}
                   />
@@ -527,6 +574,19 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           senderDomainRegex,
                         ]);
+                      } else {
+                        const updatedRegexes = store.decomposedRegexes.filter((regex) => {
+                          if (regex.name !== 'sender_domain') return true;
+                          const isUnmodified = 
+                            regex.location === 'header' &&
+                            regex.maxLength === 64 &&
+                            regex.parts.length === 3 &&
+                            regex.parts[0].regexDef === '(\r\n|^)from:[^\r\n]*@' &&
+                            regex.parts[1].regexDef === '[A-Za-z0-9][A-Za-z0-9\\.-]+\\.[A-Za-z]{2,}' &&
+                            regex.parts[2].regexDef === '[>\r\n]';
+                          return !isUnmodified;
+                        });
+                        setField('decomposedRegexes', updatedRegexes);
                       }
                     }}
                   />
@@ -563,6 +623,20 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           timestampRegex,
                         ]);
+                      } else {
+                        const updatedRegexes = store.decomposedRegexes.filter((regex) => {
+                          if (regex.name !== 'email_timestamp') return true;
+                          const isUnmodified = 
+                            regex.location === 'header' &&
+                            regex.maxLength === 64 &&
+                            regex.parts.length === 4 &&
+                            regex.parts[0].regexDef === '(\r\n|^)dkim-signature:' &&
+                            regex.parts[1].regexDef === '([a-z]+=[^;]+; )+t=' &&
+                            regex.parts[2].regexDef === '[0-9]+' &&
+                            regex.parts[3].regexDef === ';';
+                          return !isUnmodified;
+                        });
+                        setField('decomposedRegexes', updatedRegexes);
                       }
                     }}
                   />
