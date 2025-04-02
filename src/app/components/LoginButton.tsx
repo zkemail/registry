@@ -49,7 +49,11 @@ export default function LoginButton() {
       ) : (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-10 w-10 rounded-full p-0">
+            <Button
+              data-testid="profile-info"
+              variant="outline"
+              className="h-10 w-10 rounded-full p-0"
+            >
               {username?.[0]?.toUpperCase() || 'U'}
             </Button>
           </DropdownMenuTrigger>

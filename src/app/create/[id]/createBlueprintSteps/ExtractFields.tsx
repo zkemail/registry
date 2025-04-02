@@ -994,7 +994,9 @@ const ExtractFields = ({
           </div>
         ) : null}
       </div>
-      <Status />
+      <div data-testid="regex-status">
+        <Status />
+      </div>
     </div>
   );
 };
