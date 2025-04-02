@@ -19,7 +19,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isAdmin: false,
       setAuth: (username, token, isAdmin) => set({ username, token, isAdmin }),
-      clearAuth: () => set({ username: null, token: null }),
+      clearAuth: () => set({ username: null, token: null, isAdmin: false }),
       setLoading: (loading: boolean) => set({ isLoading: loading }),
     }),
     {

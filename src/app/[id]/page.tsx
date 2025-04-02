@@ -17,6 +17,7 @@ import StepperMobile from '../components/StepperMobile';
 import { BlueprintTitle } from '../components/BlueprintTitle';
 import { Blueprint, Status } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -33,6 +34,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const blueprint = useProofStore((state) => state.blueprint);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { clearAuth } = useAuthStore();
 
   let steps = blueprint?.props.externalInputs
     ? ['Connect emails', 'Select emails', 'Add inputs', 'View and verify']
@@ -51,6 +53,10 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
         await setIsUserStarred();
       })
       .catch((err) => {
+        if (err.toString().includes('401')) {
+          clearAuth();
+          return
+        }
         console.error(`Failed to get blueprint with id ${id}: `, err);
         toast.error('This blueprint could not be found');
         router.push('/');
@@ -141,7 +147,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
               height: 'auto',
             }}
           />
-          <div className="w-full flex justify-center">
+          <div className="flex w-full justify-center">
             <Button
               onClick={() => router.push(`/create/${blueprint.props.id}`)}
               variant="secondary"
