@@ -103,7 +103,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           internalDate: (() => {
             const dateMatches = file.match(/Date: (.*)/g); // Find all "Date:" occurrences
             if (dateMatches && dateMatches.length > 0) {
-              const lastDateMatch = dateMatches[dateMatches.length - 1]; // Take the last match
+              const lastDateMatch = dateMatches[0]; // Take the first match - should get the header date
               const dateValue = lastDateMatch.split('Date: ')[1]; // Extract the actual date string
               return new Date(dateValue).toISOString(); // Convert to ISO format
             }
