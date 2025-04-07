@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import Loader from '@/components/ui/loader';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
+import { ZkFramework } from '@zk-email/sdk';
 
 const AddInputs = () => {
   const pathname = usePathname();
@@ -35,7 +36,7 @@ const AddInputs = () => {
     }
   };
   useEffect(() => {
-    const allInputsValid = externalInputs?.every(input => input.value) ?? false;
+    const allInputsValid = externalInputs?.every((input) => input.value) ?? false;
     setAreProvingButtonsDisabled(!allInputsValid);
   }, [externalInputs]);
 
@@ -67,7 +68,9 @@ const AddInputs = () => {
         <div className="flex flex-col gap-4">
           <div
             className={`rounded-2xl border border-grey-200 p-6 ${
-              areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
+              areProvingButtonsDisabled || blueprint?.props.zkFramework !== ZkFramework.Circom
+                ? 'cursor-not-allowed bg-neutral-100'
+                : 'cursor-pointer'
             }`}
             onClick={() => {
               if (areProvingButtonsDisabled) return;
@@ -126,8 +129,14 @@ const AddInputs = () => {
               </div>
             </div>
             <p className="text-base text-grey-700">
-              This method prioritizes your privacy by generating proofs directly on your device.
-              While it may take a bit more time, your email remains securely on your system.
+              {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+                <>
+                  This method prioritizes your privacy by generating proofs directly on your device.
+                  While it may take a bit more time, your email remains securely on your system.
+                </>
+              ) : (
+                'Local proving only works for blueprints compiled with Circom'
+              )}
             </p>
           </div>
         </div>
