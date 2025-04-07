@@ -33,6 +33,7 @@ import { Switch } from '@/components/ui/switch';
 import HighlightText from '@/app/components/HighlightRegex';
 import { REGEX_COLORS } from '@/app/constants';
 import { debounce } from '@/app/utils';
+import ModalGenerator from '@/components/ModalGenerator';
 
 type Step = '0' | '1' | '2';
 
@@ -78,6 +79,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [canCompile, setCanCompile] = useState(false);
+  const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
+  const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -164,8 +167,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   };
 
-  const handleTestEmail = async () => {
-    if (!file) {
+  const handleTestEmail = async (updateFields = false) => {
+    console.log(savedEmls, id);
+    if (!savedEmls[id]) {
       console.error('Add eml file first');
       return;
     }
@@ -182,6 +186,18 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
       setCanonicalizedBody(parsedEmail.canonicalizedBody);
       setDkimSelector(selector);
+
+      if (
+        (store.senderDomain !== senderDomain ||
+        store.emailQuery !== emailQuery ||
+        store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
+        store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64 ) &&
+        !updateFields
+      ) {
+        setIsConfirmInputsUpdateModalOpen(true);
+        return;
+      }
+
       store.setField('senderDomain', senderDomain);
       store.setField('emailQuery', emailQuery);
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
@@ -204,6 +220,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         } else {
           toast.error('Invalid email');
         }
+      if (savedEmls[id]) {
+        toast.error('Invalid email');
       }
       return;
     }
@@ -435,7 +453,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               }}
             />
             <span className="text-base">
-              We collect anonymous usage data to improve the registry. Toggle this switch to opt out.
+              We collect anonymous usage data to improve the registry. Toggle this switch to opt
+              out.
             </span>
           </div>
         </div>
@@ -659,6 +678,48 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       ) : null}
+      <ModalGenerator
+        isOpen={isConfirmInputsUpdateModalOpen}
+        onClose={() => {
+          setIsConfirmInputsUpdateModalOpen(false);
+        }}
+        title="Confirm Inputs Update!"
+        disableSubmitButton={isUpdateInputsLoading}
+        showActionBar={false}
+        modalContent={
+          <div className="flex w-[456px] flex-col justify-center gap-4">
+            <p className="text-base font-semibold text-grey-700">
+              Are you sure you want to update the inputs?
+            </p>
+            <div className="flex w-full gap-2">
+              <Button
+                className="w-full"
+                startIcon={
+                  <Image src="/assets/GoBackIcon.svg" alt="arrow-left" width={16} height={16} />
+                }
+                variant="secondary"
+                onClick={() => setIsConfirmInputsUpdateModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="w-full"
+                startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
+                variant="destructive"
+                onClick={async () => {
+                  setIsUpdateInputsLoading(true);
+                  await handleTestEmail(true);
+                  setIsUpdateInputsLoading(false);
+                  setIsConfirmInputsUpdateModalOpen(false);
+                }}
+                loading={isUpdateInputsLoading}
+              >
+                Update
+              </Button>
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 };
