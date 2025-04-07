@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import { extractEMLDetails, testBlueprint } from '@zk-email/sdk';
+import { extractEMLDetails, testBlueprint, ZkFramework } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
@@ -398,7 +398,9 @@ const SelectEmails = ({ id }: { id: string }) => {
               </div>
               <div
                 className={`rounded-2xl border border-grey-200 p-6 ${
-                  selectedEmail === null || !!isCreateProofLoading
+                  selectedEmail === null ||
+                  !!isCreateProofLoading ||
+                  blueprint?.props.zkFramework !== ZkFramework.Circom
                     ? 'cursor-not-allowed bg-neutral-100'
                     : 'cursor-pointer'
                 }`}
@@ -426,8 +428,15 @@ const SelectEmails = ({ id }: { id: string }) => {
                   </div>
                 </div>
                 <p className="text-base text-grey-700">
-                  This method prioritizes your privacy by generating proofs directly on your device.
-                  While it may take a bit more time, your email remains securely on your system.
+                  {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+                    <>
+                      This method prioritizes your privacy by generating proofs directly on your
+                      device. While it may take a bit more time, your email remains securely on your
+                      system.
+                    </>
+                  ) : (
+                    'Local proving only works for blueprints compiled with Circom'
+                  )}
                 </p>
               </div>
             </div>

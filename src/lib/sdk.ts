@@ -1,6 +1,9 @@
 import zkeSdk from '@zk-email/sdk';
 import auth from './auth';
 
-const sdk = zkeSdk({ auth, baseUrl: 'http://localhost:8080' });
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+console.log('baseUrl: ', baseUrl);
+
+const sdk = zkeSdk({ auth, ...(baseUrl ? { baseUrl } : {}) });
 
 export default sdk;
