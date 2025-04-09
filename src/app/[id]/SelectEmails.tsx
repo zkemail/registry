@@ -101,7 +101,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           emailMessageId: 'uploadedFile',
           subject,
           internalDate: (() => {
-            const dateMatches = file.match(/Date: (.*)/g); // Find all "Date:" occurrences
+            const dateMatches = file.match(/\nDate: (.*)/g); // Find all "Date:" occurrences
             if (dateMatches && dateMatches.length > 0) {
               const lastDateMatch = dateMatches[0]; // Take the first match - should get the header date
               const dateValue = lastDateMatch.split('Date: ')[1]; // Extract the actual date string
