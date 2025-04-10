@@ -189,9 +189,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
       if (
         (store.senderDomain !== senderDomain ||
-        store.emailQuery !== emailQuery ||
-        store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
-        store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64 ) &&
+          store.emailQuery !== emailQuery ||
+          store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
+          store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64) &&
         !updateFields
       ) {
         setIsConfirmInputsUpdateModalOpen(true);
@@ -203,11 +203,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
       if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector && !store.ignoreBodyHashCheck) {
-        toast.warning(
-          'Email body is too long, max is 9984 bytes. Please add Email body cut off value else skip body hash check'
-        );
-        store.setField('ignoreBodyHashCheck', true);
-        store.setField('removeSoftLinebreaks', false);
+        toast.info('Email body is too long for circom, the blueprint will use Sp1 as prover');
       }
     } catch (err) {
       if (!optOut) {
@@ -439,8 +435,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   return (
-    <div className="flex flex-col px-4 xl:flex-row justify-center gap-2">
-      <div className="mt-16 xl:my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+    <div className="flex flex-col justify-center gap-2 px-4 xl:flex-row">
+      <div className="mt-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] xl:my-16">
         <div className="mb-4 rounded-md border border-grey-200 bg-neutral-100 p-2">
           <div className="flex items-center">
             <Switch
@@ -613,7 +609,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
       </div>
       {pathname.includes('create') && step === '2' ? (
-        <div className="my-4 xl:my-16 flex w-full xl:w-96 min-w-96 flex-col gap-4 xl:gap-2 transition-all duration-300">
+        <div className="my-4 flex w-full min-w-96 flex-col gap-4 transition-all duration-300 xl:my-16 xl:w-96 xl:gap-2">
           <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] transition-all duration-300">
             <div>
               <div
