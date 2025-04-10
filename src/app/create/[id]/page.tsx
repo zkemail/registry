@@ -202,9 +202,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailQuery', emailQuery);
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
-      if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector && !store.ignoreBodyHashCheck) {
-        toast.info('Email body is too long for circom, the blueprint will use Sp1 as prover');
-      }
     } catch (err) {
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
@@ -320,10 +317,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (step === '1') {
       return (
-        !store.emailQuery ||
-        !store.emailBodyMaxLength ||
-        (store.emailBodyMaxLength > 9984 && !store.ignoreBodyHashCheck) ||
-        store.ignoreBodyHashCheck === undefined
+        !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
       );
     }
 
