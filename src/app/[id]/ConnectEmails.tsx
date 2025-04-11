@@ -59,7 +59,7 @@ const ConnectEmails = () => {
         })}
       >
         <Image
-          src="/assets/GoogleLogo.svg"
+          src="/assets/GmailLogo.png"
           alt="Google Logo"
           width={16}
           height={16}
@@ -71,9 +71,9 @@ const ConnectEmails = () => {
         Connect Gmail Account
       </Button>
       <div className="flex w-full items-center">
-        <Separator className="flex-1" />
+        <div className="flex-1 h-[2px] bg-gradient-to-r from-transparent to-gray-300" />
         <span className="mx-3 text-base font-semibold text-grey-700">OR</span>
-        <Separator className="flex-1" />
+        <div className="flex-1 h-[2px] bg-gradient-to-l from-transparent to-gray-300" />
       </div>
       <div
         className="w-full cursor-pointer rounded-lg p-8"
