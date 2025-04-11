@@ -192,7 +192,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           store.emailQuery !== emailQuery ||
           store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
           store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64) &&
-        !updateFields
+        !updateFields && id !== 'new'
       ) {
         setIsConfirmInputsUpdateModalOpen(true);
         return;
