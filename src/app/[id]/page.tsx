@@ -1,7 +1,7 @@
 'use client';
 import { use, useEffect } from 'react';
 import Image from 'next/image';
-import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
+import { getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Button } from '@/components/ui/button';
 import Stepper from '../components/Stepper';
 import ConnectEmails from './ConnectEmails';
@@ -243,70 +243,8 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           isUserStarred={isUserStarred}
           unStarBlueprint={unStarBlueprint}
           starBlueprint={starBlueprint}
+          id={id}
         />
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
-          <div className="flex flex-row items-center justify-between gap-3">
-            <span className="text-xl font-bold leading-6 underline">{blueprint.props.version}</span>
-            <span>
-              <p className="text-xs text-grey-700">
-                Updated {getDateToNowStr(blueprint.props.updatedAt)}
-              </p>
-            </span>
-            <span>
-              <span
-                className={`flex flex-row gap-1 rounded-lg border border-green-200 bg-green-100 px-2 py-1 text-xs font-semibold text-green-300`}
-              >
-                Latest
-              </span>
-            </span>
-          </div>
-          <div className="flex w-auto flex-row gap-2">
-            <Link href={`/${id}/versions`}>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-white"
-                onClick={() => {}}
-                startIcon={
-                  <Image
-                    src="/assets/GitCommit.svg"
-                    alt="commit"
-                    width={16}
-                    height={16}
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                    }}
-                  />
-                }
-              >
-                View all versions
-              </Button>
-            </Link>
-            <Link href={`/${id}/proofs`}>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-white"
-                onClick={() => {}}
-                startIcon={
-                  <Image
-                    src="/assets/Files.svg"
-                    alt="commit"
-                    width={16}
-                    height={16}
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                    }}
-                  />
-                }
-              >
-                Past proofs
-              </Button>
-            </Link>
-          </div>
-        </div>
       </>
       {renderBlueprintComponent()}
     </div>
