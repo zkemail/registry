@@ -1,6 +1,8 @@
 import Image from 'next/image';
 import { Blueprint } from '@zk-email/sdk';
-import { getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
+import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useEffect, useState } from 'react';
@@ -10,6 +12,7 @@ interface BlueprintTitleProps {
   isUserStarred: boolean;
   unStarBlueprint: () => void;
   starBlueprint: () => void;
+  id: string;
 }
 
 export const BlueprintTitle = ({
@@ -17,6 +20,7 @@ export const BlueprintTitle = ({
   isUserStarred,
   unStarBlueprint,
   starBlueprint,
+  id,
 }: BlueprintTitleProps) => {
   const token = useAuthStore((state) => state.token);
   const [numProofs, setNumProofs] = useState(0);
@@ -46,12 +50,14 @@ export const BlueprintTitle = ({
   };
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
+    <div className="rounded-3xl border border-grey-200 bg-[#FFFFFF] p-6 shadow-sm">
+      <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
+          <h2 className="text-xl font-bold text-grey-900">{blueprint.props.title}</h2>
+        </div>
+        <div className="flex items-center gap-3 text-sm">
           <span
-            className={`flex flex-row gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
+            className={`flex flex-row items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
               blueprint.props.status
             )}`}
           >
@@ -67,31 +73,105 @@ export const BlueprintTitle = ({
             /> */}
             {getStatusName(blueprint.props.status)}
           </span>
-        </div>
-        <div className="flex items-center gap-4 text-sm text-grey-600">
-          <span className="flex flex-row gap-1 rounded border border-grey-400 px-2 py-1 font-medium text-grey-800">
-            <Image width={16} height={16} src="/assets/Users.svg" alt="views" /> {numProofs}
+          <span className="flex flex-row items-center gap-1 rounded border border-grey-400 bg-white px-2 py-1 font-medium text-grey-800">
+            <Image width={16} height={16} src="/assets/Users.svg" alt="views" /> 
+            {numProofs}
           </span>
           <button
             onClick={handleStarClick}
-            className="flex flex-row gap-1 rounded border border-grey-500 bg-white px-2 py-1 font-semibold text-grey-800"
+            className="flex flex-row items-center gap-1 rounded border border-grey-400 bg-white px-2 py-1 font-medium text-grey-800 hover:bg-grey-100 transition-colors"
           >
             <Image
               width={16}
               height={16}
               src={isUserStarred ? '/assets/StarFilled.svg' : '/assets/Star.svg'}
-              alt="⭐"
+              alt="Star"
               style={{
                 maxWidth: '100%',
                 height: 'auto',
               }}
-            />{' '}
+            />
             {(blueprint.props.stars || 0) < 2 ? 'Star' : 'Stars'} | {blueprint.props.stars || 0}
           </button>
         </div>
       </div>
-      <p className="text-sm mb-4 font-medium text-neutral-600">{blueprint.props.slug}</p>
-      <p className="text-md mb-4 font-medium text-neutral-600">{blueprint.props.description}</p>
+
+      <div className="space-y-3 mb-5">
+        <p className="text-sm font-medium text-grey-700">{blueprint.props.slug}</p>
+        <p className="text-sm text-grey-800">{blueprint.props.description}</p>
+        
+        {blueprint.props.decomposedRegexes?.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            {blueprint.props.decomposedRegexes?.map((dr, index) => (
+              <div
+                key={index}
+                className="h-fit rounded-md border border-grey-400 bg-neutral-200 px-2 py-[2px] text-[12px] leading-[16px] text-grey-800"
+              >
+                {dr.name} {dr.isHashed ? '(hashed)' : ''}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col items-start justify-between gap-4 border-t border-grey-200 pt-4 md:flex-row">
+        <div className="flex flex-row items-center gap-3">
+          <span className="text-lg font-bold leading-6 text-grey-900 underline">{blueprint.props.version}</span>
+          <p className="text-xs text-grey-700">
+            Updated {getDateToNowStr(blueprint.props.updatedAt)}
+          </p>
+          <span
+            className="flex flex-row items-center gap-1 rounded-lg border border-green-200 bg-green-100 px-2 py-1 text-xs font-semibold text-green-300"
+          >
+            Latest
+          </span>
+        </div>
+        
+        <div className="flex w-auto flex-row gap-2">
+          <Link href={`/${id}/versions`}>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white border border-grey-400 hover:bg-grey-100 text-grey-800"
+              startIcon={
+                <Image
+                  src="/assets/GitCommit.svg"
+                  alt="versions"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
+            >
+              View all versions
+            </Button>
+          </Link>
+          <Link href={`/${id}/proofs`}>
+            <Button
+              variant="secondary"
+              size="sm"
+              className="bg-white border border-grey-400 hover:bg-grey-100 text-grey-800"
+              startIcon={
+                <Image
+                  src="/assets/Files.svg"
+                  alt="proofs"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
+            >
+              Past proofs
+            </Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 };
