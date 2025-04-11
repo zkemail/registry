@@ -174,8 +174,31 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (blueprint.props.status === Status.Done) {
       return (
-        <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-          <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
+        <div className="flex flex-col gap-6 rounded-3xl border border-grey-400 bg-white p-6">
+          <div className="flex justify-between items-center">
+            <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
+            <Link href={`/${id}/proofs`}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white border border-grey-400 hover:bg-grey-100 text-grey-800"
+                startIcon={
+                  <Image
+                    src="/assets/Files.svg"
+                    alt="proofs"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
+              >
+                Past proofs
+              </Button>
+            </Link>
+          </div>
           <div className="flex flex-col items-center gap-6 md:hidden">
             <StepperMobile steps={steps} currentStep={step} />
           </div>

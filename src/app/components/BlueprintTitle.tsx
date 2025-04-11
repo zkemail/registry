@@ -51,35 +51,18 @@ export const BlueprintTitle = ({
 
   return (
     <div className="rounded-3xl border border-grey-200 bg-[#FFFFFF] p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-1 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold text-grey-900">{blueprint.props.title}</h2>
         </div>
         <div className="flex items-center gap-3 text-sm">
-          <span
-            className={`flex flex-row items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
-              blueprint.props.status
-            )}`}
-          >
-            {/* <Image
-              width={12}
-              height={12}
-              src={getStatusIcon(blueprint.props.status)}
-              alt={getStatusName(blueprint.props.status)}
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-              }}
-            /> */}
-            {getStatusName(blueprint.props.status)}
-          </span>
-          <span className="flex flex-row items-center gap-1 rounded border border-grey-400 bg-white px-2 py-1 font-medium text-grey-800">
+          <span className="flex flex-row items-center gap-1 rounded-lg px-2 py-1 font-medium text-grey-800">
             <Image width={16} height={16} src="/assets/Users.svg" alt="views" /> 
             {numProofs}
           </span>
           <button
             onClick={handleStarClick}
-            className="flex flex-row items-center gap-1 rounded border border-grey-400 bg-white px-2 py-1 font-medium text-grey-800 hover:bg-grey-100 transition-colors"
+            className="flex flex-row items-center gap-1 rounded-lg border border-grey-400 bg-white px-2 py-1 font-medium text-grey-800 hover:bg-grey-100 transition-colors"
           >
             <Image
               width={16}
@@ -101,7 +84,7 @@ export const BlueprintTitle = ({
         <p className="text-sm text-grey-800">{blueprint.props.description}</p>
         
         {blueprint.props.decomposedRegexes?.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mt-3">
+          <div className="flex flex-wrap items-center gap-2">
             {blueprint.props.decomposedRegexes?.map((dr, index) => (
               <div
                 key={index}
@@ -117,14 +100,31 @@ export const BlueprintTitle = ({
       <div className="flex flex-col items-start justify-between gap-4 border-t border-grey-200 pt-4 md:flex-row">
         <div className="flex flex-row items-center gap-3">
           <span className="text-lg font-bold leading-6 text-grey-900 underline">{blueprint.props.version}</span>
+          <span
+            className={`flex flex-row items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${getStatusColorLight(
+              blueprint.props.status
+            )}`}
+          >
+            {/* <Image
+              width={12}
+              height={12}
+              src={getStatusIcon(blueprint.props.status)}
+              alt={getStatusName(blueprint.props.status)}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            /> */}
+            {getStatusName(blueprint.props.status)}
+          </span>
           <p className="text-xs text-grey-700">
             Updated {getDateToNowStr(blueprint.props.updatedAt)}
           </p>
-          <span
+          {/* <span
             className="flex flex-row items-center gap-1 rounded-lg border border-green-200 bg-green-100 px-2 py-1 text-xs font-semibold text-green-300"
           >
             Latest
-          </span>
+          </span> */}
         </div>
         
         <div className="flex w-auto flex-row gap-2">
@@ -147,27 +147,6 @@ export const BlueprintTitle = ({
               }
             >
               View all versions
-            </Button>
-          </Link>
-          <Link href={`/${id}/proofs`}>
-            <Button
-              variant="secondary"
-              size="sm"
-              className="bg-white border border-grey-400 hover:bg-grey-100 text-grey-800"
-              startIcon={
-                <Image
-                  src="/assets/Files.svg"
-                  alt="proofs"
-                  width={16}
-                  height={16}
-                  style={{
-                    maxWidth: '100%',
-                    height: 'auto',
-                  }}
-                />
-              }
-            >
-              Past proofs
             </Button>
           </Link>
         </div>
