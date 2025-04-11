@@ -67,6 +67,7 @@ const AddInputs = () => {
         <div className="flex justify-center">Choose the mode of proof creation</div>
         <div className="flex flex-col gap-4">
           <div
+            data-testid="remote-proving"
             className={`rounded-2xl border border-grey-200 p-6 ${
               areProvingButtonsDisabled || blueprint?.props.zkFramework !== ZkFramework.Circom
                 ? 'cursor-not-allowed bg-neutral-100'
@@ -102,6 +103,7 @@ const AddInputs = () => {
             </p>
           </div>
           <div
+            data-testid="local-proving"
             className={`rounded-2xl border border-grey-200 p-6 ${
               areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
             }`}

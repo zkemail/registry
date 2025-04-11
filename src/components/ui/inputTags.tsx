@@ -39,7 +39,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
     };
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2" data-testid="input-tags">
         {props.title ? (
           <Label className="text-base text-grey-900" htmlFor={props.title}>
             {props.title}
