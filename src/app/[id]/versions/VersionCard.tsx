@@ -89,6 +89,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
     } catch (err) {
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
+      console.error('Failed to submit blueprint: ', err);
     } finally {
       setIsSaveDraftLoading(false);
     }
