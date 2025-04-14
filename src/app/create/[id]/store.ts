@@ -130,9 +130,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       saveDraft: async (): Promise<string> => {
         const state = get();
+        const savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
 
         // Page logic should already prevent saving a draft without having a file
-        if (!state.file) {
+        if (!state.file && !savedEmls[state.id ?? 'new']) {
           throw new Error('Can only save a draft with an example email provided');
         }
 
@@ -167,7 +168,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         try {
           console.log('saving draft with state: ', state);
           console.log('getting email content');
-          const emlStr = await getFileContent(state.file);
+          let emlStr = '';
+          if (state.file) {
+            emlStr = await getFileContent(state.file);
+          } else {
+            emlStr = savedEmls[state.id ?? 'new'];
+          }
           console.log('got email content');
           // Create a new blueprint
           if (!state.id || state.id === 'new') {
