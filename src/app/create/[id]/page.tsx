@@ -147,6 +147,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     } catch (err) {
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
+      console.error('Failed to submit blueprint: ', err);
       setErrors(['Unknown error while submitting blueprint']);
     } finally {
       setIsSaveDraftLoading(false);
