@@ -48,6 +48,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
   );
 
+  
   const {
     saveDraft,
     getParsedDecomposedRegexes,
@@ -58,7 +59,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setFile,
     blueprint,
   } = store;
-
+  
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -334,9 +335,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const SampleEMLPreview = () => {
     if (!showSampleEMLPreview) return <></>;
-    console.log(parsedEmail, 'supermajkjsdka');
     if (parsedEmail?.html) {
-      console.log(parsedEmail, 'supermajkjsdka');
       return (
         <div
           className="m-6"
@@ -520,13 +519,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         <div>
           <SampleEMLPreview />
           <div
-            className={`flex w-full flex-row ${savedEmls[id] ? 'justify-between' : 'justify-center'}`}
+            className={`flex w-full flex-col gap-4 sm:flex-row ${savedEmls[id] ? 'justify-between' : 'justify-center'}`}
           >
             {savedEmls[id] && (
-              <div>
+              <div className="w-full">
                 <Button
                   id="sample-eml-preview-button"
                   data-testid="sample-eml-preview-button"
+                  className='w-full sm:w-auto'
                   variant="secondary"
                   onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
                 >
