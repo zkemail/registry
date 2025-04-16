@@ -10,6 +10,7 @@ import Loader from '@/components/ui/loader';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { ZkFramework } from '@zk-email/sdk';
+import { toast } from 'react-toastify';
 
 const AddInputs = () => {
   const pathname = usePathname();
@@ -30,6 +31,11 @@ const AddInputs = () => {
       replace(`${pathname}?${params.toString()}`);
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
+      if (isLocal) {
+        toast.error('Error: Local proof generation failed');
+      } else {
+        toast.error('Error: Remote proof generation failed');
+      }
     } finally {
       setIsCreateProofLoading(null);
       setAreProvingButtonsDisabled(false);
