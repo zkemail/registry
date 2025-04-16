@@ -321,7 +321,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           </RadioGroup>
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          <Button
+        {!file  ?<Button
             variant="ghost"
             className="gap-2 text-grey-700"
             onClick={handleFetchEmails}
@@ -339,7 +339,7 @@ const SelectEmails = ({ id }: { id: string }) => {
               }}
             />
             Load More Emails
-          </Button>
+          </Button>: null}
 
           {!hasExternalInputs && (
             <div className="flex justify-center">Choose the mode of proof creation</div>
