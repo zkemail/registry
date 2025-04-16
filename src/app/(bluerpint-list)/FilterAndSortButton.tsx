@@ -96,6 +96,13 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
           <div className="absolute right-[-1px] top-full z-10 box-content w-full rounded-b-md border border-t-0 border-grey-500 bg-white pb-2">
             <div className="flex flex-col gap-2 px-3">
               <Checkbox
+                title="Draft"
+                checked={filters.includes(Status.Draft)}
+                onCheckedChange={(checked: boolean) => {
+                  handleFilter(Status.Draft, checked);
+                }}
+              />
+              <Checkbox
                 title="Compiled"
                 checked={filters.includes(Status.Done)}
                 onCheckedChange={(checked: boolean) => {
