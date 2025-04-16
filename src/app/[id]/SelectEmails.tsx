@@ -14,6 +14,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -85,6 +86,11 @@ const SelectEmails = ({ id }: { id: string }) => {
       replace(`${pathname}?${params.toString()}`);
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
+      if (isLocal) {
+        toast.error('Error: Local proof generation failed');
+      } else {
+        toast.error('Error: Remote proof generation failed');
+      }
     } finally {
       setIsCreateProofLoading(null);
     }
@@ -321,25 +327,27 @@ const SelectEmails = ({ id }: { id: string }) => {
           </RadioGroup>
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          <Button
-            variant="ghost"
-            className="gap-2 text-grey-700"
-            onClick={handleFetchEmails}
-            disabled={isFetchEmailLoading}
-          >
-            <Image
-              src="/assets/ArrowsClockwise.svg"
-              alt="arrow down"
-              width={16}
-              height={16}
-              className={isFetchEmailLoading ? 'animate-spin' : ''}
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-              }}
-            />
-            Load More Emails
-          </Button>
+          {!file ? (
+            <Button
+              variant="ghost"
+              className="gap-2 text-grey-700"
+              onClick={handleFetchEmails}
+              disabled={isFetchEmailLoading}
+            >
+              <Image
+                src="/assets/ArrowsClockwise.svg"
+                alt="arrow down"
+                width={16}
+                height={16}
+                className={isFetchEmailLoading ? 'animate-spin' : ''}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+              Load More Emails
+            </Button>
+          ) : null}
 
           {!hasExternalInputs && (
             <div className="flex justify-center">Choose the mode of proof creation</div>

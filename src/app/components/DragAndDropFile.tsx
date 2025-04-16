@@ -101,7 +101,10 @@ const DragAndDropFile = ({
                       }}
                     />
                   }
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
                     setFile(null);
                   }}
                 >
