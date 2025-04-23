@@ -12,7 +12,6 @@ interface BlueprintTitleProps {
   isUserStarred: boolean;
   unStarBlueprint: () => void;
   starBlueprint: () => void;
-  id: string;
 }
 
 export const BlueprintTitle = ({
@@ -20,7 +19,6 @@ export const BlueprintTitle = ({
   isUserStarred,
   unStarBlueprint,
   starBlueprint,
-  id,
 }: BlueprintTitleProps) => {
   const token = useAuthStore((state) => state.token);
   const [numProofs, setNumProofs] = useState(0);
@@ -57,7 +55,7 @@ export const BlueprintTitle = ({
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="flex flex-row items-center gap-1 rounded-lg px-2 py-1 font-medium text-grey-800">
-            <Image width={16} height={16} src="/assets/Users.svg" alt="views" /> 
+            <Image width={16} height={16} src="/assets/Users.svg" alt="views" />
             {numProofs}
           </span>
           <button
@@ -82,7 +80,7 @@ export const BlueprintTitle = ({
       <div className="space-y-3 mb-5">
         <p className="text-sm font-medium text-grey-700">{blueprint.props.slug}</p>
         <p className="text-sm text-grey-800">{blueprint.props.description}</p>
-        
+
         {blueprint.props.decomposedRegexes?.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {blueprint.props.decomposedRegexes?.map((dr, index) => (
@@ -126,9 +124,9 @@ export const BlueprintTitle = ({
             Latest
           </span> */}
         </div>
-        
+
         <div className="flex w-auto flex-row gap-2">
-          <Link href={`/${id}/versions`}>
+          <Link href={`/${blueprint.props.id}/versions`}>
             <Button
               variant="secondary"
               size="sm"

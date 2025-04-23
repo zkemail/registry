@@ -266,7 +266,6 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           isUserStarred={isUserStarred}
           unStarBlueprint={unStarBlueprint}
           starBlueprint={starBlueprint}
-          id={id}
         />
       </>
       {renderBlueprintComponent()}
