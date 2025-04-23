@@ -38,11 +38,11 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   startIcon?: React.ReactNode;
   endIcon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: any) => void;
   loading?: boolean;
 }
 
