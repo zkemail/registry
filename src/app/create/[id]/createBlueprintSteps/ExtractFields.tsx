@@ -124,15 +124,6 @@ const ExtractFields = ({
   const [isGeneratingFields, setIsGeneratingFields] = useState(false);
 
   useEffect(() => {
-    if (store.decomposedRegexes?.length === 0) {
-      setField('decomposedRegexes', [
-        ...(store.decomposedRegexes ?? []),
-        { maxLength: 64, parts: [], location: 'body' },
-      ]);
-    }
-  }, []);
-
-  useEffect(() => {
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
       if (!emlContent || !store.decomposedRegexes?.length) {
