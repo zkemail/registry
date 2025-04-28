@@ -146,10 +146,14 @@ const EmailDetails = ({
             onChange={(value) => {
               setField('zkFramework', value);
             }}
-            options={[
-              // { label: 'SP1', value: ZkFramework.Sp1 },
-              { label: 'Circom', value: ZkFramework.Circom },
-            ]}
+            options={
+              process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+                ? [
+                    { label: 'SP1', value: ZkFramework.Sp1 },
+                    { label: 'Circom', value: ZkFramework.Circom },
+                  ]
+                : [{ label: 'Circom', value: ZkFramework.Circom }]
+            }
           />
           <Checkbox
             title="Skip body hash check"
