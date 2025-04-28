@@ -308,7 +308,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
 
     if (step === '0') {
-      return !store.circuitName || !store.title || !store.description;
+      return !store.circuitName || !store.title || !store.description || store.title?.includes(' ');
     }
 
     if (step === '1') {
