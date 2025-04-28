@@ -233,9 +233,17 @@ const SelectEmails = ({ id }: { id: string }) => {
 
     if (fetchedEmails.filter((email) => email.valid).length === 0) {
       return (
-        <div className="rounded-lg border border-grey-200 p-4 text-grey-700">
-          No valid emails found. Please check your inbox
-        </div>
+        <Image
+          src="/assets/noEmailIllustration.svg"
+          alt="no valid emails found"
+          width={316}
+          height={316}
+          style={{
+            margin: 'auto',
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
       );
     }
 
@@ -460,14 +468,22 @@ const SelectEmails = ({ id }: { id: string }) => {
     <div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Select Emails</h4>
-        <p className="text-base font-medium text-grey-700">
-          Choose the emails you want to create proofs for.
-        </p>
-        <p className="text-base font-medium text-grey-700">
-          <span className="font-bold text-grey-900">Note</span> - If you select to create the proofs
-          remotely, your emails will be sent to our secured service for proof generation. Emails
-          will be deleted once the proofs are generated
-        </p>
+        {fetchedEmails.filter((email) => email.valid).length === 0 && !isFetchEmailLoading ? (
+          <p className="text-base font-medium text-grey-700">
+            No matching emails were found in your inbox
+          </p>
+        ) : (
+          <>
+            <p className="text-base font-medium text-grey-700">
+              Choose the emails you want to create proofs for.
+            </p>
+            <p className="text-base font-medium text-grey-700">
+              <span className="font-bold text-grey-900">Note</span> - If you select to create the
+              proofs remotely, your emails will be sent to our secured service for proof generation.
+              Emails will be deleted once the proofs are generated
+            </p>
+          </>
+        )}
       </div>
 
       {renderEmailsTable()}
