@@ -6,6 +6,7 @@ import {
   DecomposedRegex,
   DecomposedRegexPart,
   ValidationErrors,
+  ZkFramework,
   ZodError,
 } from '@zk-email/sdk';
 import { create } from 'zustand';
@@ -52,6 +53,7 @@ const initialState: BlueprintProps = {
   },
   externalInputs: [],
   decomposedRegexes: [],
+  zkFramework: ZkFramework.Circom,
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
@@ -179,7 +181,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
-            await blueprint.assignPreferredZkFramework(emlStr);
             console.log('Assigned zkFramework: ', blueprint.props.zkFramework);
             await blueprint.submitDraft();
             console.log('saved draft');
@@ -190,7 +191,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           // Update an existing blueprint
           if (state.blueprint && state.blueprint.canUpdate()) {
             console.log('updating');
-            await state.blueprint.assignPreferredZkFramework(emlStr);
             await state.blueprint.update(data);
             return state.blueprint.props.id!;
           }
@@ -198,7 +198,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           // Create a new version of an blueprint
           if (state.blueprint && !state.blueprint.canUpdate()) {
             console.log('creating new version');
-            await state.blueprint.assignPreferredZkFramework(emlStr);
             await state.blueprint.submitNewVersionDraft(data);
             return state.blueprint.props.id!;
           }
