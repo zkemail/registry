@@ -147,7 +147,7 @@ const EmailDetails = ({
               setField('zkFramework', value);
             }}
             options={[
-              { label: 'SP1', value: ZkFramework.Sp1 },
+              // { label: 'SP1', value: ZkFramework.Sp1 },
               { label: 'Circom', value: ZkFramework.Circom },
             ]}
           />
