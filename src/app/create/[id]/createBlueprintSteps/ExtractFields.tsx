@@ -30,17 +30,17 @@ const AIPromptInput = ({
 }) => {
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const placeholders = [
-    "Regex to extract email subject",
-    "Regex to extract GitHub username",
-    "Regex to extract Venmo ID",
-    "Regex to extract time sent"
+    'Regex to extract email subject',
+    'Regex to extract GitHub username',
+    'Regex to extract Venmo ID',
+    'Regex to extract time sent',
   ];
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
     }, 3000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -124,15 +124,6 @@ const ExtractFields = ({
   const [isGeneratingFields, setIsGeneratingFields] = useState(false);
 
   useEffect(() => {
-    if (store.decomposedRegexes?.length === 0) {
-      setField('decomposedRegexes', [
-        ...(store.decomposedRegexes ?? []),
-        { maxLength: 64, parts: [], location: 'body' },
-      ]);
-    }
-  }, []);
-
-  useEffect(() => {
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
       if (!emlContent || !store.decomposedRegexes?.length) {
@@ -173,8 +164,17 @@ const ExtractFields = ({
             console.error('Error testing decomposed regex:', error);
             setRegexGeneratedOutputs((prev) => {
               const updated = [...prev];
-              // @ts-ignore
-              updated[index] = ['Error: ' + error];
+
+              if (regex.parts.filter((part) => part.isPublic).length === 0) {
+                // @ts-ignore
+                updated[index] = [
+                  'Error: Empty regex — you must define at least one public part for each pattern.',
+                ];
+              } else {
+                // @ts-ignore
+                updated[index] = ['Error: ' + error];
+              }
+
               return updated;
             });
           }
@@ -353,17 +353,19 @@ const ExtractFields = ({
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center justify-between">
-          <div className="w-full border border-gray-200 rounded-lg overflow-hidden mb-4">
+          <div className="mb-4 w-full overflow-hidden rounded-lg border border-gray-200">
             <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
               <div className="flex flex-col gap-1">
                 <Label className="font-medium">Quick header extraction</Label>
-                <p className="text-gray-500 text-sm">We auto-write the regexes for all the checked fields</p>
+                <p className="text-sm text-gray-500">
+                  We auto-write the regexes for all the checked fields
+                </p>
               </div>
             </div>
             <div className="px-4 py-3">
               <div className="flex">
                 {/* Left column with 3 options */}
-                <div className="flex flex-col gap-2 w-1/2 pr-4">
+                <div className="flex w-1/2 flex-col gap-2 pr-4">
                   <Checkbox
                     title="Subject"
                     checked={isExtractSubjectChecked}
@@ -452,7 +454,8 @@ const ExtractFields = ({
                             },
                             {
                               isPublic: true,
-                              regexDef: "[A-Za-z0-9!#$%&'\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                              regexDef:
+                                "[A-Za-z0-9!#$%&'\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
                             },
                             {
                               isPublic: false,
@@ -470,9 +473,9 @@ const ExtractFields = ({
                     }}
                   />
                 </div>
-                
+
                 {/* Right column with 2 options */}
-                <div className="flex flex-col gap-2 w-1/2">
+                <div className="flex w-1/2 flex-col gap-2">
                   <Checkbox
                     title="Sender domain"
                     checked={isExtractSenderDomainChecked}
@@ -579,10 +582,13 @@ const ExtractFields = ({
 
         {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => {
           return (
-            <div key={index} className="flex flex-col gap-3 border border-gray-200 rounded-lg overflow-hidden mb-2">
+            <div
+              key={index}
+              className="mb-2 flex flex-col gap-3 overflow-hidden rounded-lg border border-gray-200"
+            >
               <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <span className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 text-xs font-medium">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium">
                     {index + 1}
                   </span>
                   <Label className="font-medium">Extracted data</Label>
@@ -688,9 +694,9 @@ const ExtractFields = ({
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
                       <div className="flex items-center justify-between">
-                        <div className="flex flex-row gap-2 items-center">
-                          <span 
-                            className="flex items-center justify-center h-5 w-5 rounded-full text-xs font-medium text-white"
+                        <div className="flex flex-row items-center gap-2">
+                          <span
+                            className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium text-white"
                             style={{
                               backgroundColor: part.isPublic
                                 ? REGEX_COLORS[index % REGEX_COLORS.length].public
@@ -820,7 +826,7 @@ const ExtractFields = ({
                   </Button>
                 </div>
                 {/* Only show output if there are regex parts and valid outputs */}
-                {parseRegexParts(regex.parts).length > 0 && 
+                {parseRegexParts(regex.parts).length > 0 &&
                 regexGeneratedOutputs[index] !== undefined &&
                 regexGeneratedOutputs[index] !== null &&
                 regexGeneratedOutputs[index].length > 0 ? (
