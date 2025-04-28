@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength, parseEmail } from '@zk-email/sdk';
+import { getMaxEmailBodyLength, parseEmail, ZkFramework } from '@zk-email/sdk';
 import Image from 'next/image';
+import { Select } from '@/components/ui/select';
 
 const EmailDetails = ({
   emlContent,
@@ -41,6 +42,12 @@ const EmailDetails = ({
 
     updateEmailBodyMaxLength();
   }, [JSON.stringify(store.shaPrecomputeSelector), JSON.stringify(store.ignoreBodyHashCheck)]);
+
+  useEffect(() => {
+    if (store.blueprint) {
+      store.blueprint.assignPreferredZkFramework(emlContent);
+    }
+  }, [emlContent]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -133,6 +140,17 @@ const EmailDetails = ({
       </Button>
       {showOptionalDetails && (
         <>
+          <Select
+            label="Zk Framework"
+            value={store.zkFramework}
+            onChange={(value) => {
+              setField('zkFramework', value);
+            }}
+            options={[
+              { label: 'SP1', value: ZkFramework.Sp1 },
+              { label: 'Circom', value: ZkFramework.Circom },
+            ]}
+          />
           <Checkbox
             title="Skip body hash check"
             helpText="Enable to ignore the contents on the email and only extract data from the headers"
