@@ -35,6 +35,7 @@ const PatternDetails = ({
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const [isFileUploading, setIsFileUploading] = useState(false);
 
+  const { isAdmin } = useAuthStore();
   const { setField } = store;
 
   const [isCheckExistingBlueprintLoading, setIsCheckExistingBlueprintLoading] = useState(false);
@@ -78,16 +79,25 @@ const PatternDetails = ({
         onChange={(e) => {
           const newTitle = e.target.value;
           setField('title', newTitle);
-          
+
           // Only check for blueprint name if there are no spaces
           if (!newTitle.includes(' ')) {
             checkExistingBlueprint(newTitle.replace(/\s+/g, '_'));
           }
         }}
         error={!!validationErrors.title || store.title?.includes(' ')}
-        errorMessage={validationErrors.title || (store.title?.includes(' ') ? 'Spaces are not allowed in the pattern name' : '')}
+        errorMessage={
+          validationErrors.title ||
+          (store.title?.includes(' ') ? 'Spaces are not allowed in the pattern name' : '')
+        }
       />
-      <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
+      <Input
+        title="Slug"
+        disabled={!isAdmin}
+        value={store.slug}
+        onChange={(e) => setField('slug', e.target.value)}
+        loading={isCheckExistingBlueprintLoading}
+      />
       {/* TODO: Add check for email body max length */}
       {emlContent && id !== 'new' ? null : (
         <DragAndDropFile
@@ -113,7 +123,7 @@ const PatternDetails = ({
             if (!e) {
               setFile(null);
               return;
-            };
+            }
 
             try {
               setIsFileUploading(true);
