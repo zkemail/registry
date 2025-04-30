@@ -143,7 +143,11 @@ const ExtractFields = ({
           try {
             const parsedRegex = Array.isArray(regex.parts)
               ? regex
-              : { ...regex, parts: JSON.parse(regex.parts) };
+              : { ...regex, parts: JSON.parse(regex.parts ?? '[]') };
+
+            if(parsedRegex.parts.length === 0) {
+              return;
+            }
 
             const regexOutputs = await testDecomposedRegex(
               body,
