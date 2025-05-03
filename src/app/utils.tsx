@@ -1,5 +1,5 @@
 import { getFileContent } from '@/lib/utils';
-import { parseEmail, Status, extractEMLDetails } from '@zk-email/sdk';
+import { Status } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -148,19 +148,53 @@ function debounce<T extends (...args: any[]) => any>(
   return debounced as T & { cancel: () => void };
 }
 
+// TODO: This should be moved to the SDK
 const findOrCreateDSP = async (file: File) => {
   const content = await getFileContent(file);
-  const { senderDomain, selector } = await extractEMLDetails(content);
 
+  const dkimPair = getSenderDomainAndSelectorPair(content);
+  if (!dkimPair) {
+    return null;
+  }
   const response = await fetch('https://archive.zk.email/api/dsp', {
     method: 'POST',
     body: JSON.stringify({
-      domain: senderDomain,
-      selector: selector,
+      domain: dkimPair.domain,
+      selector: dkimPair.selector,
     }),
   });
 
   return response;
+};
+
+// TODO: This should be moved to the SDK
+const getSenderDomainAndSelectorPair = (emlContent: string) => {
+  const headerLines: string[] = [];
+  const lines = emlContent.split("\n");
+  for (const line of lines) {
+    if (line.trim() === "") break;
+    // If line starts with whitespace, it's a continuation of previous header
+    if (line.startsWith(" ") || line.startsWith("\t")) {
+      headerLines[headerLines.length - 1] += line.trim();
+    } else {
+      headerLines.push(line);
+    }
+  }
+
+  // Then look for DKIM-Signature in the joined headers
+  for (const line of headerLines) {
+    if (line.includes("DKIM-Signature")) {
+      const selectorMatch = line.match(/s=([^;]+)/);
+      const domainMatch = line.match(/d=([^;]+)/);
+      if (selectorMatch && domainMatch) {
+        return {
+          selector: selectorMatch[1].trim(),
+          domain: domainMatch[1].trim(),
+        };
+      }
+    }
+  }
+  return null;
 };
 
 export {
