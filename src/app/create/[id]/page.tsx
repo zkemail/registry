@@ -216,7 +216,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           toast.error('Invalid email');
         }
       if (savedEmls[id]) {
-        toast.error('Invalid email');
+        if (typeof err === 'string') {
+          toast.error(err);
+        } else {
+          toast.error('Invalid email');
+        }
       }
       return;
     }
