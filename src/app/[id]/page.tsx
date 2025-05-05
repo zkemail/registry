@@ -1,7 +1,7 @@
 'use client';
 import { use, useEffect } from 'react';
 import Image from 'next/image';
-import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
+import { getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Button } from '@/components/ui/button';
 import Stepper from '../components/Stepper';
 import ConnectEmails from './ConnectEmails';
@@ -174,8 +174,31 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (blueprint.props.status === Status.Done) {
       return (
-        <div className="flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
-          <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
+        <div className="flex flex-col gap-6 rounded-3xl border border-grey-400 bg-white p-6">
+          <div className="flex justify-between items-center">
+            <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
+            <Link href={`/${id}/proofs`}>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-white border border-grey-400 hover:bg-grey-100 text-grey-800"
+                startIcon={
+                  <Image
+                    src="/assets/Files.svg"
+                    alt="proofs"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
+              >
+                Past proofs
+              </Button>
+            </Link>
+          </div>
           <div className="flex flex-col items-center gap-6 md:hidden">
             <StepperMobile steps={steps} currentStep={step} />
           </div>
@@ -244,69 +267,6 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
           unStarBlueprint={unStarBlueprint}
           starBlueprint={starBlueprint}
         />
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
-          <div className="flex flex-row items-center justify-between gap-3">
-            <span className="text-xl font-bold leading-6 underline">{blueprint.props.version}</span>
-            <span>
-              <p className="text-xs text-grey-700">
-                Updated {getDateToNowStr(blueprint.props.updatedAt)}
-              </p>
-            </span>
-            <span>
-              <span
-                className={`flex flex-row gap-1 rounded-lg border border-green-200 bg-green-100 px-2 py-1 text-xs font-semibold text-green-300`}
-              >
-                Latest
-              </span>
-            </span>
-          </div>
-          <div className="flex w-auto flex-row gap-2">
-            <Link href={`/${id}/versions`}>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-white"
-                onClick={() => {}}
-                startIcon={
-                  <Image
-                    src="/assets/GitCommit.svg"
-                    alt="commit"
-                    width={16}
-                    height={16}
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                    }}
-                  />
-                }
-              >
-                View all versions
-              </Button>
-            </Link>
-            <Link href={`/${id}/proofs`}>
-              <Button
-                variant="secondary"
-                size="sm"
-                className="bg-white"
-                onClick={() => {}}
-                startIcon={
-                  <Image
-                    src="/assets/Files.svg"
-                    alt="commit"
-                    width={16}
-                    height={16}
-                    style={{
-                      maxWidth: '100%',
-                      height: 'auto',
-                    }}
-                  />
-                }
-              >
-                Past proofs
-              </Button>
-            </Link>
-          </div>
-        </div>
       </>
       {renderBlueprintComponent()}
     </div>

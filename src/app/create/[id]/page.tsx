@@ -33,6 +33,7 @@ import { Switch } from '@/components/ui/switch';
 import HighlightText from '@/app/components/HighlightRegex';
 import { REGEX_COLORS } from '@/app/constants';
 import { debounce } from '@/app/utils';
+import ModalGenerator from '@/components/ModalGenerator';
 
 type Step = '0' | '1' | '2';
 
@@ -47,6 +48,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
   );
 
+  
   const {
     saveDraft,
     getParsedDecomposedRegexes,
@@ -57,7 +59,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setFile,
     blueprint,
   } = store;
-
+  
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -78,6 +80,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [canCompile, setCanCompile] = useState(false);
+  const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
+  const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -144,6 +148,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     } catch (err) {
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
+      console.error('Failed to submit blueprint: ', err);
       setErrors(['Unknown error while submitting blueprint']);
     } finally {
       setIsSaveDraftLoading(false);
@@ -164,8 +169,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   };
 
-  const handleTestEmail = async () => {
-    if (!file) {
+  const handleTestEmail = async (updateFields = false) => {
+    console.log(savedEmls, id);
+    if (!savedEmls[id]) {
       console.error('Add eml file first');
       return;
     }
@@ -182,23 +188,28 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setCanonicalizedHeader(parsedEmail.canonicalizedHeader);
       setCanonicalizedBody(parsedEmail.canonicalizedBody);
       setDkimSelector(selector);
+
+      if (
+        (store.senderDomain !== senderDomain ||
+          store.emailQuery !== emailQuery ||
+          store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
+          store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64) &&
+        !updateFields && id !== 'new'
+      ) {
+        setIsConfirmInputsUpdateModalOpen(true);
+        return;
+      }
+
       store.setField('senderDomain', senderDomain);
       store.setField('emailQuery', emailQuery);
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
-      if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector && !store.ignoreBodyHashCheck) {
-        toast.warning(
-          'Email body is too long, max is 9984 bytes. Please add Email body cut off value else skip body hash check'
-        );
-        store.setField('ignoreBodyHashCheck', true);
-        store.setField('removeSoftLinebreaks', false);
-      }
     } catch (err) {
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
       }
       console.error('Failed to get content from email', err);
-      if (file) {
+      if (savedEmls[id]) {
         toast.error('Invalid email');
       }
       return;
@@ -302,10 +313,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (step === '1') {
       return (
-        !store.emailQuery ||
-        !store.emailBodyMaxLength ||
-        (store.emailBodyMaxLength > 9984 && !store.ignoreBodyHashCheck) ||
-        store.ignoreBodyHashCheck === undefined
+        !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
       );
     }
 
@@ -327,9 +335,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const SampleEMLPreview = () => {
     if (!showSampleEMLPreview) return <></>;
-    console.log(parsedEmail, 'supermajkjsdka');
     if (parsedEmail?.html) {
-      console.log(parsedEmail, 'supermajkjsdka');
       return (
         <div
           className="m-6"
@@ -417,8 +423,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   return (
-    <div className="flex flex-row justify-center gap-2">
-      <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
+    <div className="flex flex-col justify-center gap-2 px-4 xl:flex-row">
+      <div className="mt-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] xl:my-16">
         <div className="mb-4 rounded-md border border-grey-200 bg-neutral-100 p-2">
           <div className="flex items-center">
             <Switch
@@ -431,8 +437,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               }}
             />
             <span className="text-base">
-              You can help improve the registry by sharing the process data with the team for future
-              improvements. Feel free to opt out of sharing.
+              We collect anonymous usage data to improve the registry. Toggle this switch to opt
+              out.
             </span>
           </div>
         </div>
@@ -513,11 +519,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         <div>
           <SampleEMLPreview />
           <div
-            className={`flex w-full flex-row ${savedEmls[id] ? 'justify-between' : 'justify-center'}`}
+            className={`flex w-full flex-col gap-4 sm:flex-row ${savedEmls[id] ? 'justify-between' : 'justify-center'}`}
           >
             {savedEmls[id] && (
-              <div>
+              <div className="w-full">
                 <Button
+                  id="sample-eml-preview-button"
+                  data-testid="sample-eml-preview-button"
+                  className='w-full sm:w-auto'
                   variant="secondary"
                   onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
                 >
@@ -591,7 +600,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
       </div>
       {pathname.includes('create') && step === '2' ? (
-        <div className="my-16 flex w-96 min-w-96 flex-col gap-2 transition-all duration-300">
+        <div className="my-4 flex w-full min-w-96 flex-col gap-4 transition-all duration-300 xl:my-16 xl:w-96 xl:gap-2">
           <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] transition-all duration-300">
             <div>
               <div
@@ -656,6 +665,48 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           </div>
         </div>
       ) : null}
+      <ModalGenerator
+        isOpen={isConfirmInputsUpdateModalOpen}
+        onClose={() => {
+          setIsConfirmInputsUpdateModalOpen(false);
+        }}
+        title="Confirm Inputs Update!"
+        disableSubmitButton={isUpdateInputsLoading}
+        showActionBar={false}
+        modalContent={
+          <div className="flex w-[456px] flex-col justify-center gap-4">
+            <p className="text-base font-semibold text-grey-700">
+              Are you sure you want to update the inputs?
+            </p>
+            <div className="flex w-full gap-2">
+              <Button
+                className="w-full"
+                startIcon={
+                  <Image src="/assets/GoBackIcon.svg" alt="arrow-left" width={16} height={16} />
+                }
+                variant="secondary"
+                onClick={() => setIsConfirmInputsUpdateModalOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="w-full"
+                startIcon={<Image src="/assets/Check.svg" alt="check" width={16} height={16} />}
+                variant="destructive"
+                onClick={async () => {
+                  setIsUpdateInputsLoading(true);
+                  await handleTestEmail(true);
+                  setIsUpdateInputsLoading(false);
+                  setIsConfirmInputsUpdateModalOpen(false);
+                }}
+                loading={isUpdateInputsLoading}
+              >
+                Update
+              </Button>
+            </div>
+          </div>
+        }
+      />
     </div>
   );
 };

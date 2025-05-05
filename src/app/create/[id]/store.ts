@@ -6,11 +6,13 @@ import {
   DecomposedRegex,
   DecomposedRegexPart,
   ValidationErrors,
+  ZkFramework,
   ZodError,
 } from '@zk-email/sdk';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import posthog from 'posthog-js';
+import { getFileContent } from '@/lib/utils';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
@@ -51,6 +53,7 @@ const initialState: BlueprintProps = {
   },
   externalInputs: [],
   decomposedRegexes: [],
+  zkFramework: ZkFramework.Circom,
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
@@ -129,6 +132,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       saveDraft: async (): Promise<string> => {
         const state = get();
+        const savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
+
+        // Page logic should already prevent saving a draft without having a file
+        if (!state.file && !savedEmls[state.id ?? 'new']) {
+          throw new Error('Can only save a draft with an example email provided');
+        }
 
         // Remove functions from the state data and clone
         const data = JSON.parse(
@@ -160,11 +169,21 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
 
         try {
           console.log('saving draft with state: ', state);
+          console.log('getting email content');
+          let emlStr = '';
+          if (state.file) {
+            emlStr = await getFileContent(state.file);
+          } else {
+            emlStr = savedEmls[state.id ?? 'new'];
+          }
+          console.log('got email content');
           // Create a new blueprint
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
+            console.log('Assigned zkFramework: ', blueprint.props.zkFramework);
             await blueprint.submitDraft();
+            console.log('saved draft');
             set({ blueprint });
             return blueprint.props.id!;
           }

@@ -31,7 +31,8 @@ import DragAndDropFile from '@/app/components/DragAndDropFile';
 interface VersionCardProps {
   blueprint: Blueprint;
   isLatest: boolean;
-  onDelete: () => {};
+  onDelete: () => Promise<void>;
+  isDeleteBlueprintLoading: boolean;
 }
 
 enum BlueprintEditMethod {
@@ -39,7 +40,12 @@ enum BlueprintEditMethod {
   Advanced = 'advanced',
 }
 
-const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps) => {
+const VersionCard = ({
+  blueprint,
+  isLatest = false,
+  onDelete,
+  isDeleteBlueprintLoading,
+}: VersionCardProps) => {
   const router = useRouter();
   const { isAdmin } = useAuthStore();
 
@@ -57,6 +63,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
   const [isDKIMMissing, setIsDKIMMissing] = useState(false);
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
+  const [isDeleteBlueprintModalOpen, setIsDeleteBlueprintModalOpen] = useState(false);
 
   useEffect(() => {
     if (blueprint.props.id) {
@@ -89,6 +96,7 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
     } catch (err) {
       // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
+      console.error('Failed to submit blueprint: ', err);
     } finally {
       setIsSaveDraftLoading(false);
     }
@@ -270,44 +278,61 @@ const VersionCard = ({ blueprint, isLatest = false, onDelete }: VersionCardProps
             </Button>
           )}
           {(blueprint.props.status === Status.Draft || isAdmin) && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="destructive"
-                  startIcon={
-                    <Image
-                      src="/assets/Trash.svg"
-                      alt="Delete"
-                      width={16}
-                      height={16}
-                      style={{
-                        maxWidth: '100%',
-                        height: 'auto',
-                      }}
-                    />
-                  }
-                  size="sm"
-                >
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete this version and it's
-                    data from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete}>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              variant="destructive"
+              startIcon={
+                <Image
+                  src="/assets/Trash.svg"
+                  alt="Delete"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
+              onClick={() => setIsDeleteBlueprintModalOpen(true)}
+              size="sm"
+            >
+              Delete
+            </Button>
           )}
         </div>
       </div>
+      <ModalGenerator
+        isOpen={isDeleteBlueprintModalOpen}
+        onClose={() => setIsDeleteBlueprintModalOpen(false)}
+        title="Delete Version"
+        submitButtonText="Continue"
+        showActionBar={false}
+        modalContent={
+          <div>
+            This action cannot be undone. This will permanently delete this version and it's data
+            from our servers.
+            <div className="mt-4 flex flex-row gap-4 justify-end">
+              <div className="mt-4">
+                <Button variant="destructive" onClick={() => setIsDeleteBlueprintModalOpen(false)}>
+                  Cancel
+                </Button>
+              </div>
+              <div className="mt-4">
+                <Button
+                  disabled={isDeleteBlueprintLoading}
+                  loading={isDeleteBlueprintLoading}
+                  onClick={() => {
+                    onDelete().then(() => {
+                      setIsDeleteBlueprintModalOpen(false);
+                    });
+                  }}
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          </div>
+        }
+      />
       <ModalGenerator
         isOpen={isEditBlueprintModalOpen}
         onClose={() => {

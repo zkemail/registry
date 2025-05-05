@@ -73,19 +73,22 @@ const PatternDetails = ({
       <Input
         title="Pattern Name"
         // disabled={id !== 'new'}
-        placeholder="Proof of Github Username"
+        placeholder="Name of the Blueprint"
         value={store.title}
         onChange={(e) => {
           const newTitle = e.target.value;
           setField('title', newTitle);
-          
+
           // Only check for blueprint name if there are no spaces
           if (!newTitle.includes(' ')) {
             checkExistingBlueprint(newTitle.replace(/\s+/g, '_'));
           }
         }}
         error={!!validationErrors.title || store.title?.includes(' ')}
-        errorMessage={validationErrors.title || (store.title?.includes(' ') ? 'Spaces are not allowed in the pattern name' : '')}
+        errorMessage={
+          validationErrors.title ||
+          (store.title?.includes(' ') ? 'Spaces are not allowed in the pattern name' : '')
+        }
       />
       <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
       {/* TODO: Add check for email body max length */}
@@ -106,9 +109,14 @@ const PatternDetails = ({
             </div>
           }
           title="Upload test .eml"
+          id="drag-and-drop-emails"
+          data-testid="drag-and-drop-emails"
           helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
           setFile={async (e) => {
-            if (!e) return;
+            if (!e) {
+              setFile(null);
+              return;
+            }
 
             try {
               setIsFileUploading(true);
@@ -132,7 +140,7 @@ const PatternDetails = ({
       )}
       <Textarea
         title="Description"
-        placeholder="Enter a description"
+        placeholder="Prove that you own a particular GitHub account"
         value={store.description}
         rows={3}
         onChange={(e) => setField('description', e.target.value)}

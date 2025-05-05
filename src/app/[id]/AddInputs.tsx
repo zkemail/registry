@@ -9,6 +9,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import Loader from '@/components/ui/loader';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
+import { ZkFramework } from '@zk-email/sdk';
+import { toast } from 'react-toastify';
 
 const AddInputs = () => {
   const pathname = usePathname();
@@ -29,13 +31,18 @@ const AddInputs = () => {
       replace(`${pathname}?${params.toString()}`);
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
+      if (isLocal) {
+        toast.error('Error: Local proof generation failed');
+      } else {
+        toast.error('Error: Remote proof generation failed');
+      }
     } finally {
       setIsCreateProofLoading(null);
       setAreProvingButtonsDisabled(false);
     }
   };
   useEffect(() => {
-    const allInputsValid = externalInputs?.every(input => input.value) ?? false;
+    const allInputsValid = externalInputs?.every((input) => input.value) ?? false;
     setAreProvingButtonsDisabled(!allInputsValid);
   }, [externalInputs]);
 
@@ -66,8 +73,11 @@ const AddInputs = () => {
         <div className="flex justify-center">Choose the mode of proof creation</div>
         <div className="flex flex-col gap-4">
           <div
+            data-testid="remote-proving"
             className={`rounded-2xl border border-grey-200 p-6 ${
-              areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
+              areProvingButtonsDisabled || blueprint?.props.zkFramework !== ZkFramework.Circom
+                ? 'cursor-not-allowed bg-neutral-100'
+                : 'cursor-pointer'
             }`}
             onClick={() => {
               if (areProvingButtonsDisabled) return;
@@ -99,6 +109,7 @@ const AddInputs = () => {
             </p>
           </div>
           <div
+            data-testid="local-proving"
             className={`rounded-2xl border border-grey-200 p-6 ${
               areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
             }`}
@@ -126,8 +137,14 @@ const AddInputs = () => {
               </div>
             </div>
             <p className="text-base text-grey-700">
-              This method prioritizes your privacy by generating proofs directly on your device.
-              While it may take a bit more time, your email remains securely on your system.
+              {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+                <>
+                  This method prioritizes your privacy by generating proofs directly on your device.
+                  While it may take a bit more time, your email remains securely on your system.
+                </>
+              ) : (
+                'Local proving only works for blueprints compiled with Circom'
+              )}
             </p>
           </div>
         </div>

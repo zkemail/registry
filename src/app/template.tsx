@@ -15,7 +15,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const step = searchParams.get('step');
     if (pathname.includes('create') && step === '2') {
-      setWidthClass('md:w-[1164px]');
+      setWidthClass('md:w-[768px] xl:w-[1164px]');
     } else {
       setWidthClass('md:w-[768px]');
     }
@@ -41,7 +41,12 @@ export default function Template({ children }: { children: React.ReactNode }) {
               List of community submitted ZK Email blueprints
             </p>
             <div>
-              <Button className="rounded-xl">Read Guide</Button>
+              <Button
+                onClick={() => window.open('https://docs.zk.email/zk-email-sdk/registry', '_blank')}
+                className="rounded-xl"
+              >
+                Read Guide
+              </Button>
             </div>
           </div>
           <Image

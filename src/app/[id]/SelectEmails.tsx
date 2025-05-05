@@ -9,11 +9,12 @@ import { AnimatePresence, motion } from 'framer-motion'; // Add this import
 import { useProofStore } from './store';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useCreateBlueprintStore } from '../create/[id]/store';
-import { extractEMLDetails, testBlueprint } from '@zk-email/sdk';
+import { extractEMLDetails, testBlueprint, ZkFramework } from '@zk-email/sdk';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'react-toastify';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -85,6 +86,11 @@ const SelectEmails = ({ id }: { id: string }) => {
       replace(`${pathname}?${params.toString()}`);
     } catch (error) {
       console.error('Error in starting proof generation: ', error);
+      if (isLocal) {
+        toast.error('Error: Local proof generation failed');
+      } else {
+        toast.error('Error: Remote proof generation failed');
+      }
     } finally {
       setIsCreateProofLoading(null);
     }
@@ -227,9 +233,17 @@ const SelectEmails = ({ id }: { id: string }) => {
 
     if (fetchedEmails.filter((email) => email.valid).length === 0) {
       return (
-        <div className="rounded-lg border border-grey-200 p-4 text-grey-700">
-          No valid emails found. Please check your inbox
-        </div>
+        <Image
+          src="/assets/noEmailIllustration.svg"
+          alt="no valid emails found"
+          width={316}
+          height={316}
+          style={{
+            margin: 'auto',
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
       );
     }
 
@@ -321,25 +335,27 @@ const SelectEmails = ({ id }: { id: string }) => {
           </RadioGroup>
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          <Button
-            variant="ghost"
-            className="gap-2 text-grey-700"
-            onClick={handleFetchEmails}
-            disabled={isFetchEmailLoading}
-          >
-            <Image
-              src="/assets/ArrowsClockwise.svg"
-              alt="arrow down"
-              width={16}
-              height={16}
-              className={isFetchEmailLoading ? 'animate-spin' : ''}
-              style={{
-                maxWidth: '100%',
-                height: 'auto',
-              }}
-            />
-            Load More Emails
-          </Button>
+          {!file ? (
+            <Button
+              variant="ghost"
+              className="gap-2 text-grey-700"
+              onClick={handleFetchEmails}
+              disabled={isFetchEmailLoading}
+            >
+              <Image
+                src="/assets/ArrowsClockwise.svg"
+                alt="arrow down"
+                width={16}
+                height={16}
+                className={isFetchEmailLoading ? 'animate-spin' : ''}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+              Load More Emails
+            </Button>
+          ) : null}
 
           {!hasExternalInputs && (
             <div className="flex justify-center">Choose the mode of proof creation</div>
@@ -362,6 +378,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           ) : (
             <div className="flex flex-col gap-4">
               <div
+                data-testid="remote-proving"
                 className={`rounded-2xl border border-grey-200 p-6 ${
                   selectedEmail === null || !!isCreateProofLoading
                     ? 'cursor-not-allowed bg-neutral-100'
@@ -397,8 +414,11 @@ const SelectEmails = ({ id }: { id: string }) => {
                 </p>
               </div>
               <div
+                data-testid="local-proving"
                 className={`rounded-2xl border border-grey-200 p-6 ${
-                  selectedEmail === null || !!isCreateProofLoading
+                  selectedEmail === null ||
+                  !!isCreateProofLoading ||
+                  blueprint?.props.zkFramework !== ZkFramework.Circom
                     ? 'cursor-not-allowed bg-neutral-100'
                     : 'cursor-pointer'
                 }`}
@@ -426,8 +446,15 @@ const SelectEmails = ({ id }: { id: string }) => {
                   </div>
                 </div>
                 <p className="text-base text-grey-700">
-                  This method prioritizes your privacy by generating proofs directly on your device.
-                  While it may take a bit more time, your email remains securely on your system.
+                  {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+                    <>
+                      This method prioritizes your privacy by generating proofs directly on your
+                      device. While it may take a bit more time, your email remains securely on your
+                      system.
+                    </>
+                  ) : (
+                    'Local proving only works for blueprints compiled with Circom'
+                  )}
                 </p>
               </div>
             </div>
@@ -441,14 +468,22 @@ const SelectEmails = ({ id }: { id: string }) => {
     <div className="flex flex-col items-center justify-center gap-6">
       <div className="flex w-full flex-col gap-1">
         <h4 className="text-xl font-bold text-grey-800">Select Emails</h4>
-        <p className="text-base font-medium text-grey-700">
-          Choose the emails you want to create proofs for.
-        </p>
-        <p className="text-base font-medium text-grey-700">
-          <span className="font-bold text-grey-900">Note</span> - If you select to create the proofs
-          remotely, your emails will be sent to our secured service for proof generation. Emails
-          will be deleted once the proofs are generated
-        </p>
+        {fetchedEmails.filter((email) => email.valid).length === 0 && !isFetchEmailLoading ? (
+          <p className="text-base font-medium text-grey-700">
+            No matching emails were found in your inbox
+          </p>
+        ) : (
+          <>
+            <p className="text-base font-medium text-grey-700">
+              Choose the emails you want to create proofs for.
+            </p>
+            <p className="text-base font-medium text-grey-700">
+              <span className="font-bold text-grey-900">Note</span> - If you select to create the
+              proofs remotely, your emails will be sent to our secured service for proof generation.
+              Emails will be deleted once the proofs are generated
+            </p>
+          </>
+        )}
       </div>
 
       {renderEmailsTable()}

@@ -9,7 +9,7 @@ import { Label } from './label';
 
 interface SelectOption {
   label: string;
-  value: string;
+  value: string | any;
 }
 
 interface SelectProps extends Omit<SelectPrimitive.SelectProps, 'children'> {
@@ -17,6 +17,7 @@ interface SelectProps extends Omit<SelectPrimitive.SelectProps, 'children'> {
   options: SelectOption[];
   placeholder?: string;
   onChange?: (value: SelectOption['value']) => void;
+  value: any;
 }
 
 const Select = ({ label, options, placeholder = 'Select', onChange, ...props }: SelectProps) => {
