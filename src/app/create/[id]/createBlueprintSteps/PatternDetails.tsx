@@ -73,19 +73,22 @@ const PatternDetails = ({
       <Input
         title="Pattern Name"
         // disabled={id !== 'new'}
-        placeholder="Proof of Github Username"
+        placeholder="Name of the Blueprint"
         value={store.title}
         onChange={(e) => {
           const newTitle = e.target.value;
           setField('title', newTitle);
-          
+
           // Only check for blueprint name if there are no spaces
           if (!newTitle.includes(' ')) {
             checkExistingBlueprint(newTitle.replace(/\s+/g, '_'));
           }
         }}
         error={!!validationErrors.title || store.title?.includes(' ')}
-        errorMessage={validationErrors.title || (store.title?.includes(' ') ? 'Spaces are not allowed in the pattern name' : '')}
+        errorMessage={
+          validationErrors.title ||
+          (store.title?.includes(' ') ? 'Spaces are not allowed in the pattern name' : '')
+        }
       />
       <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
       {/* TODO: Add check for email body max length */}
@@ -113,7 +116,7 @@ const PatternDetails = ({
             if (!e) {
               setFile(null);
               return;
-            };
+            }
 
             try {
               setIsFileUploading(true);
