@@ -9,17 +9,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useEffect, useState } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import ModalGenerator from '@/components/ModalGenerator';
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '@/app/create/[id]/store';
@@ -47,7 +36,7 @@ const VersionCard = ({
   isDeleteBlueprintLoading,
 }: VersionCardProps) => {
   const router = useRouter();
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, username } = useAuthStore();
 
   const store = useCreateBlueprintStore();
   const { saveDraft, setToExistingBlueprint } = store;
@@ -277,7 +266,9 @@ const VersionCard = ({
               Cancel Compilation
             </Button>
           )}
-          {(blueprint.props.status === Status.Draft || isAdmin) && (
+          {((blueprint.props.status === Status.Draft &&
+            blueprint.props.githubUsername === username) ||
+            isAdmin) && (
             <Button
               variant="destructive"
               startIcon={
@@ -310,7 +301,7 @@ const VersionCard = ({
           <div>
             This action cannot be undone. This will permanently delete this version and it's data
             from our servers.
-            <div className="mt-4 flex flex-row gap-4 justify-end">
+            <div className="mt-4 flex flex-row justify-end gap-4">
               <div className="mt-4">
                 <Button variant="destructive" onClick={() => setIsDeleteBlueprintModalOpen(false)}>
                   Cancel
