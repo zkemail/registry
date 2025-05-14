@@ -135,9 +135,9 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         const savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
 
         // Page logic should already prevent saving a draft without having a file
-        if (!state.file && !savedEmls[state.id ?? 'new']) {
-          throw new Error('Can only save a draft with an example email provided');
-        }
+        // if (!state.file && !savedEmls[state.id ?? 'new']) {
+        //   throw new Error('Can only save a draft with an example email provided');
+        // }
 
         // Remove functions from the state data and clone
         const data = JSON.parse(
