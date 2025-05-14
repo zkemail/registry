@@ -31,6 +31,9 @@ const Navbar = () => {
         {token && !pathname.includes('/create') ? (
           <Button
             onClick={() => {
+              let savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
+              delete savedEmls['new'];
+              localStorage.setItem('blueprintEmls', JSON.stringify(savedEmls));
               localStorage.removeItem('create-blueprint');
               router.push('/create/new');
             }}
