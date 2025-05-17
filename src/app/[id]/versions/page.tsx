@@ -11,6 +11,7 @@ import { Blueprint, Status } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import Loader from '@/components/ui/loader';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { getCombinedBlueprintStatus } from '@/app/utils';
 
 const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
@@ -85,7 +86,9 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex w-full flex-col items-start gap-2">
-            <Link href={mainBlueprint?.props.status === Status.Draft ? `/` : `/${id}`}>
+            <Link
+              href={getCombinedBlueprintStatus(mainBlueprint) === Status.Draft ? `/` : `/${id}`}
+            >
               <Button
                 variant="ghost"
                 startIcon={
@@ -155,7 +158,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
             .filter(
               (version) =>
                 version.props.githubUsername === username ||
-                version.props.status === Status.Done ||
+                getCombinedBlueprintStatus(version) === Status.Done ||
                 isAdmin
             )
             .map((version, i) => (

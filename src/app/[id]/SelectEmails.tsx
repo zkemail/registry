@@ -418,7 +418,9 @@ const SelectEmails = ({ id }: { id: string }) => {
                 className={`rounded-2xl border border-grey-200 p-6 ${
                   selectedEmail === null ||
                   !!isCreateProofLoading ||
-                  blueprint?.props.zkFramework !== ZkFramework.Circom
+                  !blueprint?.props.clientZkFramework ||
+                  // @ts-ignore ZkFramework can be None
+                  blueprint?.props.clientZkFramework === ZkFramework.None
                     ? 'cursor-not-allowed bg-neutral-100'
                     : 'cursor-pointer'
                 }`}
@@ -446,7 +448,9 @@ const SelectEmails = ({ id }: { id: string }) => {
                   </div>
                 </div>
                 <p className="text-base text-grey-700">
-                  {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+                  {blueprint?.props.serverZkFramework &&
+                  // @ts-ignore ZkFramework can be None
+                  blueprint?.props.serverZkFramework !== ZkFramework.None ? (
                     <>
                       This method prioritizes your privacy by generating proofs directly on your
                       device. While it may take a bit more time, your email remains securely on your

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength, parseEmail, ZkFramework } from '@zk-email/sdk';
+import { getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
 import Image from 'next/image';
 import { Select } from '@/components/ui/select';
 
@@ -53,7 +53,7 @@ const EmailDetails = ({
     <div className="flex flex-col gap-6">
       <Input
         title="Email Query"
-        disabled={store.status === 3}
+        disabled={store.clientStatus === Status.Done && store.serverStatus === Status.Done}
         value={store.emailQuery}
         onChange={(e) => setField('emailQuery', e.target.value)}
         placeholder="Password request from: contact@x.com"
@@ -141,10 +141,23 @@ const EmailDetails = ({
       {showOptionalDetails && (
         <>
           <Select
-            label="Zk Framework"
-            value={store.zkFramework}
+            label="Client Zk Framework"
+            value={store.clientZkFramework}
             onChange={(value) => {
-              setField('zkFramework', value);
+              console.log('setting clientZkFramework to ', value);
+              setField('clientZkFramework', value);
+            }}
+            options={[
+              // { label: 'Noir', value: ZkFramework.Noir },
+              { label: 'Circom', value: ZkFramework.Circom },
+            ]}
+          />
+          <Select
+            label="Server Zk Framework"
+            value={store.serverZkFramework}
+            onChange={(value) => {
+              console.log('setting serverzkframework to ', value);
+              setField('serverZkFramework', value);
             }}
             options={
               process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'

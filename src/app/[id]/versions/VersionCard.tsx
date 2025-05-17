@@ -1,4 +1,4 @@
-import { debounce, getDateToNowStr, getStatusIcon } from '@/app/utils';
+import { debounce, getDateToNowStr, getCombinedBlueprintStatus } from '@/app/utils';
 
 import { getStatusColorLight, getStatusName } from '@/app/utils';
 import Image from 'next/image';
@@ -53,6 +53,10 @@ const VersionCard = ({
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isDeleteBlueprintModalOpen, setIsDeleteBlueprintModalOpen] = useState(false);
+
+  function getBlueprintStatus() {
+    return getCombinedBlueprintStatus(blueprint);
+  }
 
   useEffect(() => {
     if (blueprint.props.id) {
@@ -144,10 +148,10 @@ const VersionCard = ({
           <h2 className="text-xl font-bold">v {blueprint.props.version}</h2>
           <span
             className={`flex flex-row gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
-              blueprint.props.status
+              getBlueprintStatus()
             )}`}
           >
-            {getStatusName(blueprint.props.status)}
+            {getStatusName(getBlueprintStatus())}
           </span>
         </div>
         <p
@@ -162,7 +166,7 @@ const VersionCard = ({
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {blueprint.props.status === Status.Done ? (
+          {getBlueprintStatus() === Status.Done ? (
             <Link href={`/${blueprint.props.id}`}>
               <Button size="sm">Try it</Button>
             </Link>
@@ -193,7 +197,7 @@ const VersionCard = ({
             title="Download zkey + project"
             variant="secondary"
             size="smIcon"
-            disabled={blueprint.props.status !== Status.Done}
+            disabled={getBlueprintStatus() !== Status.Done}
             onClick={() => router.push(`/${blueprint.props.id}/download`)}
           >
             <Image
@@ -243,7 +247,7 @@ const VersionCard = ({
               Report
             </Button>
           </Link>
-          {blueprint.props.status === Status.InProgress && isLatest && (
+          {getBlueprintStatus() === Status.InProgress && isLatest && (
             <Button
               size="sm"
               startIcon={
@@ -266,7 +270,7 @@ const VersionCard = ({
               Cancel Compilation
             </Button>
           )}
-          {((blueprint.props.status === Status.Draft &&
+          {((getBlueprintStatus() === Status.Draft &&
             blueprint.props.githubUsername === username) ||
             isAdmin) && (
             <Button
@@ -413,7 +417,9 @@ const VersionCard = ({
                 />
                 <Input
                   title="Email Query"
-                  disabled={store.status === 3}
+                  disabled={
+                    store.clientStatus === Status.Done && store.serverStatus === Status.Done
+                  }
                   value={store.emailQuery}
                   onChange={(e) => setField('emailQuery', e.target.value)}
                   placeholder="Password request from: contact@x.com"

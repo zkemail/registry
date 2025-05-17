@@ -1,5 +1,5 @@
 import { getFileContent } from '@/lib/utils';
-import { parseEmail, Status, extractEMLDetails } from '@zk-email/sdk';
+import { parseEmail, Status, extractEMLDetails, Blueprint } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -170,11 +170,11 @@ const findOrCreateDSP = async (file: File) => {
 // TODO: This should be moved to the SDK
 const getSenderDomainAndSelectorPair = (emlContent: string) => {
   const headerLines: string[] = [];
-  const lines = emlContent.split("\n");
+  const lines = emlContent.split('\n');
   for (const line of lines) {
-    if (line.trim() === "") break;
+    if (line.trim() === '') break;
     // If line starts with whitespace, it's a continuation of previous header
-    if (line.startsWith(" ") || line.startsWith("\t")) {
+    if (line.startsWith(' ') || line.startsWith('\t')) {
       headerLines[headerLines.length - 1] += line.trim();
     } else {
       headerLines.push(line);
@@ -183,7 +183,7 @@ const getSenderDomainAndSelectorPair = (emlContent: string) => {
 
   // Then look for DKIM-Signature in the joined headers
   for (const line of headerLines) {
-    if (line.includes("DKIM-Signature")) {
+    if (line.includes('DKIM-Signature')) {
       const selectorMatch = line.match(/s=([^;]+)/);
       const domainMatch = line.match(/d=([^;]+)/);
       if (selectorMatch && domainMatch) {
@@ -197,6 +197,40 @@ const getSenderDomainAndSelectorPair = (emlContent: string) => {
   return null;
 };
 
+function getCombinedBlueprintStatus(blueprint: Blueprint | null) {
+  if (blueprint === null) {
+    return Status.Draft;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.Done &&
+    blueprint.props.serverStatus === Status.Done
+  ) {
+    return Status.Done;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.InProgress ||
+    blueprint.props.serverStatus === Status.InProgress
+  ) {
+    return Status.InProgress;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.Draft ||
+    blueprint.props.serverStatus === Status.Draft
+  ) {
+    return Status.Draft;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.Failed ||
+    blueprint.props.serverStatus === Status.Failed
+  ) {
+    return Status.Failed;
+  }
+}
+
 export {
   getStatusColorLight,
   getStatusIcon,
@@ -206,4 +240,5 @@ export {
   formatDateAndTime,
   debounce,
   findOrCreateDSP,
+  getCombinedBlueprintStatus,
 };

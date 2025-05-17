@@ -1,5 +1,11 @@
 import Image from 'next/image';
-import { getDateToNowStr, getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
+import {
+  getCombinedBlueprintStatus,
+  getDateToNowStr,
+  getStatusColorLight,
+  getStatusIcon,
+  getStatusName,
+} from '../utils';
 import { Blueprint } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
@@ -26,9 +32,9 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
   };
 
   return (
-    <div className="flex flex-col rounded-[20px] border bg-white overflow-hidden transition-shadow hover:shadow-[0px_4px_8px_rgba(0,0,0,0.1)]">
+    <div className="flex flex-col overflow-hidden rounded-[20px] border bg-white transition-shadow hover:shadow-[0px_4px_8px_rgba(0,0,0,0.1)]">
       {/* Top div with title and slug */}
-      <div className="p-6 pb-4 border-b">
+      <div className="border-b p-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-row flex-wrap items-center gap-2">
             <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
@@ -37,8 +43,8 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           <div className="flex items-center gap-3 text-sm text-grey-600">
             {isLoggedIn && (
               <span
-                className={`flex flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] leading-[18px] font-medium ${getStatusColorLight(
-                  blueprint.props.status
+                className={`flex flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] font-medium leading-[18px] ${getStatusColorLight(
+                  getCombinedBlueprintStatus(blueprint)
                 )}`}
               >
                 {/* <Image
@@ -51,7 +57,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                     height: 'auto',
                   }}
                 /> */}
-                {getStatusName(blueprint.props.status)}
+                {getStatusName(getCombinedBlueprintStatus(blueprint))}
               </span>
             )}
             <button
@@ -73,7 +79,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           </div>
         </div>
         <div className="mt-1 flex items-center">
-          <div 
+          <div
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -82,11 +88,9 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               );
               toast.success('Copied to clipboard');
             }}
-            className="flex items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 cursor-pointer hover:bg-neutral-100 hover:border-grey-400 transition-all"
+            className="flex cursor-pointer items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 transition-all hover:border-grey-400 hover:bg-neutral-100"
           >
-            <p className="overflow-hidden text-ellipsis">
-              {blueprint.props.slug}
-            </p>
+            <p className="overflow-hidden text-ellipsis">{blueprint.props.slug}</p>
             <div
               className="ml-2 flex items-center justify-center p-0.5"
               aria-label="Copy blueprint reference"
@@ -107,7 +111,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       </div>
 
       {/* Bottom div with the rest of the content - updated with Satoshi font and grey-700 color */}
-      <div className="p-6 pt-4 font-['Satoshi'] text-[14px] leading-[20px] tracking-[0.035em] font-normal text-grey-700">
+      <div className="p-6 pt-4 font-['Satoshi'] text-[14px] font-normal leading-[20px] tracking-[0.035em] text-grey-700">
         <p className="mb-3">{blueprint.props.description}</p>
         <div className="mt-2 flex flex-col items-start justify-between md:flex-row md:items-end">
           <div className="flex flex-wrap items-center gap-2">
@@ -123,8 +127,8 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
           </div>
           <div className="mt-2 flex w-full flex-row items-center justify-between gap-2 md:mt-0 md:w-auto">
             <span
-              className={`flex flex-row gap-1 rounded-lg px-2 py-[6px] text-[14px] leading-[18px] font-semibold md:hidden ${getStatusColorLight(
-                blueprint.props.status
+              className={`flex flex-row gap-1 rounded-lg px-2 py-[6px] text-[14px] font-semibold leading-[18px] md:hidden ${getStatusColorLight(
+                getCombinedBlueprintStatus(blueprint)
               )}`}
             >
               {/* <Image
@@ -137,12 +141,9 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                   height: 'auto',
                 }}
               /> */}
-              {getStatusName(blueprint.props.status)}
+              {getStatusName(getCombinedBlueprintStatus(blueprint))}
             </span>
-            <p
-              className="w-max text-grey-700"
-              title={blueprint.props.updatedAt?.toLocaleString()}
-            >
+            <p className="w-max text-grey-700" title={blueprint.props.updatedAt?.toLocaleString()}>
               Updated {getDateToNowStr(blueprint.props.updatedAt)}
             </p>
           </div>
