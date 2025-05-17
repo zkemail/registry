@@ -48,7 +48,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
   );
 
-  
   const {
     saveDraft,
     getParsedDecomposedRegexes,
@@ -59,7 +58,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setFile,
     blueprint,
   } = store;
-  
+
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -194,7 +193,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           store.emailQuery !== emailQuery ||
           store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
           store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64) &&
-        !updateFields && id !== 'new'
+        !updateFields &&
+        id !== 'new'
       ) {
         setIsConfirmInputsUpdateModalOpen(true);
         return;
@@ -530,7 +530,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   id="sample-eml-preview-button"
                   data-testid="sample-eml-preview-button"
-                  className='w-full sm:w-auto'
+                  className="w-full sm:w-auto"
                   variant="secondary"
                   onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
                 >

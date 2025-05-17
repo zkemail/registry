@@ -75,9 +75,7 @@ const AddInputs = () => {
           <div
             data-testid="remote-proving"
             className={`rounded-2xl border border-grey-200 p-6 ${
-              areProvingButtonsDisabled || blueprint?.props.zkFramework !== ZkFramework.Circom
-                ? 'cursor-not-allowed bg-neutral-100'
-                : 'cursor-pointer'
+              areProvingButtonsDisabled ? 'cursor-not-allowed bg-neutral-100' : 'cursor-pointer'
             }`}
             onClick={() => {
               if (areProvingButtonsDisabled) return;
@@ -137,7 +135,9 @@ const AddInputs = () => {
               </div>
             </div>
             <p className="text-base text-grey-700">
-              {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+              {blueprint?.props.clientZkFramework &&
+              // @ts-ignore this can be None
+              blueprint.props.clientZkFramework !== ZkFramework.None ? (
                 <>
                   This method prioritizes your privacy by generating proofs directly on your device.
                   While it may take a bit more time, your email remains securely on your system.

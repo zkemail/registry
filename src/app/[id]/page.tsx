@@ -55,7 +55,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       .catch((err) => {
         if (err.toString().includes('401')) {
           clearAuth();
-          return
+          return;
         }
         console.error(`Failed to get blueprint with id ${id}: `, err);
         toast.error('This blueprint could not be found');
@@ -82,12 +82,18 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
     );
   }
 
-  if (blueprint?.props.status === Status.Draft) {
+  if (
+    blueprint?.props.clientStatus === Status.Draft ||
+    blueprint?.props.serverStatus === Status.Draft
+  ) {
     router.push(`/${id}/versions`);
   }
 
   const renderBlueprintComponent = () => {
-    if (blueprint.props.status === Status.InProgress) {
+    if (
+      blueprint.props.clientStatus === Status.InProgress ||
+      blueprint.props.serverStatus === Status.InProgress
+    ) {
       return (
         <div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
           <h4 className="text-lg font-bold text-grey-800">Compilation in progress</h4>
@@ -129,7 +135,10 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       );
     }
 
-    if (blueprint.props.status === Status.Failed) {
+    if (
+      blueprint.props.clientStatus === Status.Failed ||
+      blueprint.props.serverStatus === Status.Failed
+    ) {
       return (
         <div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
           <h4 className="text-lg font-bold text-grey-800">Compilation Failed :(</h4>
@@ -172,16 +181,19 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       );
     }
 
-    if (blueprint.props.status === Status.Done) {
+    if (
+      blueprint.props.clientStatus === Status.Done ||
+      blueprint.props.serverStatus === Status.Done
+    ) {
       return (
         <div className="flex flex-col gap-6 rounded-3xl border border-grey-400 bg-white p-6">
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <h4 className="text-lg font-bold text-grey-800">Generate Proof</h4>
             <Link href={`/${id}/proofs`}>
               <Button
                 variant="secondary"
                 size="sm"
-                className="bg-white border border-grey-400 hover:bg-grey-100 text-grey-800"
+                className="border border-grey-400 bg-white text-grey-800 hover:bg-grey-100"
                 startIcon={
                   <Image
                     src="/assets/Files.svg"
