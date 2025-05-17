@@ -173,7 +173,8 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         <div className="mb-3" key={blueprint.props.id}>
           <Link
             href={
-              blueprint.props.status === Status.Draft
+              blueprint.props.clientStatus === Status.Draft ||
+              blueprint.props.serverStatus === Status.Draft
                 ? `/${encodeURIComponent(blueprint.props.id!)}/versions`
                 : `/${encodeURIComponent(blueprint.props.id!)}`
             }
