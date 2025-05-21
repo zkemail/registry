@@ -146,10 +146,14 @@ const EmailDetails = ({
               console.log('setting clientZkFramework to ', value);
               setField('clientZkFramework', value);
             }}
-            options={[
-              // { label: 'Noir', value: ZkFramework.Noir },
-              { label: 'Circom', value: ZkFramework.Circom },
-            ]}
+            options={
+              process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+                ? [
+                    { label: 'Circom', value: ZkFramework.Circom },
+                    { label: 'Noir', value: ZkFramework.Noir },
+                  ]
+                : [{ label: 'Circom', value: ZkFramework.Circom }]
+            }
           />
           <Select
             label="Server Zk Framework"

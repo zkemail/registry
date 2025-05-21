@@ -1,10 +1,18 @@
 import { getFileContent } from '@/lib/utils';
-import { Blueprint, ExternalInputInput, parseEmail, Proof } from '@zk-email/sdk';
+import {
+  Blueprint,
+  ExternalInputInput,
+  GenerateProofOptions,
+  parseEmail,
+  Proof,
+  ZkFramework,
+} from '@zk-email/sdk';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import sdk from '@/lib/sdk';
+import { initNoirWasm } from '@zk-email/sdk/initNoirWasm';
 
 export type Step = '0' | '1' | '2' | '3';
 
@@ -143,7 +151,12 @@ export const useProofStore = create<ProofState>()(
         const prover = blueprint.createProver({ isLocal });
         let proof: Proof;
         try {
-          proof = await prover.generateProof(file, externalInputs || []);
+          let options: GenerateProofOptions = {};
+          if (isLocal && blueprint.props.clientZkFramework === ZkFramework.Noir) {
+            const noirWasm = await initNoirWasm();
+            options.noirWasm = noirWasm;
+          }
+          proof = await prover.generateProof(file, externalInputs || [], options);
           // save proof.props with blueprint.props.id as proof on useProofEmailStore here
         } catch (err) {
           console.error('Failed to generate a proof request');
