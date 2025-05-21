@@ -31,9 +31,8 @@ const EmailDetails = ({
         return;
       }
 
-      const parsedEmail = await parseEmail(emlContent);
       const maxEmailBodyLength = await getMaxEmailBodyLength(
-        parsedEmail.cleanedBody,
+        emlContent,
         store.shaPrecomputeSelector || ''
       );
 
