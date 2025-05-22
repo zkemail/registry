@@ -53,7 +53,8 @@ const initialState: BlueprintProps = {
   },
   externalInputs: [],
   decomposedRegexes: [],
-  zkFramework: ZkFramework.Circom,
+  clientZkFramework: ZkFramework.Circom,
+  serverZkFramework: ZkFramework.Circom,
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
@@ -181,7 +182,9 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
-            console.log('Assigned zkFramework: ', blueprint.props.zkFramework);
+            await blueprint.assignPreferredZkFramework(emlStr);
+            console.log('Assigned clientZkFramework: ', blueprint.props.clientZkFramework);
+            console.log('Assigned serverZkFramework: ', blueprint.props.serverZkFramework);
             await blueprint.submitDraft();
             console.log('saved draft');
             set({ blueprint });
@@ -190,7 +193,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
 
           // Update an existing blueprint
           if (state.blueprint && state.blueprint.canUpdate()) {
-            console.log('updating');
             await state.blueprint.update(data);
             return state.blueprint.props.id!;
           }
