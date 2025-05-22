@@ -204,6 +204,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       store.setField('emailQuery', emailQuery);
       store.setField('emailHeaderMaxLength', (Math.ceil(headerLength / 64) + 7) * 64);
       store.setField('emailBodyMaxLength', (Math.ceil(emailBodyMaxLength / 64) + 7) * 64);
+      if (emailBodyMaxLength > 9984 && !store.shaPrecomputeSelector) {
+        toast.warning(
+          'Email body is too long, max is 9984 bytes. Please add Email body cut off value else skip body hash check'
+        );
+        store.setField('ignoreBodyHashCheck', true);
+        store.setField('removeSoftLinebreaks', false);
+      }
     } catch (err) {
       if (!optOut) {
         posthog.capture('$test_email_error:failed_to_get_content', { error: err });
