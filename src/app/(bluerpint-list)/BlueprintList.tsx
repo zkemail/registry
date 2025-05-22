@@ -48,7 +48,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
             limit: PAGINATION_LIMIT,
             status: filters.length > 0 ? filters : undefined,
             sort: -1,
-            sortBy: sort as 'stars' | 'updatedAt',
+            sortBy: sort as 'stars' | 'updatedAt' | 'totalProofs',
           });
         } catch (err) {
           retryCount++;
