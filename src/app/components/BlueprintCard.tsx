@@ -54,6 +54,10 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                 {getStatusName(blueprint.props.status)}
               </span>
             )}
+            <span className="flex flex-row items-center gap-1 rounded-lg px-2 py-1 font-medium text-grey-800">
+            <Image width={16} height={16} src="/assets/Users.svg" alt="views" />
+            {blueprint.props.totalProofs}
+          </span>
             <button
               onClick={onStar}
               className="flex flex-row gap-1 rounded-md border border-grey-500 bg-neutral-200 px-2 py-1 text-grey-800"

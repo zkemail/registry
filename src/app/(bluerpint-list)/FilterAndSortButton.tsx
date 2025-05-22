@@ -150,6 +150,13 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
                   handleSort('updatedAt', checked);
                 }}
               />
+              <Checkbox
+                title="Total Proofs"
+                checked={sort === 'totalProofs'}
+                onCheckedChange={(checked: boolean) => {
+                  handleSort('totalProofs', checked);
+                }}
+              />
             </div>
           </div>
         )}

@@ -42,7 +42,7 @@ function BlueprintListWrapper() {
   const search = searchParams.get('search');
   const filters =
     (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || [];
-  const sort = searchParams.get('sort') || '';
+  const sort = searchParams.get('sort') || 'totalProofs';
 
   return (
     <div className="">
