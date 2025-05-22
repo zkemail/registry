@@ -222,7 +222,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return;
     }
 
-    // Bleurpint was not defined yet, skip testing email against blueprint
+    // Blueprint was not defined yet, skip testing email against blueprint
     if (id === 'new') return;
 
     try {

@@ -27,19 +27,6 @@ export const BlueprintTitle = ({
   starBlueprint,
 }: BlueprintTitleProps) => {
   const token = useAuthStore((state) => state.token);
-  const [numProofs, setNumProofs] = useState(0);
-
-  useEffect(() => {
-    if (!blueprint || !blueprint.getNumOfRemoteProofs) return;
-    blueprint
-      .getNumOfRemoteProofs()
-      .then((remoteProofs) => {
-        setNumProofs(remoteProofs + (blueprint.props.numLocalProofs || 0) || 0);
-      })
-      .catch((err) => {
-        console.error('Failed to get remote proofs for blueprint: ', err);
-      });
-  }, [blueprint]);
 
   const handleStarClick = () => {
     if (!token) {
@@ -62,7 +49,7 @@ export const BlueprintTitle = ({
         <div className="flex items-center gap-3 text-sm">
           <span className="flex flex-row items-center gap-1 rounded-lg px-2 py-1 font-medium text-grey-800">
             <Image width={16} height={16} src="/assets/Users.svg" alt="views" />
-            {numProofs}
+            {blueprint.props.totalProofs}
           </span>
           <button
             onClick={handleStarClick}
