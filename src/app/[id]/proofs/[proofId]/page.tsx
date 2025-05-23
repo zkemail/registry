@@ -398,6 +398,17 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           </div>
         </div>
       ) : null}
+      {emailProof ? (
+        <div>
+          <h4 className="rounded text-base font-medium text-grey-900">Public Outputs</h4>
+          <div
+            className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-gray-600"
+            id="public-outputs"
+          >
+            <pre>{JSON.stringify(emailProof.publicOutputs, null, 2)}</pre>
+          </div>
+        </div>
+      ) : null}
       {parsedEmail?.html ? (
         <div>
           <h4 className="rounded text-base font-medium text-grey-900">Email Render</h4>
