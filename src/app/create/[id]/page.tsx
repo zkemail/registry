@@ -189,7 +189,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setDkimSelector(selector);
 
       if (
-        (store.senderDomain !== senderDomain || store.emailQuery !== emailQuery) &&
+        (store.senderDomain !== senderDomain ||
+          store.emailQuery !== emailQuery) &&
         !updateFields &&
         id !== 'new'
       ) {
