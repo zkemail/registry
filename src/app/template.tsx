@@ -32,8 +32,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
     <>
       <Navbar />
       {pathname === '/' && (
-        <div className="relative h-[200px]">
-          <div className="absolute left-1/2 top-1/2 mx-auto flex w-full flex-grow -translate-x-1/2 -translate-y-1/2 transform flex-col gap-4 px-4 md:w-[768px]">
+        <div className="relative h-[200px] w-full">
+          <div className="absolute left-1/2 top-1/2 z-10 mx-auto flex w-full flex-grow -translate-x-1/2 -translate-y-1/2 transform flex-col gap-4 px-4 md:w-[768px] xl:w-[1164px]">
             <p className="hidden w-full text-2xl font-medium text-neutral-100 md:block md:w-[550px]">
               List of community submitted ZK Email blueprints that can be dropped into your project
             </p>
@@ -49,14 +49,24 @@ export default function Template({ children }: { children: React.ReactNode }) {
               </Button>
             </div>
           </div>
-          <Image
-            src="/assets/HomepageBanner.webp"
-            alt="homepage-banner"
-            className="h-[200px] w-full object-cover"
-            width={4000}
-            height={200}
-            priority
-          />
+          <div className="absolute inset-0 w-full">
+            <Image
+              src="/assets/HomepageBanner.webp"
+              alt="homepage-banner"
+              className="h-[200px] w-full object-cover"
+              width={1920}
+              height={200}
+              priority
+              quality={75}
+              loading="eager"
+              sizes="100vw"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center',
+                willChange: 'transform'
+              }}
+            />
+          </div>
         </div>
       )}
       <div
