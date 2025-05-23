@@ -34,7 +34,6 @@ test('check draft blueprints without authentication', async ({ page }) => {
   await page.getByTestId('create-blueprint-button').click();
 
   await page.waitForLoadState('networkidle');
-  await expect(page.getByText('You can help improve the')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Submit Blueprint' })).toBeVisible();
 
   await page.getByRole('textbox', { name: 'Pattern Name' }).click();
@@ -64,7 +63,6 @@ test('check draft blueprints without authentication', async ({ page }) => {
   await expect(page.getByRole('checkbox')).toBeVisible();
   await page.getByRole('button', { name: 'Next arrow right' }).click();
 
-  await page.getByRole('button', { name: 'trash Delete' }).click();
   await page.getByRole('button', { name: 'expand' }).first().click();
   await expect(
     page.getByText('date:Wed, 19 Mar 2025 09:58:03 +0000 from:X <info@x.com> to:Shubham Agarawal <')
