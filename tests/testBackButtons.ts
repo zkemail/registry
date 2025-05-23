@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { dragAndDropFile } from './utils/DragAndDropFile';
+import { dragAndDropFile } from '../src/test-utils/DragAndDropFile';
 
 test('test back button in proofs page', async ({ page }) => {
   test.setTimeout(120000);

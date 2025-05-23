@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { dragAndDropFile } from './utils/DragAndDropFile';
+import { dragAndDropFile } from '../src/test-utils/DragAndDropFile';
 
 test('check draft blueprints without authentication', async ({ page }) => {
   await page.goto('http://localhost:3000/');
