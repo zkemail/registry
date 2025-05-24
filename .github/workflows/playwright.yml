@@ -10,11 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-node@v4
+    - uses: oven-sh/setup-bun@v1
       with:
-        node-version: lts/*
+        bun-version: 1.1.25
+    - name: Make envfile
+      uses: SpicyPizza/create-envfile@v2.0
+      with:
+        envkey_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+        envkey_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        envkey_NEXT_PUBLIC_POSTHOG_KEY: ${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
+        envkey_NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
+        envkey_NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
+        envkey_NEXT_PUBLIC_DEPLOYMENT_ENV: ${{ secrets.NEXT_PUBLIC_DEPLOYMENT_ENV }}
+        directory: ./
+        file_name: .env
+        fail_on_empty: false
+        sort_keys: false
+
     - name: Install dependencies
-      run: npm ci
+      run: bun install
+    - name: Build
+      run: bun run build
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Run Playwright tests
