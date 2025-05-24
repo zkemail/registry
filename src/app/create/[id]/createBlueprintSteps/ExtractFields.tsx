@@ -145,7 +145,7 @@ const ExtractFields = ({
               ? regex
               : { ...regex, parts: JSON.parse(regex.parts ?? '[]') };
 
-            if(parsedRegex.parts.length === 0) {
+            if (parsedRegex.parts.length === 0) {
               return;
             }
 
@@ -655,7 +655,7 @@ const ExtractFields = ({
                     setField('decomposedRegexes', updatedRegexes);
                   }}
                   options={[
-                    { label: 'Email Body', value: 'body' },
+                    ...(store.ignoreBodyHashCheck ? [] : [{ label: 'Email Body', value: 'body' }]),
                     { label: 'Email Header', value: 'header' },
                   ]}
                 />
