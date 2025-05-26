@@ -20,8 +20,18 @@ type Email = RawEmailResponse & {
   valid: boolean;
 };
 
+const CACHE_KEY = 'zk_email_cache';
+const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+interface CacheData {
+  emails: Email[];
+  timestamp: number;
+  query: string;
+}
+
 const SelectEmails = ({ id }: { id: string }) => {
-  const { setStep, file, setEmailContent, blueprint, startProofGeneration } = useProofStore();
+  const { setStep, file, setEmailContent, blueprint, startProofGeneration, emlUploadMode } =
+    useProofStore();
   const store = useCreateBlueprintStore();
   const { getParsedDecomposedRegexes, setToExistingBlueprint, reset } = store;
   const pathname = usePathname();
@@ -98,7 +108,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   useEffect(() => {
     const checkFileValidity = async (file: string | null) => {
-      if (file) {
+      if (file && emlUploadMode === 'upload') {
         const valid = await handleValidateEmail(file);
 
         const subject = file.match(/Subject: (.*)/)?.[1] || 'No Subject';
@@ -120,6 +130,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         };
 
         setFetchedEmails([selectedEmail]);
+        saveEmailsToCache([selectedEmail], blueprint?.props.emailQuery || '');
       }
     };
 
@@ -128,16 +139,57 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   console.log('selectedEmail: ', fetchedEmails, selectedEmail);
 
+  // Function to save emails to localStorage
+  const saveEmailsToCache = (emails: Email[], query: string) => {
+    const cacheData: CacheData = {
+      emails,
+      timestamp: Date.now(),
+      query,
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  };
+
+  // Function to get emails from localStorage
+  const getEmailsFromCache = (): CacheData | null => {
+    const cachedData = localStorage.getItem(CACHE_KEY);
+    if (!cachedData) return null;
+
+    const data: CacheData = JSON.parse(cachedData);
+    const isExpired = Date.now() - data.timestamp > CACHE_EXPIRY;
+
+    if (isExpired) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+
+    return data;
+  };
+
   const handleFetchEmails = async () => {
     console.log('fetching emails');
     try {
       setIsFetchEmailLoading(true);
+
+      // Check cache first
+      const cachedData = getEmailsFromCache();
+      const currentQuery = blueprint?.props.emailQuery || '';
+
+      console.log('cachedData: ', cachedData);
+      console.log('currentQuery: ', currentQuery);
+
+      if (cachedData && cachedData.query === currentQuery) {
+        console.log('Using cached emails');
+        setFetchedEmails(cachedData.emails);
+        setIsFetchEmailLoading(false);
+        return;
+      }
+
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
         pageToken: pageToken,
-        q: blueprint?.props.emailQuery,
+        q: currentQuery,
       });
 
-      console.log('emailQuery: ', blueprint?.props.emailQuery);
+      console.log('emailQuery: ', currentQuery);
 
       const emailResponseMessages = emailListResponse.messages;
       if (emailResponseMessages?.length > 0) {
@@ -199,12 +251,18 @@ const SelectEmails = ({ id }: { id: string }) => {
           return;
         }
 
-        console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
-        setFetchedEmails([...fetchedEmails, ...processedEmails]);
+        const newEmails = [...fetchedEmails, ...processedEmails];
+        console.log('fetchedEmails: ', newEmails);
+        setFetchedEmails(newEmails);
+
+        // Save to cache
+        saveEmailsToCache(newEmails, currentQuery);
 
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
         setFetchedEmails([]);
+        // Clear cache if no emails found
+        localStorage.removeItem(CACHE_KEY);
       }
     } catch (error) {
       console.error('Error in fetching data:', error);
@@ -214,12 +272,12 @@ const SelectEmails = ({ id }: { id: string }) => {
   };
 
   useEffect(() => {
-    if (file) {
+    if (file && emlUploadMode === 'upload') {
       return;
     }
-    if (googleAuthToken?.access_token) {
-      handleFetchEmails();
-    }
+    // if (googleAuthToken?.access_token) {
+    handleFetchEmails();
+    // }
   }, [googleAuthToken?.access_token]);
 
   const renderEmailsTable = () => {
@@ -335,7 +393,7 @@ const SelectEmails = ({ id }: { id: string }) => {
           </RadioGroup>
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          {!file ? (
+          {!file && emlUploadMode === 'connect' ? (
             <Button
               variant="ghost"
               className="gap-2 text-grey-700"

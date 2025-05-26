@@ -15,6 +15,7 @@ import sdk from '@/lib/sdk';
 import { initNoirWasm } from '@zk-email/sdk/initNoirWasm';
 
 export type Step = '0' | '1' | '2' | '3';
+export type EmlUploadMode = 'upload' | 'connect';
 
 interface ProofState {
   step: Step;
@@ -34,6 +35,8 @@ interface ProofState {
   setIsUserStarred: () => Promise<void>;
   isUserStarred: boolean;
   starBlueprint: () => Promise<void>;
+  emlUploadMode: EmlUploadMode | null;
+  setEmlUploadMode: (mode: EmlUploadMode) => void;
   unStarBlueprint: () => Promise<void>;
 }
 
@@ -44,6 +47,7 @@ const initialState = {
   blueprint: null,
   externalInputs: null,
   isUserStarred: false,
+  emlUploadMode: null,
 };
 
 // seperate store
@@ -63,6 +67,7 @@ export const useProofStore = create<ProofState>()(
   persist(
     (set, get) => ({
       ...initialState,
+      setEmlUploadMode: (mode: EmlUploadMode) => set({ emlUploadMode: mode }),
       setEmailContent: (content: string | null) => set({ file: content }),
       setExternalInputs: (inputs: ExternalInputInput[]) => set({ externalInputs: inputs }),
       setStep: (step: Step) => {
