@@ -14,7 +14,7 @@ type UpdatingStatus = {
   updatingStatus: Promise<ProofStatus>;
 };
 
-type ProofEmail = ProofProps & Email;
+export type ProofEmail = ProofProps & Email;
 
 export type ProofEmailStatusUpdate = ProofEmail & UpdatingStatus;
 

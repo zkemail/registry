@@ -8,12 +8,11 @@ import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import PostalMime, { Email } from 'postal-mime';
-import { Proof, ProofStatus } from '@zk-email/sdk';
+import { Proof, ProofStatus, startJsonFileDownload, ZkFramework } from '@zk-email/sdk';
 import { handleGetStatusIcon } from '../../ProofRow';
-import { formatDate, formatDateAndTime } from '@/app/utils';
+import { formatDateAndTime } from '@/app/utils';
 import Loader from '@/components/ui/loader';
 import Link from 'next/link';
-import { log } from 'console';
 import { useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
@@ -33,6 +32,9 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const emailProof = localProofInfo
     ? JSON.parse(localProofInfo)
     : useProofEmailStore((state) => state.data[id!]?.[proofId]);
+
+  console.log('emailProof: ', emailProof);
+
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
   const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
@@ -165,6 +167,17 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     setIsVerifyingProofLoading(false);
   };
 
+  const handleProofDownload = () => {
+    const proofData = {
+      publicData: emailProof.publicData,
+      proofData: emailProof.proofData,
+      publicOutputs: emailProof.publicOutputs,
+      externalInputs: emailProof.externalInputs,
+      input: emailProof.input,
+    };
+    startJsonFileDownload(JSON.stringify(proofData), emailProof.id);
+  };
+
   if (!blueprint || !emailProof) {
     return <Loader />;
   }
@@ -196,7 +209,25 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
         <div className="flex flex-row flex-wrap gap-2">
           <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleProofDownload}
+            disabled={!emailProof?.publicData}
+          >
+            <Image
+              src="/assets/Download.svg"
+              alt="download"
+              width={20}
+              height={20}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
+          </Button>
+          <Button
             loading={isVerifyingProofLoading}
+            disabled={emailProof.zkFramework === ZkFramework.Noir}
             variant="secondary"
             size="sm"
             className="flex flex-row gap-2"
@@ -219,6 +250,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <Button
             className="flex flex-row gap-2"
             size="sm"
+            disabled={emailProof.zkFramework === ZkFramework.Noir}
             onClick={() => {
               navigator.clipboard.writeText(window.location.href + `?${urlProofParams}`);
               toast.success('Link successfully copied to clipboard');
