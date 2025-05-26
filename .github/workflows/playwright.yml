@@ -8,11 +8,14 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    environment: staging
     steps:
     - uses: actions/checkout@v4
     - uses: oven-sh/setup-bun@v1
       with:
         bun-version: 1.1.25
+    - name: echo env
+      run: echo ${{ secrets.GOOGLE_CLIENT_ID }}
     - name: Make envfile
       uses: SpicyPizza/create-envfile@v2.0
       with:
@@ -22,10 +25,9 @@ jobs:
         envkey_NEXT_PUBLIC_POSTHOG_HOST: ${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
         envkey_NEXT_PUBLIC_BASE_URL: ${{ secrets.NEXT_PUBLIC_BASE_URL }}
         envkey_NEXT_PUBLIC_DEPLOYMENT_ENV: ${{ secrets.NEXT_PUBLIC_DEPLOYMENT_ENV }}
-        directory: ./
-        file_name: .env
-        fail_on_empty: false
-        sort_keys: false
+        fail_on_empty: true
+    - name: Show env file
+      run: cat .env
 
     - name: Install dependencies
       run: bun install
