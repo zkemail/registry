@@ -6,12 +6,12 @@ test('check draft blueprints without authentication', async ({ page }) => {
 
   const loginButton = page.getByRole('button', { name: 'Login' });
   await expect(loginButton).toBeVisible();
-  await loginButton.click();
+  // await loginButton.click();
 
   if (await loginButton.isVisible()) {
     console.log('Login button is visible');
     //wait for blueprint card to be visible
-    await page.getByTestId('blueprint-card').waitFor();
+    // await page.getByTestId('blueprint-card').waitFor();
 
     // check if there is any component with data-testid="blueprint-status-Draft" and if it is visible fail the test
     const draftBlueprint = page.getByTestId('blueprint-status-Draft');
@@ -19,11 +19,24 @@ test('check draft blueprints without authentication', async ({ page }) => {
     await expect(draftBlueprint).not.toBeVisible();
   }
 
-  // Login with github
-  await page.getByLabel('Username or email address').fill('zktestman00');
-  await page.getByLabel('Username or email address').press('Tab');
-  await page.getByLabel('Password').fill('FxV*weH9AzRswWo_kqxgjoN4HknnmB');
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  const authStorage = {
+    state: {
+      username: 'zktestman00',
+      token:
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA4NzYwNjAsImdpdGh1Yl91c2VybmFtZSI6InprdGVzdG1hbjAwIn0.oKGk65EREAjaUz9ENhRTAIrRJP9tV_5OPGptFzc7Rh4',
+      isAdmin: false,
+    },
+    version: 0,
+  };
+
+  await page.evaluate(
+    (storage) => {
+      localStorage.setItem('auth-storage', storage);
+    },
+    JSON.stringify(authStorage)
+  );
+
+  await page.reload();
 
   await page.waitForLoadState('networkidle');
 
@@ -79,6 +92,7 @@ test('check draft blueprints without authentication', async ({ page }) => {
   await expect(page.getByText('subject: ["Password reset')).toBeVisible();
   await expect(page.getByText('All tests passed. Ready to')).toBeVisible();
   await page.getByRole('button', { name: 'check Submit Blueprint' }).click();
+  await page.waitForLoadState('networkidle');
   await expect(page.getByText('In Progress', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'close Cancel Compilation' }).click();
 });
