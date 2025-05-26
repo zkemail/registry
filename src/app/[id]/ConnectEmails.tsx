@@ -6,10 +6,9 @@ import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import { toast } from 'react-toastify';
 import { findOrCreateDSP } from '../utils';
-import { useCreateBlueprintStore } from '../create/[id]/store';
 
 const ConnectEmails = () => {
-  const { setFile, setStep } = useProofStore();
+  const { setFile, setStep, setEmlUploadMode } = useProofStore();
   const blueprint = useProofStore((state) => state.blueprint);
 
   const { googleLogIn } = useGoogleAuth();
@@ -55,6 +54,8 @@ const ConnectEmails = () => {
         className="flex w-max items-center gap-2"
         onClick={googleLogIn(() => {
           setFile(null);
+          localStorage.removeItem('zk_email_cache');
+          setEmlUploadMode('connect');
           setStep('1');
         })}
       >
@@ -71,9 +72,9 @@ const ConnectEmails = () => {
         Connect Gmail Account
       </Button>
       <div className="flex w-full items-center">
-        <div className="flex-1 h-[2px] bg-gradient-to-r from-transparent to-gray-300" />
+        <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent to-gray-300" />
         <span className="mx-3 text-base font-semibold text-grey-700">OR</span>
-        <div className="flex-1 h-[2px] bg-gradient-to-l from-transparent to-gray-300" />
+        <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent to-gray-300" />
       </div>
       <div
         className="w-full cursor-pointer rounded-lg p-8"
@@ -97,7 +98,11 @@ const ConnectEmails = () => {
             }
 
             setFile(files[0])
-              .then(() => setStep('1'))
+              .then(() => {
+                setStep('1');
+                localStorage.removeItem('zk_email_cache');
+                setEmlUploadMode('upload');
+              })
               .catch((err) => toast.error(err.message ?? err));
           }
         }}
@@ -142,7 +147,11 @@ const ConnectEmails = () => {
                 }
 
                 setFile(file)
-                  .then(() => setStep('1'))
+                  .then(() => {
+                    setStep('1');
+                    localStorage.removeItem('zk_email_cache');
+                    setEmlUploadMode('upload');
+                  })
                   .catch((err) => {
                     toast.error(err.message ?? err);
                   });
