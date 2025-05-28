@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
 import useGoogleAuth from '../hooks/useGoogleAuth';
@@ -27,9 +27,11 @@ const SelectEmails = ({ id }: { id: string }) => {
   const pathname = usePathname();
   const { replace } = useRouter();
   const searchParams = useSearchParams();
+  const isFetchingRef = useRef(false);
 
   const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
+  const [areAllEmailsFetched, setAreAllEmailsFetched] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
@@ -54,18 +56,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   const handleValidateEmail = async (content: string) => {
     try {
-      console.log('validating email: ', content);
-      console.log('blueprint: ', blueprint!.props);
-
-      const output = await testBlueprint(
-        content,
-        // {
-        //   blueprint,
-        //   decomposedRegexes: getParsedDecomposedRegexes(),
-        // },
-        blueprint?.props!
-      );
-      console.log('output: ', output);
+      await testBlueprint(content, blueprint?.props!);
 
       return true;
     } catch (err) {
@@ -129,7 +120,14 @@ const SelectEmails = ({ id }: { id: string }) => {
   console.log('selectedEmail: ', fetchedEmails, selectedEmail);
 
   const handleFetchEmails = async () => {
-    console.log('fetching emails');
+    if (isFetchingRef.current) {
+      console.log('Already fetching, skipping');
+      return;
+    }
+
+    console.log('handleFetchEmails called');
+    isFetchingRef.current = true;
+
     try {
       setIsFetchEmailLoading(true);
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
@@ -144,63 +142,43 @@ const SelectEmails = ({ id }: { id: string }) => {
         const emailIds = emailResponseMessages.map((message) => message.id);
         const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
 
-        const validatedEmails: {
-          email: RawEmailResponse;
-          senderDomain: string;
-          selector: string;
-        }[] = await Promise.all(
-          emails.map(async (email) => {
-            const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
-            return {
-              email,
-              senderDomain,
-              selector,
-            };
-          })
-        );
+        // Process emails one at a time
+        const processedEmails: Email[] = [];
+        const uniquePairs = new Set<string>();
 
-        // Get unique domain-selector pairs
-        const uniquePairs = Array.from(
-          new Set(
-            validatedEmails.map(({ senderDomain, selector }) => `${senderDomain}:${selector}`)
-          )
-        ).map((pair) => {
-          const [domain, selector] = pair.split(':');
-          return { domain, selector };
-        });
+        for (const email of emails) {
+          // Extract EML details
+          const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
+          const pairKey = `${senderDomain}:${selector}`;
 
-        // Make API calls only for unique pairs
-        await Promise.all(
-          uniquePairs.map((pair) =>
-            fetch('https://archive.zk.email/api/dsp', {
+          // Add to unique pairs if not already present
+          if (!uniquePairs.has(pairKey)) {
+            uniquePairs.add(pairKey);
+            // Make API call for this unique pair
+            await fetch('https://archive.zk.email/api/dsp', {
               method: 'POST',
-              body: JSON.stringify({
-                domain: pair.domain,
-                selector: pair.selector,
-              }),
-            })
-          )
-        );
+              body: JSON.stringify({ domain: senderDomain, selector }),
+            });
+          }
 
-        // Process validation for all emails
-        const processedEmails: Email[] = await Promise.all(
-          validatedEmails.map(async ({ email }) => {
-            const validationResult = await handleValidateEmail(email.decodedContents);
-            return {
-              ...email,
-              valid: validationResult ?? false,
-            };
-          })
-        );
+          // Validate the email
+          const validationResult = await handleValidateEmail(email.decodedContents);
+          const processedEmail = {
+            ...email,
+            valid: validationResult ?? false,
+          };
 
-        if (validatedEmails.length === 0 && emailListResponse.nextPageToken) {
+          processedEmails.push(processedEmail);
+          // Update the UI with the new email
+          setFetchedEmails((prev) => [...prev, processedEmail]);
+          setIsFetchEmailLoading(false);
+        }
+
+        if (processedEmails.length === 0 && emailListResponse.nextPageToken) {
           setPageToken(emailListResponse.nextPageToken || null);
           handleFetchEmails();
           return;
         }
-
-        console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
-        setFetchedEmails([...fetchedEmails, ...processedEmails]);
 
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
@@ -209,18 +187,24 @@ const SelectEmails = ({ id }: { id: string }) => {
     } catch (error) {
       console.error('Error in fetching data:', error);
     } finally {
-      setIsFetchEmailLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
   useEffect(() => {
+    console.log('useEffect triggered', {
+      hasToken: !!googleAuthToken?.access_token,
+      isFile: !!file,
+      isFetching: isFetchingRef.current,
+    });
+
     if (file) {
       return;
     }
-    if (googleAuthToken?.access_token) {
+    if (googleAuthToken?.access_token && !isFetchingRef.current) {
       handleFetchEmails();
     }
-  }, [googleAuthToken?.access_token]);
+  }, [googleAuthToken?.access_token, file]);
 
   const renderEmailsTable = () => {
     if (isFetchEmailLoading) {
@@ -333,9 +317,25 @@ const SelectEmails = ({ id }: { id: string }) => {
                 ))}
             </AnimatePresence>
           </RadioGroup>
+          {isFetchingRef.current ? (
+            <Button variant="ghost" className="gap-2 text-grey-700" disabled={isFetchEmailLoading}>
+              <Image
+                src="/assets/ArrowsClockwise.svg"
+                alt="arrow down"
+                width={16}
+                height={16}
+                className={'animate-spin'}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+              Loading...
+            </Button>
+          ) : null}
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          {!file ? (
+          {!file && !isFetchingRef.current ? (
             <Button
               variant="ghost"
               className="gap-2 text-grey-700"
@@ -347,7 +347,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                 alt="arrow down"
                 width={16}
                 height={16}
-                className={isFetchEmailLoading ? 'animate-spin' : ''}
+                className={areAllEmailsFetched && !isFetchEmailLoading ? 'animate-spin' : ''}
                 style={{
                   maxWidth: '100%',
                   height: 'auto',

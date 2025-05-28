@@ -67,19 +67,15 @@ const getDateToNowStr = (date?: Date) => {
 const formatDate = (timestamp: string) => {
   try {
     let date: Date;
-    console.log('Input timestamp:', timestamp, typeof timestamp);
 
     // Try parsing as milliseconds first
     const msTimestamp = parseInt(timestamp);
-    console.log('Parsed msTimestamp:', msTimestamp);
 
     if (!isNaN(msTimestamp) && msTimestamp.toString().length > 4) {
       date = new Date(msTimestamp);
     } else {
       date = new Date(timestamp);
     }
-
-    console.log('Resulting date object:', date);
 
     if (date.toString() === 'Invalid Date') {
       throw new Error('Invalid date format');
