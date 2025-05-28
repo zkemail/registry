@@ -21,7 +21,6 @@ const EmailDetails = ({
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
-  const [showOptionalDetails, setShowOptionalDetails] = useState(false);
   const [shaPrecomputeSelectorValidationErrors, setShaPrecomputeSelectorValidationErrors] =
     useState('');
 
@@ -129,129 +128,116 @@ const EmailDetails = ({
         value={store.emailHeaderMaxLength || ''}
         onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
       />
-      <Button
-        variant="secondary"
-        size="sm"
-        className="w-fit"
-        onClick={() => setShowOptionalDetails(!showOptionalDetails)}
-      >
-        {showOptionalDetails ? '- Hide optional details' : '+ View optional details'}
-      </Button>
-      {showOptionalDetails && (
-        <>
-          <Select
-            label="Client Zk Framework"
-            value={store.clientZkFramework}
-            onChange={(value) => {
-              console.log('setting clientZkFramework to ', value);
-              setField('clientZkFramework', value);
+      <Select
+        label="Client Zk Framework"
+        value={store.clientZkFramework}
+        onChange={(value) => {
+          console.log('setting clientZkFramework to ', value);
+          setField('clientZkFramework', value);
+        }}
+        options={
+          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+            ? [
+                { label: 'Circom', value: ZkFramework.Circom },
+                { label: 'Noir', value: ZkFramework.Noir },
+              ]
+            : [{ label: 'Circom', value: ZkFramework.Circom }]
+        }
+      />
+      <Select
+        label="Server Zk Framework"
+        value={store.serverZkFramework}
+        onChange={(value) => {
+          console.log('setting serverzkframework to ', value);
+          setField('serverZkFramework', value);
+        }}
+        options={
+          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+            ? [
+                { label: 'SP1', value: ZkFramework.Sp1 },
+                { label: 'Circom', value: ZkFramework.Circom },
+              ]
+            : [{ label: 'Circom', value: ZkFramework.Circom }]
+        }
+      />
+      <Checkbox
+        title="Skip body hash check"
+        helpText="Enable to ignore the contents on the email and only extract data from the headers"
+        checked={store.ignoreBodyHashCheck}
+        onCheckedChange={(checked) => {
+          setField('ignoreBodyHashCheck', !!checked);
+          setField('removeSoftLinebreaks', !checked);
+        }}
+      />
+      {!store.ignoreBodyHashCheck && (
+        <div className="ml-2">
+          <Input
+            title="Email Body Cutoff Value (optional)"
+            placeholder=">Not my Account<"
+            type="text"
+            disabled={store.ignoreBodyHashCheck}
+            helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
+            value={store.shaPrecomputeSelector}
+            error={!!shaPrecomputeSelectorValidationErrors}
+            errorMessage={shaPrecomputeSelectorValidationErrors}
+            onChange={async (e) => {
+              setField('shaPrecomputeSelector', e.target.value);
+
+              if (!emlContent) {
+                return;
+              }
+
+              const parsedEmail = await parseEmail(emlContent);
+              const value = e.target.value;
+
+              if (!value) {
+                setShaPrecomputeSelectorValidationErrors('');
+                return;
+              }
+
+              const matches = parsedEmail.cleanedBody.split(value).length - 1;
+              if (matches === 0) {
+                setShaPrecomputeSelectorValidationErrors('Value not found in email body');
+              } else if (matches > 1) {
+                setShaPrecomputeSelectorValidationErrors(
+                  'Value appears multiple times in email body. Please use unique value else it will be cut off at the first occurrence'
+                );
+              } else {
+                setShaPrecomputeSelectorValidationErrors('');
+              }
             }}
-            options={
-              process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-                ? [
-                    { label: 'Circom', value: ZkFramework.Circom },
-                    { label: 'Noir', value: ZkFramework.Noir },
-                  ]
-                : [{ label: 'Circom', value: ZkFramework.Circom }]
+            tooltipComponent={
+              <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+                <Image
+                  src="/assets/emailBodyCutOffValue.svg"
+                  className="rounded-t-xl"
+                  alt="emailQueryInfo"
+                  width={360}
+                  height={80}
+                />
+                <p className="mt-3 text-base font-medium text-grey-700">
+                  We will cut-off the part of the email body before this value, so that we only
+                  compute the regex on the email body after this value. This is to reduce the number
+                  of constraints for long email bodies where only regex matches at the end matter
+                </p>
+              </div>
             }
           />
-          <Select
-            label="Server Zk Framework"
-            value={store.serverZkFramework}
-            onChange={(value) => {
-              console.log('setting serverzkframework to ', value);
-              setField('serverZkFramework', value);
-            }}
-            options={
-              process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-                ? [
-                    { label: 'SP1', value: ZkFramework.Sp1 },
-                    { label: 'Circom', value: ZkFramework.Circom },
-                  ]
-                : [{ label: 'Circom', value: ZkFramework.Circom }]
-            }
+          <Input
+            title="Max Email Body Length"
+            disabled={store.ignoreBodyHashCheck}
+            placeholder="4032"
+            error={!!validationErrors.emailBodyMaxLength}
+            errorMessage={validationErrors.emailBodyMaxLength}
+            max={9984}
+            min={0}
+            startIcon={<Image src="/assets/Info.svg" alt="info" width={16} height={16} />}
+            type="number"
+            helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
+            value={store.emailBodyMaxLength}
+            onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
           />
-          <Checkbox
-            title="Skip body hash check"
-            helpText="Enable to ignore the contents on the email and only extract data from the headers"
-            checked={store.ignoreBodyHashCheck}
-            onCheckedChange={(checked) => {
-              setField('ignoreBodyHashCheck', !!checked);
-              setField('removeSoftLinebreaks', !checked);
-            }}
-          />
-          {!store.ignoreBodyHashCheck && (
-            <div className="ml-2">
-              <Input
-                title="Email Body Cutoff Value (optional)"
-                placeholder=">Not my Account<"
-                type="text"
-                disabled={store.ignoreBodyHashCheck}
-                helpText="We will cut-off the part of the email body before this value, so that we only compute the regex on the email body after this value. This is to reduce the number of constraints in the circuit for long email bodies where only regex matches at the end matter"
-                value={store.shaPrecomputeSelector}
-                error={!!shaPrecomputeSelectorValidationErrors}
-                errorMessage={shaPrecomputeSelectorValidationErrors}
-                onChange={async (e) => {
-                  setField('shaPrecomputeSelector', e.target.value);
-
-                  if (!emlContent) {
-                    return;
-                  }
-
-                  const parsedEmail = await parseEmail(emlContent);
-                  const value = e.target.value;
-
-                  if (!value) {
-                    setShaPrecomputeSelectorValidationErrors('');
-                    return;
-                  }
-
-                  const matches = parsedEmail.cleanedBody.split(value).length - 1;
-                  if (matches === 0) {
-                    setShaPrecomputeSelectorValidationErrors('Value not found in email body');
-                  } else if (matches > 1) {
-                    setShaPrecomputeSelectorValidationErrors(
-                      'Value appears multiple times in email body. Please use unique value else it will be cut off at the first occurrence'
-                    );
-                  } else {
-                    setShaPrecomputeSelectorValidationErrors('');
-                  }
-                }}
-                tooltipComponent={
-                  <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
-                    <Image
-                      src="/assets/emailBodyCutOffValue.svg"
-                      className="rounded-t-xl"
-                      alt="emailQueryInfo"
-                      width={360}
-                      height={80}
-                    />
-                    <p className="mt-3 text-base font-medium text-grey-700">
-                      We will cut-off the part of the email body before this value, so that we only
-                      compute the regex on the email body after this value. This is to reduce the
-                      number of constraints for long email bodies where only regex matches at the
-                      end matter
-                    </p>
-                  </div>
-                }
-              />
-              <Input
-                title="Max Email Body Length"
-                disabled={store.ignoreBodyHashCheck}
-                placeholder="4032"
-                error={!!validationErrors.emailBodyMaxLength}
-                errorMessage={validationErrors.emailBodyMaxLength}
-                max={9984}
-                min={0}
-                startIcon={<Image src="/assets/Info.svg" alt="info" width={16} height={16} />}
-                type="number"
-                helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
-                value={store.emailBodyMaxLength}
-                onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
-              />
-            </div>
-          )}
-        </>
+        </div>
       )}
     </div>
   );
