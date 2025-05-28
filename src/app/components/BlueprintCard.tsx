@@ -115,7 +115,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       </div>
 
       {/* Bottom div with the rest of the content - updated with Satoshi font and grey-700 color */}
-      <div className="p-6 pt-4 font-['Satoshi'] text-[14px] font-normal leading-[20px] tracking-[0.035em] text-grey-700">
+      <div className="p-6 pt-4 font-satoshi text-[14px] font-normal leading-[20px] tracking-[0.035em] text-grey-700">
         <p className="mb-3">{blueprint.props.description}</p>
         <div className="mt-2 flex flex-col items-start justify-between md:flex-row md:items-end">
           <div className="flex flex-wrap items-center gap-2">
