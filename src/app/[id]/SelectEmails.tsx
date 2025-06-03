@@ -156,7 +156,7 @@ const SelectEmails = ({ id }: { id: string }) => {
     return data;
   };
 
-  const handleFetchEmails = async () => {
+  const handleFetchEmails = async (newEmails = false) => {
     if (isFetchingRef.current) {
       console.log('Already fetching, skipping');
       return;
@@ -166,6 +166,7 @@ const SelectEmails = ({ id }: { id: string }) => {
     isFetchingRef.current = true;
 
     try {
+      setAreAllEmailsFetched(false);
       setIsFetchEmailLoading(true);
 
       // Check cache first
@@ -175,7 +176,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       console.log('cachedData: ', cachedData);
       console.log('currentQuery: ', currentQuery);
 
-      if (cachedData && cachedData.query === currentQuery) {
+      if (cachedData && cachedData.query === currentQuery && !newEmails) {
         console.log('Using cached emails');
         setFetchedEmails(cachedData.emails);
         setIsFetchEmailLoading(false);
@@ -228,7 +229,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
         if (processedEmails.length === 0 && emailListResponse.nextPageToken) {
           setPageToken(emailListResponse.nextPageToken || null);
-          handleFetchEmails();
+          handleFetchEmails(true);
           return;
         }
 
@@ -244,6 +245,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         setFetchedEmails([]);
         // Clear cache if no emails found
         localStorage.removeItem(CACHE_KEY);
+        setAreAllEmailsFetched(true);
       }
     } catch (error) {
       console.error('Error in fetching data:', error);
@@ -268,7 +270,7 @@ const SelectEmails = ({ id }: { id: string }) => {
   }, [googleAuthToken?.access_token, file]);
 
   const renderEmailsTable = () => {
-    if (isFetchEmailLoading) {
+    if (isFetchEmailLoading && fetchedEmails.length === 0) {
       return (
         <div className="mt-6 flex w-full justify-center">
           <Loader />
@@ -378,7 +380,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                 ))}
             </AnimatePresence>
           </RadioGroup>
-          {isFetchingRef.current ? (
+          {isFetchingRef.current || isFetchEmailLoading ? (
             <Button variant="ghost" className="gap-2 text-grey-700" disabled={isFetchEmailLoading}>
               <Image
                 src="/assets/ArrowsClockwise.svg"
@@ -396,11 +398,11 @@ const SelectEmails = ({ id }: { id: string }) => {
           ) : null}
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          {!file && emlUploadMode === 'connect' && !isFetchingRef.current ? (
+          {emlUploadMode === 'connect' && !isFetchingRef.current ? (
             <Button
               variant="ghost"
               className="gap-2 text-grey-700"
-              onClick={handleFetchEmails}
+              onClick={() => handleFetchEmails(true)}
               disabled={isFetchEmailLoading}
             >
               <Image
@@ -408,7 +410,8 @@ const SelectEmails = ({ id }: { id: string }) => {
                 alt="arrow down"
                 width={16}
                 height={16}
-                className={areAllEmailsFetched && !isFetchEmailLoading ? 'animate-spin' : ''}
+                // className={areAllEmailsFetched && !isFetchEmailLoading ? 'animate-spin' : ''}
+                className={isFetchEmailLoading ? 'animate-spin' : ''}
                 style={{
                   maxWidth: '100%',
                   height: 'auto',
