@@ -72,7 +72,7 @@ test('check draft blueprints without authentication', async ({ page }) => {
 
   await expect(page.getByRole('textbox', { name: 'Sender domain' })).toBeVisible();
   await expect(page.getByRole('textbox', { name: 'Email Query' })).toBeVisible();
-  await page.getByRole('button', { name: '+ View optional details' }).click();
+  // await page.getByRole('button', { name: '+ View optional details' }).click();
   await expect(page.getByRole('checkbox')).toBeVisible();
   await page.getByRole('button', { name: 'Next arrow right' }).click();
 
