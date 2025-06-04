@@ -245,7 +245,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
               />
             }
           >
-            Verify On-chain
+            Verify
           </Button>
           <Button
             className="flex flex-row gap-2"
