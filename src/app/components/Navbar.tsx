@@ -28,21 +28,6 @@ const Navbar = () => {
         <span className="text-xl font-semibold text-[#1C1C1C] dark:text-white">registry</span>
       </Link>
       <div className="flex items-center gap-4">
-        {token && !pathname.includes('/create') ? (
-          <Button
-            onClick={() => {
-              let savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
-              delete savedEmls['new'];
-              localStorage.setItem('blueprintEmls', JSON.stringify(savedEmls));
-              localStorage.removeItem('create-blueprint');
-              router.push('/create/new');
-            }}
-            className="rounded-xl"
-            data-testid="create-blueprint-button"
-          >
-            Create Blueprint
-          </Button>
-        ) : null}
         <div className="flex items-center gap-4">
           <LoginButton />
         </div>
