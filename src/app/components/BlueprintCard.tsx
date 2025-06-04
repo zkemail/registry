@@ -37,13 +37,21 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       <div className="border-b p-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-row flex-wrap items-center gap-2 flex-grow min-w-0">
-            <h2 className="text-xl font-bold text-ellipsis overflow-hidden">{blueprint.props.title}</h2>
+            <h2 
+              className="text-xl font-bold text-ellipsis overflow-hidden" 
+              title={blueprint.props.title}
+            >
+              {blueprint.props.title && blueprint.props.title.length > 20 
+                ? blueprint.props.title.substring(0, 20) + '...' 
+                : blueprint.props.title
+              }
+            </h2>
           </div>
           {/* Status and Star button grouped together */}
           <div className="flex items-center gap-3 text-sm text-grey-600 w-max">
             {isLoggedIn && (
               <span
-                className={`flex flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] font-medium leading-[18px] ${getStatusColorLight(
+                className={`hidden flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] font-medium leading-[18px] md:flex ${getStatusColorLight(
                   getCombinedBlueprintStatus(blueprint)
                 )}`}
               >
@@ -73,8 +81,11 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                   maxWidth: '100%',
                   height: 'auto',
                 }}
-              />{' '}
-              {(stars || 0) < 2 ? 'Star' : 'Stars'} | {stars ?? 0}
+              />
+              <span className="hidden md:inline">
+                {(stars || 0) < 2 ? 'Star' : 'Stars'} |{' '}
+              </span>
+              {stars ?? 0}
             </button>
           </div>
         </div>
