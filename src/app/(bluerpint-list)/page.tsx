@@ -9,7 +9,7 @@ import { Status } from '@zk-email/sdk';
 export default function Home() {
   return (
     <div className="container mx-auto py-8">
-      <div className="mb-8 flex flex-col items-start justify-between md:flex-row md:items-center">
+      <div className="mb-8 flex flex-col gap-2 items-start justify-between md:flex-row md:items-center">
         <h1 className="text-2xl font-bold">Blueprints</h1>
         <div className="flex items-center gap-4">
           <SearchBar />
