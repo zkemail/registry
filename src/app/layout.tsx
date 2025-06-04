@@ -9,6 +9,7 @@ import ToastProvider from './contexts/ToastProvider';
 import { Suspense } from 'react';
 import { CSPostHogProvider } from './providers';
 import PostHogPageView from './pageview';
+import HelpFab from '@/components/HelpFab';
 
 const fustat = Fustat({ subsets: ['latin'] });
 
@@ -46,6 +47,7 @@ export default function RootLayout({
                     <AuthHandler />
                     <PostHogPageView />
                     {children}
+                    <HelpFab />
                   </ToastProvider>
                 </GoogleAuthProvider>
               </GoogleOAuthProvider>
