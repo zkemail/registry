@@ -12,6 +12,10 @@ const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
 
+  const handleCreateBlueprint = () => {
+    router.push('/create');
+  };
+
   return (
     <nav className="flex items-center justify-between border-b bg-white px-6 py-3 dark:border-grey-800 dark:bg-black">
       <Link href="/" className="flex items-center gap-2">
@@ -29,6 +33,15 @@ const Navbar = () => {
       </Link>
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-4">
+          {token && (
+            <Button
+              onClick={handleCreateBlueprint}
+              className="hidden rounded-xl py-2 px-4 md:inline-flex"
+              size="md"
+            >
+              Create Blueprint
+            </Button>
+          )}
           <LoginButton />
         </div>
       </div>
