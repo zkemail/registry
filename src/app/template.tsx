@@ -43,7 +43,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
             <div className="flex gap-3">
               <Button
                 onClick={() => window.location.href = '/create'}
-                className="rounded-xl bg-white text-black hover:bg-gray-100"
+                className="lg:hidden rounded-xl bg-white text-black hover:bg-gray-100"
               >
                 Create Blueprint
               </Button>
