@@ -202,7 +202,8 @@ const HelpFab = () => {
       <button
         type="button"
         className="
-          flex 
+          hidden 
+          md:flex 
           h-10 
           w-10 
           items-center 
