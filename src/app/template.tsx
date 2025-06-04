@@ -40,7 +40,13 @@ export default function Template({ children }: { children: React.ReactNode }) {
             <p className="block w-full text-2xl font-medium text-neutral-100 md:hidden md:w-[550px]">
               List of community submitted ZK Email blueprints
             </p>
-            <div>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => window.location.href = '/create'}
+                className="rounded-xl bg-white text-black hover:bg-gray-100"
+              >
+                Create Blueprint
+              </Button>
               <Button
                 onClick={() => window.open('https://docs.zk.email/zk-email-sdk/registry', '_blank')}
                 className="rounded-xl"
