@@ -17,6 +17,7 @@ import { useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { initNoirWasm } from '@zk-email/sdk/initNoirWasm';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -133,20 +134,23 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   const onVerifyProof = async () => {
     setIsVerifyingProofLoading(true);
-    let proof: Proof;
-    try {
-      proof = await getProof(proofId);
-      console.log('proof: ', proof);
-    } catch (err) {
-      console.error(`Failed to get proof for id: ${proofId}: `, err);
-      toast.error('Failed to get proof');
+
+    if (!blueprint) {
+      toast.error('Failed to verify proof: could not find matching blueprint');
       setIsVerifyingProofLoading(false);
       return;
     }
-
+    
     try {
-      console.log('verifying proof');
-      const verified = await blueprint?.verifyProof(proof);
+      const proof = new Proof(blueprint, emailProof);
+      let verified;
+      if (proof.props.zkFramework === ZkFramework.Noir) {
+        const noirWasm = await initNoirWasm();
+        const options = { noirWasm };
+        verified = await blueprint?.verifyProof(proof, options);
+      } else {
+        verified = await blueprint?.verifyProof(proof);
+      }
 
       // toast.success('Proof verified successfully on chain');
       if (verified) {
@@ -227,7 +231,6 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           </Button>
           <Button
             loading={isVerifyingProofLoading}
-            disabled={emailProof.zkFramework === ZkFramework.Noir}
             variant="secondary"
             size="sm"
             className="flex flex-row gap-2"
