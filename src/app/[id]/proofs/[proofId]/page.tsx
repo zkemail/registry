@@ -140,7 +140,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       setIsVerifyingProofLoading(false);
       return;
     }
-    
+
     try {
       const proof = new Proof(blueprint, emailProof);
       let verified;
@@ -155,15 +155,13 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
       // toast.success('Proof verified successfully on chain');
       if (verified) {
         toast.success('Proof verified successfully');
+        setIsExploding(true);
+        setTimeout(() => {
+          setIsExploding(false);
+        }, 5000);
       } else {
         throw new Error('Failed to verify proof');
       }
-
-      setIsExploding(true);
-      setTimeout(() => {
-        setIsExploding(false);
-      }, 5000);
-      toast.success('Proof verified successfully');
     } catch (err) {
       console.error(`Failed to verify proof with id: ${proofId}: `, err);
       toast.error('Failed to verify proof');
