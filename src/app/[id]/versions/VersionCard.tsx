@@ -417,9 +417,6 @@ const VersionCard = ({
                 />
                 <Input
                   title="Email Query"
-                  disabled={
-                    store.clientStatus === Status.Done && store.serverStatus === Status.Done
-                  }
                   value={store.emailQuery}
                   onChange={(e) => setField('emailQuery', e.target.value)}
                   placeholder="Password request from: contact@x.com"
@@ -445,6 +442,9 @@ const VersionCard = ({
                 <Input
                   title="Sender domain"
                   loading={isVerifyDKIMLoading}
+                  disabled={
+                    store.clientStatus === Status.Done && store.serverStatus === Status.Done
+                  }
                   placeholder="twitter.com"
                   helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
                   value={store.senderDomain}
