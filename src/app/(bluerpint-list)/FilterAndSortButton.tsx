@@ -6,11 +6,13 @@ import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { forwardRef, useState, useRef, useEffect } from 'react';
 import { Status } from '@zk-email/sdk';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
 
 type FilterAndSortButtonProps = ButtonProps & {};
 
 const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonProps>(
   ({ startIcon, endIcon, variant, size, className, ...props }, ref) => {
+    const { username } = useAuthStore();
     const [expanded, setExpanded] = useState(false);
     const buttonRef = useRef<HTMLDivElement>(null);
     const searchParams = useSearchParams();
@@ -94,47 +96,51 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
 
         {expanded && (
           <div className="absolute right-[-1px] top-full z-10 box-content w-full rounded-b-md border border-t-0 border-grey-500 bg-white pb-2">
-            <div className="flex flex-col gap-2 px-3">
-              <Checkbox
-                title="Draft"
-                checked={filters.includes(Status.Draft)}
-                onCheckedChange={(checked: boolean) => {
-                  handleFilter(Status.Draft, checked);
-                }}
-              />
-              <Checkbox
-                title="Compiled"
-                checked={filters.includes(Status.Done)}
-                onCheckedChange={(checked: boolean) => {
-                  handleFilter(Status.Done, checked);
-                }}
-              />
-              <Checkbox
-                title="In Progress"
-                checked={filters.includes(Status.InProgress)}
-                onCheckedChange={(checked: boolean) => {
-                  handleFilter(Status.InProgress, checked);
-                }}
-              />
-              <Checkbox
-                title="Failed"
-                checked={filters.includes(Status.Failed)}
-                onCheckedChange={(checked: boolean) => {
-                  handleFilter(Status.Failed, checked);
-                }}
-              />
-            </div>
-            <div
-              className="mx-3 my-2"
-              style={{
-                height: '1px',
-                backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2' stroke-width='3' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
-              }}
-            />
-            <div className="flex w-max items-center gap-2 px-3 pb-2">
-              <Image src="/assets/Sort.svg" alt="filter" width={16} height={16} />
-              Sort
-            </div>
+            {username && (
+              <>
+                <div className="flex flex-col gap-2 px-3">
+                  <Checkbox
+                    title="Draft"
+                    checked={filters.includes(Status.Draft)}
+                    onCheckedChange={(checked: boolean) => {
+                      handleFilter(Status.Draft, checked);
+                    }}
+                  />
+                  <Checkbox
+                    title="Compiled"
+                    checked={filters.includes(Status.Done)}
+                    onCheckedChange={(checked: boolean) => {
+                      handleFilter(Status.Done, checked);
+                    }}
+                  />
+                  <Checkbox
+                    title="In Progress"
+                    checked={filters.includes(Status.InProgress)}
+                    onCheckedChange={(checked: boolean) => {
+                      handleFilter(Status.InProgress, checked);
+                    }}
+                  />
+                  <Checkbox
+                    title="Failed"
+                    checked={filters.includes(Status.Failed)}
+                    onCheckedChange={(checked: boolean) => {
+                      handleFilter(Status.Failed, checked);
+                    }}
+                  />
+                </div>
+                <div
+                  className="mx-3 my-2"
+                  style={{
+                    height: '1px',
+                    backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23E2E2E2' stroke-width='3' stroke-dasharray='6%2c 14' stroke-dashoffset='2' stroke-linecap='square'/%3e%3c/svg%3e")`,
+                  }}
+                />
+                <div className="flex w-max items-center gap-2 px-3 pb-2">
+                  <Image src="/assets/Sort.svg" alt="filter" width={16} height={16} />
+                  Sort
+                </div>
+              </>
+            )}
             <div className="flex flex-col gap-2 px-3">
               <Checkbox
                 title="Most Stars"
