@@ -270,7 +270,7 @@ const VersionCard = ({
               Cancel Compilation
             </Button>
           )}
-          {((getBlueprintStatus() === Status.Draft &&
+          {(((getBlueprintStatus() === Status.Draft || getBlueprintStatus() === Status.Failed) &&
             blueprint.props.githubUsername === username) ||
             isAdmin) && (
             <Button
