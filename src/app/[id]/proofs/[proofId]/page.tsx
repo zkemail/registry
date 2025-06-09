@@ -17,7 +17,7 @@ import { useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { initNoirWasm } from '@zk-email/sdk/initNoirWasm';
+import { initNoirWasm } from '@/lib/utils';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();

@@ -12,7 +12,7 @@ import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import sdk from '@/lib/sdk';
-import { initNoirWasm } from '@zk-email/sdk/initNoirWasm';
+import { initNoirWasm } from '@/lib/utils';
 
 export type Step = '0' | '1' | '2' | '3';
 export type EmlUploadMode = 'upload' | 'connect';
