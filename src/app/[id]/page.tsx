@@ -15,9 +15,10 @@ import AddInputs from './AddInputs';
 import Loader from '@/components/ui/loader';
 import StepperMobile from '../components/StepperMobile';
 import { BlueprintTitle } from '../components/BlueprintTitle';
-import { Blueprint, Status } from '@zk-email/sdk';
+import { Blueprint, Status, ZkFramework } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { initNoirWasm } from '@/lib/utils';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -51,6 +52,11 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
         await bp.getStars();
         setBlueprint(bp);
         await setIsUserStarred();
+        
+        // Pre initialize noir so proving is faster
+        if (bp.props.clientZkFramework === ZkFramework.Noir) {
+          await initNoirWasm();
+        }
       })
       .catch((err) => {
         if (err.toString().includes('401')) {
