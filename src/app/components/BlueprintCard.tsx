@@ -41,10 +41,18 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               className="text-xl font-bold text-ellipsis overflow-hidden" 
               title={blueprint.props.title}
             >
-              {blueprint.props.title && blueprint.props.title.length > 20 
-                ? blueprint.props.title.substring(0, 20) + '...' 
-                : blueprint.props.title
-              }
+              <span className="md:hidden">
+                {blueprint.props.title && blueprint.props.title.length > 20 
+                  ? blueprint.props.title.substring(0, 20) + '...' 
+                  : blueprint.props.title
+                }
+              </span>
+              <span className="hidden md:inline">
+                {blueprint.props.title && blueprint.props.title.length > 60 
+                  ? blueprint.props.title.substring(0, 60) + '...' 
+                  : blueprint.props.title
+                }
+              </span>
             </h2>
           </div>
           {/* Status and Star button grouped together */}
@@ -127,29 +135,14 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         <div className="mt-2 flex flex-col items-start justify-between md:flex-row md:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <p>Values extracted:</p>
-            {blueprint.props.decomposedRegexes?.map((dr, index) => {
-              const displayName = dr.name && dr.name.length > 15 
-                ? `${dr.name.substring(0, 15)}...` 
-                : dr.name;
-              const displayNameLarge = dr.name && dr.name.length > 72 
-                ? `${dr.name.substring(0, 72)}...` 
-                : dr.name;
-              
-              return (
-                <div
-                  key={index}
-                  className="h-fit rounded-md border border-[#D4D4D4] bg-neutral-200 px-2 py-[1px] text-[12px] leading-[16px]"
-                  title={dr.name}
-                >
-                  <span className="md:hidden">
-                    {displayName} {dr.isHashed ? '(hashed)' : ''}
-                  </span>
-                  <span className="hidden md:inline">
-                    {displayNameLarge} {dr.isHashed ? '(hashed)' : ''}
-                  </span>
-                </div>
-              );
-            })}
+            {blueprint.props.decomposedRegexes?.map((dr, index) => (
+              <div
+                key={index}
+                className="h-fit rounded-md border border-[#D4D4D4] bg-neutral-200 px-2 py-[1px] text-[12px] leading-[16px]"
+              >
+                {dr.name} {dr.isHashed ? '(hashed)' : ''}
+              </div>
+            ))}
           </div>
           <div className="mt-2 flex w-full flex-row items-center justify-between gap-2 md:mt-0 md:w-auto">
             <span
