@@ -1,12 +1,12 @@
 "use client";
 
 import Image from 'next/image';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, KeyboardEvent } from 'react';
 
 const HelpFab = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleClick = () => {
     if (isMenuOpen) {
@@ -21,7 +21,7 @@ const HelpFab = () => {
     }
   };
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       handleClick();
@@ -30,8 +30,8 @@ const HelpFab = () => {
 
   // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         if (isMenuOpen) {
           setIsExiting(true);
           setTimeout(() => {
