@@ -48,8 +48,8 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                 }
               </span>
               <span className="hidden md:inline">
-                {blueprint.props.title && blueprint.props.title.length > 60 
-                  ? blueprint.props.title.substring(0, 60) + '...' 
+                {blueprint.props.title && blueprint.props.title.length > 32 
+                  ? blueprint.props.title.substring(0, 32) + '...' 
                   : blueprint.props.title
                 }
               </span>
@@ -109,7 +109,20 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
             }}
             className="flex max-w-full cursor-pointer items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 transition-all hover:border-grey-400 hover:bg-neutral-100"
           >
-            <p className="flex-grow min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{blueprint.props.slug}</p>
+            <p className="flex-grow min-w-0 overflow-hidden text-ellipsis whitespace-nowrap" title={blueprint.props.slug}>
+              <span className="md:hidden">
+                {blueprint.props.slug && blueprint.props.slug.length > 20 
+                  ? blueprint.props.slug.substring(0, 20) + '...' 
+                  : blueprint.props.slug
+                }
+              </span>
+              <span className="hidden md:inline">
+                {blueprint.props.slug && blueprint.props.slug.length > 40 
+                  ? blueprint.props.slug.substring(0, 40) + '...' 
+                  : blueprint.props.slug
+                }
+              </span>
+            </p>
             <div
               className="ml-2 flex-shrink-0 flex items-center justify-center p-0.5"
               aria-label="Copy blueprint reference"
