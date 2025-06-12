@@ -34,6 +34,7 @@ import HighlightText from '@/app/components/HighlightRegex';
 import { REGEX_COLORS } from '@/app/constants';
 import { debounce } from '@/app/utils';
 import ModalGenerator from '@/components/ModalGenerator';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 
 type Step = '0' | '1' | '2';
 
@@ -44,9 +45,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const posthog = usePostHog();
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
-  const [savedEmls, setSavedEmls] = useState<Record<string, string>>(
-    JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
-  );
+  const emlStore = useEmlStore();
+  const [savedEmls, setSavedEmls] = useState<Record<string, string>>({});
 
   const {
     saveDraft,
@@ -125,18 +125,23 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [id, step]);
 
+  useEffect(() => {
+    // Load all EMLs from IndexedDB on mount
+    emlStore.getAllEmls().then(setSavedEmls);
+  }, []);
+
   const handleSaveDraft = async (notify = true) => {
     setIsSaveDraftLoading(true);
     try {
       const newId = await saveDraft();
       if (step === '0') {
-        localStorage.setItem(
-          'blueprintEmls',
-          JSON.stringify({
-            ...savedEmls,
-            [newId]: savedEmls[id],
-          })
-        );
+        // Save EML to IndexedDB
+        if (savedEmls[id]) {
+          await emlStore.setEml(newId, savedEmls[id]);
+          // Refresh local state
+          const allEmls = await emlStore.getAllEmls();
+          setSavedEmls(allEmls);
+        }
       }
       if (notify) {
         toast.success('Successfully saved draft');
@@ -145,7 +150,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         return newId;
       }
     } catch (err) {
-      // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
       console.error('Failed to submit blueprint: ', err);
       setErrors(['Unknown error while submitting blueprint']);
