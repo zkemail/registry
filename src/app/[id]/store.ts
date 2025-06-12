@@ -11,8 +11,10 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 import sdk from '@/lib/sdk';
 import { initNoirWasm } from '@/lib/utils';
+import { get, set } from 'idb-keyval';
 
 export type Step = '0' | '1' | '2' | '3';
 export type EmlUploadMode = 'upload' | 'connect';
@@ -93,7 +95,6 @@ export const useProofStore = create<ProofState>()(
         } catch (err) {
           console.error('Failed to get file contents: ', err);
           throw err;
-          // TODO: Notify user about this
         }
 
         const { blueprint } = get();
@@ -104,7 +105,11 @@ export const useProofStore = create<ProofState>()(
         } catch (err) {
           console.error('Failed to parse email, email is invalid: ', err);
           throw err;
-          // TODO: Notify user about this, cannot go to next step, email is invalid
+        }
+
+        // Save to IndexedDB if we have a blueprint ID
+        if (blueprint?.props.id) {
+          await useEmlStore.getState().setEml(blueprint.props.id, content);
         }
 
         set({ file: content });
@@ -180,6 +185,18 @@ export const useProofStore = create<ProofState>()(
     }),
     {
       name: 'proof-storage',
+      storage: {
+        getItem: async (name) => {
+          const value = await get(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: async (name, value) => {
+          await set(name, JSON.stringify(value));
+        },
+        removeItem: async (name) => {
+          await set(name, null);
+        },
+      },
     }
   )
 );

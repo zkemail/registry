@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { Step } from '../store';
 import DragAndDropFile from '@/app/components/DragAndDropFile';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -53,6 +54,8 @@ const VersionCard = ({
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isDeleteBlueprintModalOpen, setIsDeleteBlueprintModalOpen] = useState(false);
+
+  const emlStore = useEmlStore();
 
   function getBlueprintStatus() {
     return getCombinedBlueprintStatus(blueprint);
@@ -526,12 +529,7 @@ const VersionCard = ({
                     setFile(file);
                     const emlFileContent = await getFileContent(file);
                     console.log('emlFileContent: ', emlFileContent);
-                    await localStorage.setItem(
-                      'blueprintEmls',
-                      JSON.stringify({
-                        [blueprint.props.id]: emlFileContent,
-                      })
-                    );
+                    await emlStore.setEml(blueprint.props.id, emlFileContent);
                     router.push(`/create/${blueprint.props.id}`);
                   }}
                 />
