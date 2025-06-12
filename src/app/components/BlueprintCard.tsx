@@ -37,13 +37,29 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
       <div className="border-b p-6 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex flex-row flex-wrap items-center gap-2">
-            <h2 className="text-xl font-bold">{blueprint.props.title}</h2>
+            <h2 
+              className="text-xl font-bold" 
+              title={blueprint.props.title}
+            >
+              <span className="md:hidden">
+                {blueprint.props.title && blueprint.props.title.length > 20 
+                  ? blueprint.props.title.substring(0, 20) + '...' 
+                  : blueprint.props.title
+                }
+              </span>
+              <span className="hidden md:inline">
+                {blueprint.props.title && blueprint.props.title.length > 32 
+                  ? blueprint.props.title.substring(0, 32) + '...' 
+                  : blueprint.props.title
+                }
+              </span>
+            </h2>
           </div>
           {/* Status and Star button grouped together */}
           <div className="flex items-center gap-3 text-sm text-grey-600">
             {isLoggedIn && (
               <span
-                className={`flex flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] font-medium leading-[18px] ${getStatusColorLight(
+                className={`hidden flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] font-medium leading-[18px] md:flex ${getStatusColorLight(
                   getCombinedBlueprintStatus(blueprint)
                 )}`}
               >
@@ -73,8 +89,11 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                   maxWidth: '100%',
                   height: 'auto',
                 }}
-              />{' '}
-              {(stars || 0) < 2 ? 'Star' : 'Stars'} | {stars ?? 0}
+              />
+              <span className="hidden md:inline">
+                {(stars || 0) < 2 ? 'Star' : 'Stars'} |{' '}
+              </span>
+              {stars ?? 0}
             </button>
           </div>
         </div>
@@ -90,7 +109,20 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
             }}
             className="flex cursor-pointer items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 transition-all hover:border-grey-400 hover:bg-neutral-100"
           >
-            <p className="overflow-hidden text-ellipsis">{blueprint.props.slug}</p>
+            <p className="overflow-hidden text-ellipsis" title={blueprint.props.slug}>
+              <span className="md:hidden">
+                {blueprint.props.slug && blueprint.props.slug.length > 20 
+                  ? blueprint.props.slug.substring(0, 20) + '...' 
+                  : blueprint.props.slug
+                }
+              </span>
+              <span className="hidden md:inline">
+                {blueprint.props.slug && blueprint.props.slug.length > 40 
+                  ? blueprint.props.slug.substring(0, 40) + '...' 
+                  : blueprint.props.slug
+                }
+              </span>
+            </p>
             <div
               className="ml-2 flex items-center justify-center p-0.5"
               aria-label="Copy blueprint reference"
