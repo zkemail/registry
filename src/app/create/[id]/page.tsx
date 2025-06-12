@@ -81,6 +81,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [canCompile, setCanCompile] = useState(false);
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
+  const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -328,10 +329,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const onClickNext = async () => {
     try {
+      setIsNextButtonClicked(true);
       const newId = await handleSaveDraft();
       setStep((parseInt(step) + 1).toString() as Step, newId);
     } catch (err) {
       console.error('failed to save draft and move to next step: ', err);
+    } finally {
+      setIsNextButtonClicked(false);
     }
   };
 
@@ -544,7 +548,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               <Button
                 variant="secondary"
                 onClick={handleSaveDraft}
-                loading={isSaveDraftLoading}
+                loading={isSaveDraftLoading && !isNextButtonClicked}
                 disabled={!store.circuitName || !store.title}
                 startIcon={
                   <Image
@@ -564,6 +568,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               {parseInt(step) < 2 ? (
                 <Button
                   onClick={onClickNext}
+                  loading={isNextButtonClicked}
                   endIcon={
                     <Image
                       src="/assets/ArrowRight.svg"
