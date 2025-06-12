@@ -583,7 +583,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'body' },
+                  { maxLength: 64, location: 'header' },
                 ]);
               }}
             >
