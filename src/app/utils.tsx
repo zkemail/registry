@@ -1,5 +1,5 @@
 import { getFileContent } from '@/lib/utils';
-import { parseEmail, Status, extractEMLDetails, Blueprint } from '@zk-email/sdk';
+import { parseEmail, Status, extractEMLDetails, Blueprint, ZkFramework } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -226,6 +226,25 @@ function getCombinedBlueprintStatus(blueprint: Blueprint | null) {
     return Status.Failed;
   }
 }
+
+export const getZkFrameworkName = (framework: ZkFramework | undefined): string => {
+  switch (framework) {
+    case ZkFramework.None:
+      return 'None';
+    case ZkFramework.Circom:
+      return 'Circom';
+    case ZkFramework.Sp1:
+      return 'SP1';
+    case ZkFramework.Noir:
+      return 'Noir';
+    default:
+      // Handle potential undefined or unexpected values gracefully
+      const frameworkName = Object.keys(ZkFramework).find(
+        (key) => ZkFramework[key as keyof typeof ZkFramework] === framework
+      );
+      return frameworkName || 'Unknown';
+  }
+};
 
 export {
   getStatusColorLight,
