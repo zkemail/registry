@@ -37,7 +37,7 @@ const Navbar = () => {
             <Button
               onClick={handleCreateBlueprint}
               className="hidden rounded-xl py-2 px-4 md:inline-flex"
-              size="md"
+              size="default"
             >
               Create Blueprint
             </Button>

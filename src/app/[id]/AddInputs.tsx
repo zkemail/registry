@@ -63,6 +63,7 @@ const AddInputs = () => {
               newInputs[index] = {
                 name: input.name,
                 value: e.target.value,
+                maxLength: input.maxLength || 64
               };
               setExternalInputs(newInputs);
             }}
