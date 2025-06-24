@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,66 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
+import { debounce } from '@/app/utils';
+
+const DebouncedMaxLengthInput = ({
+  value,
+  onChange,
+  placeholder = "64",
+}: {
+  value: number | undefined;
+  onChange: (value: number) => void;
+  placeholder?: string;
+}) => {
+  const [localValue, setLocalValue] = useState<string>(value?.toString() || '');
+  const debouncedOnChange = useRef(debounce(onChange, 700));
+
+  // Update local value when prop value changes externally
+  useEffect(() => {
+    setLocalValue(value?.toString() || '');
+  }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+    setLocalValue(inputValue);
+
+    // Only update store if value is valid
+    if (inputValue && !isNaN(Number(inputValue))) {
+      const numValue = parseInt(inputValue, 10);
+      if (numValue > 0) {
+        debouncedOnChange.current(numValue);
+      }
+    }
+  };
+
+  const handleBlur = () => {
+    // Apply default if field is empty or invalid
+    if (!localValue || isNaN(Number(localValue))) {
+      const defaultValue = 64;
+      setLocalValue(defaultValue.toString());
+      onChange(defaultValue);
+    } else {
+      const numValue = parseInt(localValue, 10);
+      if (numValue <= 0) {
+        const defaultValue = 64;
+        setLocalValue(defaultValue.toString());
+        onChange(defaultValue);
+      }
+    }
+  };
+
+  return (
+    <Input
+      title="Max Length"
+      placeholder={placeholder}
+      type="number"
+      value={localValue}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      min="1"
+    />
+  );
+};
 
 const AIPromptInput = ({
   aiPrompt,
@@ -173,12 +233,22 @@ const ExtractFields = ({
               return updated;
             });
 
-            // update the max length of the regex at that particular index
+            // update the max length of public parts based on output
             // Only update when the output changes, so we can still set maxLength
             if (outputUpdated) {
-              const totalLength = regexOutputs.reduce((acc, cur) => (acc += cur.length), 0);
               const decomposedRegexes = [...store.decomposedRegexes];
-              decomposedRegexes[index].maxLength = totalLength ?? 64;
+              const parsedRegex = Array.isArray(decomposedRegexes[index].parts)
+                ? decomposedRegexes[index]
+                : { ...decomposedRegexes[index], parts: JSON.parse(decomposedRegexes[index].parts ?? '[]') };
+              
+              // Update maxLength for each public part based on its output
+              parsedRegex.parts.forEach((part: any, partIndex: number) => {
+                if (part.isPublic && regexOutputs[partIndex]) {
+                  part.maxLength = regexOutputs[partIndex].length || 64;
+                }
+              });
+              
+              decomposedRegexes[index] = parsedRegex;
               setField('decomposedRegexes', decomposedRegexes);
             }
           } catch (error) {
@@ -236,7 +306,6 @@ const ExtractFields = ({
         name: data[0].name,
         location: data[0].location === 'body' ? 'body' : 'header',
         parts: data[0].parts,
-        maxLength: 64,
       };
 
       setField('decomposedRegexes', updatedRegexes);
@@ -399,13 +468,13 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef: '[^\r\n]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
                               regexDef: '\r\n',
                             },
                           ],
-                          maxLength: 64,
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -435,6 +504,7 @@ const ExtractFields = ({
                               isPublic: true,
                               regexDef:
                                 '[a-zA-Z0-9!#$%&\\*\\+-/=\\\?\\^_`{\\|}~\\.]+@[a-zA-Z0-9_\\\.-]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -442,7 +512,6 @@ const ExtractFields = ({
                             },
                           ],
                           location: 'header',
-                          maxLength: 64,
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -472,6 +541,7 @@ const ExtractFields = ({
                               isPublic: true,
                               regexDef:
                                 "[A-Za-z0-9!#$%&'\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -479,7 +549,6 @@ const ExtractFields = ({
                             },
                           ],
                           location: 'header',
-                          maxLength: 64,
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -508,6 +577,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+\\.[A-Za-z]{2,}',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -515,7 +585,6 @@ const ExtractFields = ({
                             },
                           ],
                           location: 'header',
-                          maxLength: 64,
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -544,6 +613,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef: '[0-9]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -551,7 +621,6 @@ const ExtractFields = ({
                             },
                           ],
                           location: 'header',
-                          maxLength: 64,
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -587,7 +656,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'header' },
+                  { location: 'header' },
                 ]);
               }}
             >
@@ -663,17 +732,7 @@ const ExtractFields = ({
                     { label: 'Email Header', value: 'header' },
                   ]}
                 />
-                <Input
-                  title="Max Length"
-                  placeholder="64"
-                  type="number"
-                  value={regex.maxLength}
-                  onChange={(e) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = { ...regex, maxLength: parseInt(e.target.value) };
-                    setField('decomposedRegexes', updatedRegexes);
-                  }}
-                />
+
                 <Checkbox
                   title="Hash Public Output"
                   checked={regex.isHashed}
@@ -758,7 +817,16 @@ const ExtractFields = ({
                           value={part.isPublic ? 'public' : 'private'}
                           onChange={(value) => {
                             const parts = parseRegexParts(regex.parts);
-                            parts[partIndex].isPublic = value === 'public';
+                            const isPublic = value === 'public';
+                            parts[partIndex].isPublic = isPublic;
+                            
+                            // Add maxLength when changing to public, remove when changing to private
+                            if (isPublic && !parts[partIndex].maxLength) {
+                              parts[partIndex].maxLength = 64;
+                            } else if (!isPublic && parts[partIndex].maxLength) {
+                              delete parts[partIndex].maxLength;
+                            }
+                            
                             const updatedRegexes = [...store.decomposedRegexes];
                             updatedRegexes[index] = {
                               ...regex,
@@ -801,6 +869,27 @@ const ExtractFields = ({
                           />
                         </div>
                       </div>
+                      {part.isPublic && (
+                        <div className="ml-3 flex flex-col gap-3">
+                          <Label>Max Length</Label>
+                          <DebouncedMaxLengthInput
+                            value={part.maxLength}
+                            onChange={(newMaxLength) => {
+                              const parts = [...parseRegexParts(regex.parts)];
+                              parts[partIndex] = {
+                                ...parts[partIndex],
+                                maxLength: newMaxLength,
+                              };
+                              const updatedRegexes = [...store.decomposedRegexes];
+                              updatedRegexes[index] = {
+                                ...regex,
+                                parts: parts,
+                              };
+                              setField('decomposedRegexes', updatedRegexes);
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -894,7 +983,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'body' },
+                  { location: 'body' },
                 ]);
               }}
             >

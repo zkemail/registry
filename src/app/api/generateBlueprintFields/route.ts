@@ -322,11 +322,12 @@ export async function POST(request: Request) {
       return part && Array.isArray(part.parts) && 
         part.parts.every((p: any) => 
           typeof p.isPublic === 'boolean' &&
-          typeof p.regexDef === 'string'
+          typeof p.regexDef === 'string' &&
+          // maxLength should only be present when isPublic is true
+          (p.isPublic ? typeof p.maxLength === 'number' : p.maxLength === undefined)
         ) &&
         typeof part.name === 'string' &&
-        typeof part.location === 'string' &&
-        typeof part.maxLength === 'number';
+        typeof part.location === 'string';
     };
 
     // Extract and validate the values array from parsed data
