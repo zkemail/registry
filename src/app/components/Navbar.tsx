@@ -13,6 +13,7 @@ const Navbar = () => {
   const router = useRouter();
 
   const handleCreateBlueprint = () => {
+    localStorage.removeItem('create-blueprint');
     router.push('/create');
   };
 
@@ -36,8 +37,7 @@ const Navbar = () => {
           {token && (
             <Button
               onClick={handleCreateBlueprint}
-              className="hidden rounded-xl py-2 px-4 md:inline-flex"
-              size="md"
+              className="hidden rounded-xl px-4 py-2 md:inline-flex"
             >
               Create Blueprint
             </Button>
