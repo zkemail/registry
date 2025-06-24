@@ -1,6 +1,15 @@
 import { clsx, type ClassValue } from 'clsx';
-import PostalMime from 'postal-mime';
 import { twMerge } from 'tailwind-merge';
+import { initNoirWasm as _initNoirWasm } from '@zk-email/sdk/initNoirWasm';
+
+// Memoized version of initNoirWasm that only initializes once
+let noirWasmPromise: Promise<any> | null = null;
+export async function initNoirWasm() {
+  if (!noirWasmPromise) {
+    noirWasmPromise = _initNoirWasm();
+  }
+  return noirWasmPromise;
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

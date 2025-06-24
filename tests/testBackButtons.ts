@@ -54,7 +54,7 @@ test('test back button in proofs page', async ({ page }) => {
 
 test('test back button in generate proof steps', async ({ page }) => {
   test.setTimeout(120000);
-  await page.goto('http://localhost:3000/');
+  await page.goto('http://localhost:3000/?search=proof+of+twitter');
 
   await page.waitForLoadState('networkidle');
 

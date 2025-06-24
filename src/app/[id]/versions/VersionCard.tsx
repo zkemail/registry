@@ -16,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { Step } from '../store';
 import DragAndDropFile from '@/app/components/DragAndDropFile';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -53,6 +54,8 @@ const VersionCard = ({
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isDeleteBlueprintModalOpen, setIsDeleteBlueprintModalOpen] = useState(false);
+
+  const emlStore = useEmlStore();
 
   function getBlueprintStatus() {
     return getCombinedBlueprintStatus(blueprint);
@@ -270,7 +273,7 @@ const VersionCard = ({
               Cancel Compilation
             </Button>
           )}
-          {((getBlueprintStatus() === Status.Draft &&
+          {(((getBlueprintStatus() === Status.Draft || getBlueprintStatus() === Status.Failed) &&
             blueprint.props.githubUsername === username) ||
             isAdmin) && (
             <Button
@@ -417,9 +420,6 @@ const VersionCard = ({
                 />
                 <Input
                   title="Email Query"
-                  disabled={
-                    store.clientStatus === Status.Done && store.serverStatus === Status.Done
-                  }
                   value={store.emailQuery}
                   onChange={(e) => setField('emailQuery', e.target.value)}
                   placeholder="Password request from: contact@x.com"
@@ -445,6 +445,9 @@ const VersionCard = ({
                 <Input
                   title="Sender domain"
                   loading={isVerifyDKIMLoading}
+                  disabled={
+                    store.clientStatus === Status.Done && store.serverStatus === Status.Done
+                  }
                   placeholder="twitter.com"
                   helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
                   value={store.senderDomain}
@@ -526,12 +529,7 @@ const VersionCard = ({
                     setFile(file);
                     const emlFileContent = await getFileContent(file);
                     console.log('emlFileContent: ', emlFileContent);
-                    await localStorage.setItem(
-                      'blueprintEmls',
-                      JSON.stringify({
-                        [blueprint.props.id]: emlFileContent,
-                      })
-                    );
+                    await emlStore.setEml(blueprint.props.id, emlFileContent);
                     router.push(`/create/${blueprint.props.id}`);
                   }}
                 />

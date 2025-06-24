@@ -56,7 +56,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
             </h2>
           </div>
           {/* Status and Star button grouped together */}
-          <div className="flex items-center gap-3 text-sm text-grey-600">
+          <div className="flex items-center gap-3 text-sm text-grey-600 w-max">
             {isLoggedIn && (
               <span
                 className={`hidden flex-row gap-1 rounded-md px-2 py-[6px] text-[14px] font-medium leading-[18px] md:flex ${getStatusColorLight(
@@ -78,7 +78,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
             )}
             <button
               onClick={onStar}
-              className="flex flex-row gap-1 rounded-md border border-grey-500 bg-neutral-200 px-2 py-1 text-grey-800"
+              className="flex flex-row gap-1 rounded-md border border-grey-500 bg-neutral-200 px-2 py-1 text-grey-800 w-max"
             >
               <Image
                 width={16}
@@ -107,7 +107,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               );
               toast.success('Copied to clipboard');
             }}
-            className="flex cursor-pointer items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 transition-all hover:border-grey-400 hover:bg-neutral-100"
+            className="flex max-w-full cursor-pointer items-center rounded-md border border-neutral-300 bg-neutral-200 px-3 py-1 text-sm font-medium text-grey-800 transition-all hover:border-grey-400 hover:bg-neutral-100"
           >
             <p className="overflow-hidden text-ellipsis" title={blueprint.props.slug}>
               <span className="md:hidden">
@@ -124,7 +124,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
               </span>
             </p>
             <div
-              className="ml-2 flex items-center justify-center p-0.5"
+              className="ml-2 flex-shrink-0 flex items-center justify-center p-0.5"
               aria-label="Copy blueprint reference"
             >
               <Image
@@ -144,7 +144,7 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
 
       {/* Bottom div with the rest of the content - updated with Satoshi font and grey-700 color */}
       <div className="p-6 pt-4 font-satoshi text-[14px] font-normal leading-[20px] tracking-[0.035em] text-grey-700">
-        <p className="mb-3">{blueprint.props.description}</p>
+        <p className="mb-3 overflow-hidden text-ellipsis whitespace-nowrap">{blueprint.props.description}</p>
         <div className="mt-2 flex flex-col items-start justify-between md:flex-row md:items-end">
           <div className="flex flex-wrap items-center gap-2">
             <p>Values extracted:</p>

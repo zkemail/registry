@@ -15,6 +15,7 @@ import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useEmailCacheStore } from '@/lib/stores/useEmailCacheStore';
 
 type Email = RawEmailResponse & {
   valid: boolean;
@@ -38,6 +39,7 @@ const SelectEmails = ({ id }: { id: string }) => {
   const { replace } = useRouter();
   const searchParams = useSearchParams();
   const isFetchingRef = useRef(false);
+  const emailCacheStore = useEmailCacheStore();
 
   const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
@@ -130,30 +132,14 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   console.log('selectedEmail: ', fetchedEmails, selectedEmail);
 
-  // Function to save emails to localStorage
-  const saveEmailsToCache = (emails: Email[], query: string) => {
-    const cacheData: CacheData = {
-      emails,
-      timestamp: Date.now(),
-      query,
-    };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  // Function to save emails to cache
+  const saveEmailsToCache = async (emails: Email[], query: string) => {
+    await emailCacheStore.saveEmailsToCache(emails, query);
   };
 
-  // Function to get emails from localStorage
-  const getEmailsFromCache = (): CacheData | null => {
-    const cachedData = localStorage.getItem(CACHE_KEY);
-    if (!cachedData) return null;
-
-    const data: CacheData = JSON.parse(cachedData);
-    const isExpired = Date.now() - data.timestamp > CACHE_EXPIRY;
-
-    if (isExpired) {
-      localStorage.removeItem(CACHE_KEY);
-      return null;
-    }
-
-    return data;
+  // Function to get emails from cache
+  const getEmailsFromCache = async () => {
+    return await emailCacheStore.getEmailsFromCache();
   };
 
   const handleFetchEmails = async (newEmails = false) => {
@@ -170,7 +156,7 @@ const SelectEmails = ({ id }: { id: string }) => {
       setIsFetchEmailLoading(true);
 
       // Check cache first
-      const cachedData = getEmailsFromCache();
+      const cachedData = await getEmailsFromCache();
       const currentQuery = blueprint?.props.emailQuery || '';
 
       console.log('cachedData: ', cachedData);
@@ -238,13 +224,13 @@ const SelectEmails = ({ id }: { id: string }) => {
         setFetchedEmails(newEmails);
 
         // Save to cache
-        saveEmailsToCache(newEmails, currentQuery);
+        await saveEmailsToCache(newEmails, currentQuery);
 
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
         setFetchedEmails([]);
         // Clear cache if no emails found
-        localStorage.removeItem(CACHE_KEY);
+        await emailCacheStore.clearCache();
         setAreAllEmailsFetched(true);
       }
     } catch (error) {

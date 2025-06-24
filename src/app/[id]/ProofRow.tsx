@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
-import { initNoirWasm } from '@zk-email/sdk/initNoirWasm';
+import { initNoirWasm } from '@/lib/utils';
 
 interface ProofProps {
   // emailProof: ProofEmailStatusUpdate;

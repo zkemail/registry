@@ -1,5 +1,6 @@
 import sdk from '@/lib/sdk';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 import {
   Blueprint,
   BlueprintProps,
@@ -13,6 +14,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import posthog from 'posthog-js';
 import { getFileContent } from '@/lib/utils';
+import { get, set } from 'idb-keyval';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
@@ -133,12 +135,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       saveDraft: async (): Promise<string> => {
         const state = get();
-        const savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
-
-        // Page logic should already prevent saving a draft without having a file
-        // if (!state.file && !savedEmls[state.id ?? 'new']) {
-        //   throw new Error('Can only save a draft with an example email provided');
-        // }
+        const emlStore = useEmlStore.getState();
+        const savedEmls = await emlStore.getAllEmls();
 
         // Remove functions from the state data and clone
         const data = JSON.parse(
@@ -276,12 +274,43 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           validationErrors: {},
         });
       },
-      setFile: (file: File | null) => {
-        set({ file });
+      setFile: async (file: File | null) => {
+        if (!file) {
+          set({ file });
+          return;
+        }
+
+        try {
+          const content = await getFileContent(file);
+          const emlStore = useEmlStore.getState();
+          const state = get();
+
+          // Save to IndexedDB if we have an ID
+          if (state.id && state.id !== 'new') {
+            await emlStore.setEml(state.id, content);
+          }
+
+          set({ file });
+        } catch (err) {
+          console.error('Failed to get file contents:', err);
+          throw err;
+        }
       },
     }),
     {
       name: 'create-blueprint',
+      storage: {
+        getItem: async (name) => {
+          const value = await get(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: async (name, value) => {
+          await set(name, JSON.stringify(value));
+        },
+        removeItem: async (name) => {
+          await set(name, null);
+        },
+      },
     }
   )
 );

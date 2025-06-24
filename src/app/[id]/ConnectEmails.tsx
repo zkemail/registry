@@ -6,10 +6,12 @@ import { useProofStore } from './store';
 import useGoogleAuth from '../hooks/useGoogleAuth';
 import { toast } from 'react-toastify';
 import { findOrCreateDSP } from '../utils';
+import { useEmailCacheStore } from '@/lib/stores/useEmailCacheStore';
 
 const ConnectEmails = () => {
   const { setFile, setStep, setEmlUploadMode } = useProofStore();
   const blueprint = useProofStore((state) => state.blueprint);
+  const emailCacheStore = useEmailCacheStore();
 
   const { googleLogIn } = useGoogleAuth();
 
@@ -54,7 +56,7 @@ const ConnectEmails = () => {
         className="flex w-max items-center gap-2"
         onClick={googleLogIn(() => {
           setFile(null);
-          localStorage.removeItem('zk_email_cache');
+          emailCacheStore.clearCache();
           setEmlUploadMode('connect');
           setStep('1');
         })}
@@ -100,7 +102,7 @@ const ConnectEmails = () => {
             setFile(files[0])
               .then(() => {
                 setStep('1');
-                localStorage.removeItem('zk_email_cache');
+                emailCacheStore.clearCache();
                 setEmlUploadMode('upload');
               })
               .catch((err) => toast.error(err.message ?? err));
@@ -149,7 +151,7 @@ const ConnectEmails = () => {
                 setFile(file)
                   .then(() => {
                     setStep('1');
-                    localStorage.removeItem('zk_email_cache');
+                    emailCacheStore.clearCache();
                     setEmlUploadMode('upload');
                   })
                   .catch((err) => {

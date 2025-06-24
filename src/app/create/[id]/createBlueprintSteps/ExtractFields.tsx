@@ -309,7 +309,11 @@ const ExtractFields = ({
     if (
       !regexGeneratedOutputs.length ||
       regexGeneratedOutputs.some((output) =>
-        Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error')
+        Array.isArray(output)
+          ? output.join('').includes('Error')
+          : output
+            ? output.includes('Error')
+            : true
       )
     ) {
       setCanCompile(false);
@@ -583,7 +587,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'body' },
+                  { maxLength: 64, location: 'header' },
                 ]);
               }}
             >
