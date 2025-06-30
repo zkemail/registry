@@ -98,6 +98,7 @@ const GoogleAuthProvider = ({ children }: ProvidersProps) => {
       scope: 'email profile https://www.googleapis.com/auth/gmail.readonly',
       flow: 'implicit',
       ux_mode: 'redirect',
+      prompt: 'consent',
     } as UseGoogleLoginOptionsImplicitFlow);
 
   const googleLogOut = () => {
