@@ -84,11 +84,9 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         transformOrigin: "top center",
         y: 0,
         transition: {
-          type: "spring",
-          stiffness: 200,
-          damping: 20,
-          staggerChildren: 0.02,
-          delayChildren: 0.02,
+          duration: 0.05,
+          staggerChildren: 0.01,
+          delayChildren: 0.01,
         },
       },
       exit: {
@@ -97,10 +95,8 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         transformOrigin: "top center",
         y: -10,
         transition: {
-          type: "spring",
-          stiffness: 200,
-          damping: 20,
-          staggerChildren: 0.02,
+          duration: 0.05,
+          staggerChildren: 0.01,
           staggerDirection: -1,
         },
       },
@@ -118,9 +114,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         y: 0,
         scale: 1,
         transition: {
-          type: "spring",
-          stiffness: 500,
-          damping: 30,
+          duration: 0.15,
         },
       },
       exit: {
@@ -128,9 +122,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         y: -10,
         scale: 0.95,
         transition: {
-          type: "spring",
-          stiffness: 500,
-          damping: 30,
+          duration: 0.1,
         },
       },
     };
@@ -158,7 +150,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
           )}
           onClick={() => setExpanded(!expanded)}
           whileTap={{ scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          transition={{ duration: 0.1 }}
         >
           <div className="flex w-max items-center gap-2">
             <Image
