@@ -85,10 +85,10 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         y: 0,
         transition: {
           type: "spring",
-          stiffness: 400,
-          damping: 30,
-          staggerChildren: 0.05,
-          delayChildren: 0.05,
+          stiffness: 200,
+          damping: 20,
+          staggerChildren: 0.02,
+          delayChildren: 0.02,
         },
       },
       exit: {
@@ -98,8 +98,8 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
         y: -10,
         transition: {
           type: "spring",
-          stiffness: 400,
-          damping: 30,
+          stiffness: 200,
+          damping: 20,
           staggerChildren: 0.02,
           staggerDirection: -1,
         },

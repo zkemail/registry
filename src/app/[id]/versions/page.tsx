@@ -128,7 +128,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                 >
                   {versions.length} Version{versions.length > 1 && 's'}
                 </Button>
-                <Link href={`/create`}>
+                {/* <Link href={`/create`}>
                   <Button
                     variant="default"
                     size="sm"
@@ -147,7 +147,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
                   >
                     Start fresh
                   </Button>
-                </Link>
+                </Link> */}
               </div>
             </div>
           </div>

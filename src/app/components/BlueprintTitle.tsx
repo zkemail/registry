@@ -103,8 +103,8 @@ export const BlueprintTitle = ({
 
       <div className="flex flex-col items-start justify-between gap-4 border-t border-grey-200 pt-4 md:flex-row">
         <div className="flex flex-row items-center gap-3">
-          <span className="text-lg font-bold leading-6 text-grey-900 underline">
-            {blueprint.props.version}
+          <span className="text-lg font-bold leading-6 text-grey-900">
+            v {blueprint.props.version}
           </span>
           <span
             className={`flex flex-row items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium ${getStatusColorLight(

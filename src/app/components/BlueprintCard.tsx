@@ -147,15 +147,21 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
         <p className="mb-3 overflow-hidden text-ellipsis whitespace-nowrap">{blueprint.props.description}</p>
         <div className="mt-2 flex flex-col items-start justify-between md:flex-row md:items-end">
           <div className="flex flex-wrap items-center gap-2">
-            <p>Values extracted:</p>
-            {blueprint.props.decomposedRegexes?.map((dr, index) => (
-              <div
-                key={index}
-                className="h-fit rounded-md border border-[#D4D4D4] bg-neutral-200 px-2 py-[1px] text-[12px] leading-[16px]"
-              >
-                {dr.name} {dr.isHashed ? '(hashed)' : ''}
-              </div>
-            ))}
+            {blueprint.props.decomposedRegexes && blueprint.props.decomposedRegexes.length > 0 ? (
+              <>
+                <p>Values extracted:</p>
+                {blueprint.props.decomposedRegexes.map((dr, index) => (
+                  <div
+                    key={index}
+                    className="h-fit rounded-md border border-[#D4D4D4] bg-neutral-200 px-2 py-[1px] text-[12px] leading-[16px]"
+                  >
+                    {dr.name} {dr.isHashed ? '(hashed)' : ''}
+                  </div>
+                ))}
+              </>
+            ) : (
+              <p>Values extracted: None</p>
+            )}
           </div>
           <div className="mt-2 flex w-full flex-row items-center justify-between gap-2 md:mt-0 md:w-auto">
             <span
