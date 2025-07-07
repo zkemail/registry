@@ -183,8 +183,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setDkimSelector(selector);
 
       if (
-        (store.senderDomain !== senderDomain ||
-          store.emailQuery !== emailQuery) &&
+        (store.senderDomain !== senderDomain || store.emailQuery !== emailQuery) &&
+        store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64 &&
+        store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 &&
         !updateFields &&
         id !== 'new'
       ) {
