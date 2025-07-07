@@ -190,13 +190,13 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           }
 
           // Update an existing blueprint
-          if (state.blueprint && state.blueprint.canUpdate()) {
+          if (state.blueprint && state.blueprint.canUpdate(data)) {
             await state.blueprint.update(data);
             return state.blueprint.props.id!;
           }
 
           // Create a new version of an blueprint
-          if (state.blueprint && !state.blueprint.canUpdate()) {
+          if (state.blueprint && !state.blueprint.canUpdate(data)) {
             console.log('creating new version');
             await state.blueprint.submitNewVersionDraft(data);
             return state.blueprint.props.id!;
