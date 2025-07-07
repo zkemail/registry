@@ -1,16 +1,5 @@
 'use client';
 
-// Test decomposedRegex
-/*
-[
-          {
-            "isPublic": true,
-            "regexDef": "Hi!"
-          }
-        ]
-
-*/
-
 import { useCreateBlueprintStore } from './store';
 
 import { use, useEffect, useState } from 'react';
@@ -190,11 +179,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       setDkimSelector(selector);
 
       if (
-        (store.senderDomain !== senderDomain ||
-          store.emailQuery !== emailQuery ||
-          store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 ||
-          store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64) &&
-        !updateFields && id !== 'new'
+        (store.senderDomain !== senderDomain || store.emailQuery !== emailQuery) &&
+        store.emailBodyMaxLength !== (Math.ceil(emailBodyMaxLength / 64) + 7) * 64 &&
+        store.emailHeaderMaxLength !== (Math.ceil(headerLength / 64) + 7) * 64 &&
+        !updateFields &&
+        id !== 'new'
       ) {
         setIsConfirmInputsUpdateModalOpen(true);
         return;
@@ -265,7 +254,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (!savedEmls[id]) {
       setIsFileInvalid(false);
     }
-  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id], revealPrivateFields]);
+  }, [savedEmls[id]]);
 
   // Create a debounced version of the DKIM verification
   const debouncedVerifyDKIM = debounce(async (domain: string, selector: string | null) => {

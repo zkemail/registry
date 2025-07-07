@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="">
+    <html lang="" suppressHydrationWarning>
       <body className={`${fustat.className} flex min-h-screen flex-col bg-[#F5F3EF] antialiased`}>
         <Suspense>
           <ThemeProvider attribute="class">
