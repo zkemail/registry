@@ -845,10 +845,7 @@ const ExtractFields = ({
                   </Button>
                 </div>
                 {/* Only show output if there are regex parts and valid outputs */}
-                {parseRegexParts(regex.parts).length > 0 &&
-                regexGeneratedOutputs[index] !== undefined &&
-                regexGeneratedOutputs[index] !== null &&
-                regexGeneratedOutputs[index].length > 0 ? (
+                {parseRegexParts(regex.parts).length > 0 ? (
                   <>
                     <Label>Output</Label>
                     <div
@@ -860,7 +857,7 @@ const ExtractFields = ({
                     >
                       {regexGeneratedOutputErrors[index]
                         ? JSON.stringify(regexGeneratedOutputErrors[index])
-                        : regexGeneratedOutputs
+                        : regexGeneratedOutputs && regexGeneratedOutputs[index]
                           ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
                           : ''}
                     </div>
