@@ -90,9 +90,6 @@ const BlueprintCard = ({ blueprint, setStarred, setUnStarred, starred }: Bluepri
                   height: 'auto',
                 }}
               />
-              <span className="hidden md:inline">
-                {(stars || 0) < 2 ? 'Star' : 'Stars'} |{' '}
-              </span>
               {stars ?? 0}
             </button>
           </div>
