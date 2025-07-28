@@ -12,12 +12,15 @@ import { findOrCreateDSP } from '@/app/utils';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { getFileContent } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const PatternDetails = ({
   id,
   isFileInvalid,
   file,
   savedEmls,
+  skipEmlUpload,
+  setSkipEmlUpload,
   setSavedEmls,
   setFile,
   emlContent,
@@ -26,6 +29,8 @@ const PatternDetails = ({
   isFileInvalid: boolean;
   file: File | null;
   savedEmls: Record<string, string>;
+  skipEmlUpload: boolean;
+  setSkipEmlUpload: (skipEmlUpload: boolean) => void;
   setSavedEmls: (savedEmls: Record<string, string>) => void;
   setFile: (file: File | null) => void;
   emlContent: string;
@@ -138,6 +143,13 @@ const PatternDetails = ({
           errorMessage={isFileInvalid ? 'File is invalid' : ''}
         />
       )}
+      <div className="flex items-center gap-2">
+        <Checkbox
+          checked={skipEmlUpload}
+          onCheckedChange={(checked) => setSkipEmlUpload(!!checked)}
+        />
+        <p className="text-sm text-grey-700">Skip EML upload and use the default .eml file</p>
+      </div>
       <Textarea
         title="Description"
         placeholder="Prove that you own a particular GitHub account"
