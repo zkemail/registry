@@ -71,6 +71,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
   const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
+  const [skipEmlUpload, setSkipEmlUpload] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -300,7 +301,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
   const isNextButtonDisabled = () => {
-    if (!savedEmls[id] || isFileInvalid) {
+    if ((!savedEmls[id] || isFileInvalid) && !skipEmlUpload) {
       return true;
     }
 
@@ -308,6 +309,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return !store.circuitName || !store.title || !store.description || store.title?.includes(' ');
     }
 
+    console.log('skipEmlUpload', skipEmlUpload);
     if (step === '1') {
       return (
         !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
@@ -493,6 +495,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         )}
         {step === '0' && (
           <PatternDetails
+            skipEmlUpload={skipEmlUpload}
+            setSkipEmlUpload={setSkipEmlUpload}
             isFileInvalid={isFileInvalid}
             id={id}
             file={file}
@@ -583,7 +587,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!savedEmls[id] || !canCompile}
+                  disabled={(!savedEmls[id] || !canCompile) && (!skipEmlUpload || !store.decomposedRegexes.length)}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"
