@@ -153,7 +153,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setIsCompileLoading(true);
     try {
       await handleSaveDraft(false);
-      const blueprintId = await compile();
+      const blueprintId = await compile(skipEmlUpload);
       router.push(`/${blueprintId}`);
     } catch (error) {
       console.error('Failed to compile:', error);

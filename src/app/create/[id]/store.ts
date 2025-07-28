@@ -24,7 +24,7 @@ type CreateBlueprintState = BlueprintProps & {
   validateAll: () => boolean;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => void;
-  compile: () => Promise<string>;
+  compile: (skipValidation?: boolean) => Promise<string>;
   saveDraft: () => Promise<string>;
   reset: () => void;
   file: File | null;
@@ -180,7 +180,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
-            await blueprint.assignPreferredZkFramework(emlStr);
+            if (emlStr) {
+              await blueprint.assignPreferredZkFramework(emlStr);
+            } else {
+              data.clientZkFramework = ZkFramework.Noir;
+              data.serverZkFramework = ZkFramework.Sp1;
+            }
             console.log('Assigned clientZkFramework: ', blueprint.props.clientZkFramework);
             console.log('Assigned serverZkFramework: ', blueprint.props.serverZkFramework);
             await blueprint.submitDraft();
@@ -233,7 +238,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           throw err;
         }
       },
-      compile: async (): Promise<string> => {
+      compile: async (skipValidation: boolean = false): Promise<string> => {
         const state = get();
 
         posthog.capture('$compile_blueprint', {
@@ -246,7 +251,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         }
 
         try {
-          if (!state.validateAll()) {
+          if (!skipValidation && !state.validateAll()) {
             throw new Error('Validation failed');
           }
         } catch (err) {
