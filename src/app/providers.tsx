@@ -7,6 +7,12 @@ if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_POSTHOG_KEY) {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     person_profiles: 'always', // or 'always' to create profiles for anonymous users as well
     disable_session_recording: true,
+    session_recording: {
+      maskAllInputs: false,
+      maskInputOptions: {
+        password: true,
+      },
+    },
   });
 }
 
