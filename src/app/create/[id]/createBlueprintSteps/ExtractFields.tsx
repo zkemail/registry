@@ -394,7 +394,7 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)subject:',
+                              regexDef: '(?:\r\n|^)subject:',
                             },
                             {
                               isPublic: true,
@@ -425,11 +425,11 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)to:',
+                              regexDef: '(?:\r\n|^)to:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '([^\r\n]+<)?',
+                              regexDef: '(?:[^\r\n]+<)?',
                             },
                             {
                               isPublic: true,
@@ -452,7 +452,7 @@ const ExtractFields = ({
                     }}
                   />
                   <Checkbox
-                    title="Sender name"
+                    title="Sender email"
                     checked={isExtractSenderNameChecked}
                     onCheckedChange={(checked: boolean) => {
                       setIsExtractSenderNameChecked(checked);
@@ -462,11 +462,11 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)from:',
+                              regexDef: '(?:\r\n|^)from:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '([^\r\n]+<)?',
+                              regexDef: '(?:[^\r\n]+<)?',
                             },
                             {
                               isPublic: true,
@@ -535,11 +535,11 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)dkim-signature:',
+                              regexDef: '(?:\r\n|^)dkim-signature:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '([a-z]+=[^;]+; )+t=',
+                              regexDef: '(?:[a-z]+=[^;]+; )+t=',
                             },
                             {
                               isPublic: true,
