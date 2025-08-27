@@ -32,3 +32,16 @@ export const useAuthStore = create<AuthState>()(
     }
   )
 );
+
+// Cross-tab logout sync: clear Zustand store if token is removed in another tab
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === 'auth-storage') {
+      // If the token is removed from localStorage, clear the Zustand store
+      const newValue = event.newValue ? JSON.parse(event.newValue) : null;
+      if (!newValue || !newValue.state || !newValue.state.token) {
+        useAuthStore.getState().clearAuth();
+      }
+    }
+  });
+}

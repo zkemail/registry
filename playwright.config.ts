@@ -14,6 +14,9 @@ export default defineConfig({
     reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000, // 120 seconds
   },
+  expect: {
+    timeout: 60000, // 1 minute default timeout for expects (can be overridden for specific expects)
+  },
   retries: 1,
   reporter: [['html'], ['list']],
-}); 
+});

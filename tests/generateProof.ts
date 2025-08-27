@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { dragAndDropFile } from './utils/DragAndDropFile';
+import { dragAndDropFile } from '../src/test-utils/DragAndDropFile';
 
-test('test', async ({ page }) => {
+test('test proof generation', async ({ page }) => {
   test.setTimeout(120000);
-  await page.goto('http://localhost:3000/');
+  await page.goto('http://localhost:3000/?search=proof+of+twitter');
 
   await page.waitForLoadState('networkidle');
 

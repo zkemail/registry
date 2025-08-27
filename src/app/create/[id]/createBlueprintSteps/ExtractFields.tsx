@@ -143,7 +143,11 @@ const ExtractFields = ({
           try {
             const parsedRegex = Array.isArray(regex.parts)
               ? regex
-              : { ...regex, parts: JSON.parse(regex.parts) };
+              : { ...regex, parts: JSON.parse(regex.parts ?? '[]') };
+
+            if (parsedRegex.parts.length === 0) {
+              return;
+            }
 
             const regexOutputs = await testDecomposedRegex(
               body,
@@ -305,7 +309,11 @@ const ExtractFields = ({
     if (
       !regexGeneratedOutputs.length ||
       regexGeneratedOutputs.some((output) =>
-        Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error')
+        Array.isArray(output)
+          ? output.join('').includes('Error')
+          : output
+            ? output.includes('Error')
+            : true
       )
     ) {
       setCanCompile(false);
@@ -386,7 +394,7 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)subject:',
+                              regexDef: '(?:\r\n|^)subject:',
                             },
                             {
                               isPublic: true,
@@ -417,11 +425,11 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)to:',
+                              regexDef: '(?:\r\n|^)to:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '([^\r\n]+<)?',
+                              regexDef: '(?:[^\r\n]+<)?',
                             },
                             {
                               isPublic: true,
@@ -444,7 +452,7 @@ const ExtractFields = ({
                     }}
                   />
                   <Checkbox
-                    title="Sender name"
+                    title="Sender email"
                     checked={isExtractSenderNameChecked}
                     onCheckedChange={(checked: boolean) => {
                       setIsExtractSenderNameChecked(checked);
@@ -454,11 +462,11 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)from:',
+                              regexDef: '(?:\r\n|^)from:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '([^\r\n]+<)?',
+                              regexDef: '(?:[^\r\n]+<)?',
                             },
                             {
                               isPublic: true,
@@ -527,11 +535,11 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)dkim-signature:',
+                              regexDef: '(?:\r\n|^)dkim-signature:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '([a-z]+=[^;]+; )+t=',
+                              regexDef: '(?:[a-z]+=[^;]+; )+t=',
                             },
                             {
                               isPublic: true,
@@ -579,7 +587,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'body' },
+                  { maxLength: 64, location: 'header' },
                 ]);
               }}
             >
@@ -651,7 +659,7 @@ const ExtractFields = ({
                     setField('decomposedRegexes', updatedRegexes);
                   }}
                   options={[
-                    { label: 'Email Body', value: 'body' },
+                    ...(store.ignoreBodyHashCheck ? [] : [{ label: 'Email Body', value: 'body' }]),
                     { label: 'Email Header', value: 'header' },
                   ]}
                 />
@@ -837,10 +845,7 @@ const ExtractFields = ({
                   </Button>
                 </div>
                 {/* Only show output if there are regex parts and valid outputs */}
-                {parseRegexParts(regex.parts).length > 0 &&
-                regexGeneratedOutputs[index] !== undefined &&
-                regexGeneratedOutputs[index] !== null &&
-                regexGeneratedOutputs[index].length > 0 ? (
+                {parseRegexParts(regex.parts).length > 0 ? (
                   <>
                     <Label>Output</Label>
                     <div
@@ -852,7 +857,7 @@ const ExtractFields = ({
                     >
                       {regexGeneratedOutputErrors[index]
                         ? JSON.stringify(regexGeneratedOutputErrors[index])
-                        : regexGeneratedOutputs
+                        : regexGeneratedOutputs && regexGeneratedOutputs[index]
                           ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
                           : ''}
                     </div>

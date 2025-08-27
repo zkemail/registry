@@ -1,4 +1,4 @@
-import { debounce, getDateToNowStr, getStatusIcon } from '@/app/utils';
+import { debounce, getDateToNowStr, getCombinedBlueprintStatus } from '@/app/utils';
 
 import { getStatusColorLight, getStatusName } from '@/app/utils';
 import Image from 'next/image';
@@ -9,17 +9,6 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { useEffect, useState } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import ModalGenerator from '@/components/ModalGenerator';
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '@/app/create/[id]/store';
@@ -27,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { getFileContent } from '@/lib/utils';
 import { Step } from '../store';
 import DragAndDropFile from '@/app/components/DragAndDropFile';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -47,7 +37,7 @@ const VersionCard = ({
   isDeleteBlueprintLoading,
 }: VersionCardProps) => {
   const router = useRouter();
-  const { isAdmin } = useAuthStore();
+  const { isAdmin, username } = useAuthStore();
 
   const store = useCreateBlueprintStore();
   const { saveDraft, setToExistingBlueprint } = store;
@@ -64,6 +54,12 @@ const VersionCard = ({
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isDeleteBlueprintModalOpen, setIsDeleteBlueprintModalOpen] = useState(false);
+
+  const emlStore = useEmlStore();
+
+  function getBlueprintStatus() {
+    return getCombinedBlueprintStatus(blueprint);
+  }
 
   useEffect(() => {
     if (blueprint.props.id) {
@@ -155,10 +151,10 @@ const VersionCard = ({
           <h2 className="text-xl font-bold">v {blueprint.props.version}</h2>
           <span
             className={`flex flex-row gap-1 rounded-lg px-2 py-1 text-xs font-semibold ${getStatusColorLight(
-              blueprint.props.status
+              getBlueprintStatus()
             )}`}
           >
-            {getStatusName(blueprint.props.status)}
+            {getStatusName(getBlueprintStatus())}
           </span>
         </div>
         <p
@@ -173,7 +169,7 @@ const VersionCard = ({
       </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {blueprint.props.status === Status.Done ? (
+          {getBlueprintStatus() === Status.Done ? (
             <Link href={`/${blueprint.props.id}`}>
               <Button size="sm">Try it</Button>
             </Link>
@@ -204,7 +200,7 @@ const VersionCard = ({
             title="Download zkey + project"
             variant="secondary"
             size="smIcon"
-            disabled={blueprint.props.status !== Status.Done}
+            disabled={getBlueprintStatus() !== Status.Done}
             onClick={() => router.push(`/${blueprint.props.id}/download`)}
           >
             <Image
@@ -254,7 +250,7 @@ const VersionCard = ({
               Report
             </Button>
           </Link>
-          {blueprint.props.status === Status.InProgress && isLatest && (
+          {getBlueprintStatus() === Status.InProgress && isLatest && (
             <Button
               size="sm"
               startIcon={
@@ -277,7 +273,9 @@ const VersionCard = ({
               Cancel Compilation
             </Button>
           )}
-          {(blueprint.props.status === Status.Draft || isAdmin) && (
+          {(((getBlueprintStatus() === Status.Draft || getBlueprintStatus() === Status.Failed) &&
+            blueprint.props.githubUsername === username) ||
+            isAdmin) && (
             <Button
               variant="destructive"
               startIcon={
@@ -310,7 +308,7 @@ const VersionCard = ({
           <div>
             This action cannot be undone. This will permanently delete this version and it's data
             from our servers.
-            <div className="mt-4 flex flex-row gap-4 justify-end">
+            <div className="mt-4 flex flex-row justify-end gap-4">
               <div className="mt-4">
                 <Button variant="destructive" onClick={() => setIsDeleteBlueprintModalOpen(false)}>
                   Cancel
@@ -422,7 +420,6 @@ const VersionCard = ({
                 />
                 <Input
                   title="Email Query"
-                  disabled={store.status === 3}
                   value={store.emailQuery}
                   onChange={(e) => setField('emailQuery', e.target.value)}
                   placeholder="Password request from: contact@x.com"
@@ -448,6 +445,9 @@ const VersionCard = ({
                 <Input
                   title="Sender domain"
                   loading={isVerifyDKIMLoading}
+                  disabled={
+                    store.clientStatus === Status.Done && store.serverStatus === Status.Done
+                  }
                   placeholder="twitter.com"
                   helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
                   value={store.senderDomain}
@@ -529,12 +529,7 @@ const VersionCard = ({
                     setFile(file);
                     const emlFileContent = await getFileContent(file);
                     console.log('emlFileContent: ', emlFileContent);
-                    await localStorage.setItem(
-                      'blueprintEmls',
-                      JSON.stringify({
-                        [blueprint.props.id]: emlFileContent,
-                      })
-                    );
+                    await emlStore.setEml(blueprint.props.id, emlFileContent);
                     router.push(`/create/${blueprint.props.id}`);
                   }}
                 />

@@ -274,19 +274,17 @@ export async function POST(request: Request) {
   try {
     // Extract form data from the request
     const formData = await request.formData();
-    const file = formData.get('emlFile') as File;
+    const emailContent = formData.get('emlFile') as string;
     const extractionGoals = formData.get('extractionGoals');
 
     // Validate required fields are present
-    if (!file || !extractionGoals) {
+    if (!emailContent || !extractionGoals) {
       return NextResponse.json(
         { error: 'Missing email file or extraction goals' },
         { status: 400 }
       );
     }
 
-    // Get email content as text and prepare prompt by replacing placeholders
-    const emailContent = await file.text();
     const promptWithReplacements = PROMPT
       .replace('{{EMAIL_CONTENT}}', emailContent)
       .replace('{{EXTRACTION_GOALS}}', extractionGoals.toString());

@@ -50,7 +50,7 @@ const Proofs = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="mx-auto flex flex-col py-16">
-      <Link href={blueprint?.props.status === Status.Draft ? `/` : `/${id}`}>
+      <Link href={`/${id}`}>
         <Button
           variant="ghost"
           startIcon={
