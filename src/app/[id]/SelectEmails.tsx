@@ -231,6 +231,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
         setFetchedEmails([]);
+        setIsFetchEmailLoading(false);
         // Clear cache if no emails found
         await emailCacheStore.clearCache();
         setAreAllEmailsFetched(true);
