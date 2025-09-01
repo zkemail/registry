@@ -525,7 +525,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           }}
         />
         <div>
-          <SampleEMLPreview />
           <div
             className={`flex w-full flex-col gap-4 sm:flex-row ${savedEmls[id] ? 'justify-between' : 'justify-center'}`}
           >
@@ -587,7 +586,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={(!savedEmls[id] || !canCompile) && (!skipEmlUpload || !store.decomposedRegexes.length)}
+                  disabled={
+                    (!savedEmls[id] || !canCompile) &&
+                    (!skipEmlUpload || !store.decomposedRegexes.length)
+                  }
                   startIcon={
                     <Image
                       src="/assets/Check.svg"
@@ -606,6 +608,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               )}
             </div>
           </div>
+          <SampleEMLPreview />
         </div>
       </div>
       {pathname.includes('create') && step === '2' ? (
