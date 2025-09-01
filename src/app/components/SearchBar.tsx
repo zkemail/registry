@@ -3,13 +3,25 @@ import { Input } from '@/components/ui/input';
 import Image from "next/image";
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
 import { useDebouncedCallback } from 'use-debounce';
+import { useBlueprintFiltersStore } from '@/lib/stores/useBlueprintFiltersStore';
+import { useEffect } from 'react';
 
 export default function SearchBar() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+  const { setSearch } = useBlueprintFiltersStore();
+  
+  // Get current search from URL for immediate visual feedback
+  const currentSearch = searchParams.get('search') || '';
+
+  // Sync URL params with store when URL changes
+  useEffect(() => {
+    setSearch(currentSearch);
+  }, [currentSearch, setSearch]);
 
   const handleSearch = useDebouncedCallback((term) => {
+    setSearch(term);
     const params = new URLSearchParams(searchParams);
     if (term) {
       params.set('search', term);
@@ -29,7 +41,7 @@ export default function SearchBar() {
         onChange={(e) => {
           handleSearch(e.target.value);
         }}
-        defaultValue={searchParams.get('search')?.toString()}
+        defaultValue={currentSearch}
         startIcon={<Image
           src="/assets/SearchIcon.svg"
           alt="search"

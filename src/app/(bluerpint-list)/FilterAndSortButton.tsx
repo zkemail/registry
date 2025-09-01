@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { forwardRef, useState, useRef, useEffect } from 'react';
 import { Status } from '@zk-email/sdk';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useBlueprintFiltersStore } from '@/lib/stores/useBlueprintFiltersStore';
 
 type FilterAndSortButtonProps = ButtonProps & {};
 
@@ -18,10 +19,21 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
     const searchParams = useSearchParams();
     const { replace } = useRouter();
     const pathname = usePathname();
-    const [filters, setFilters] = useState<Status[]>(
-      (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || []
-    );
-    const [sort, setSort] = useState(searchParams.get('sort') || '');
+    const { setFilters: setStoreFilters, setSort: setStoreSort } = useBlueprintFiltersStore();
+    
+    // Get current filters and sort from URL (this ensures immediate visual feedback)
+    const currentFilters = (searchParams.get('filter')?.split(',').filter(Boolean) as string[]) || [];
+    const currentSort = searchParams.get('sort') || 'totalProofs';
+    
+    // Sync URL params with store on mount and when URL changes
+    useEffect(() => {
+      setStoreFilters(currentFilters as unknown as Status[]);
+      if (currentSort) {
+        setStoreSort(currentSort);
+      }
+    }, [searchParams, setStoreFilters, setStoreSort]);
+
+    console.log(currentFilters, Status.Draft)
 
     // Handle clicks outside the component
     useEffect(() => {
@@ -43,11 +55,12 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
     }, [expanded]);
 
     const handleFilter = (filterValue: Status, checked: boolean) => {
+      const filterString = filterValue.toString();
       const newFilters = checked
-        ? [...filters, filterValue]
-        : filters.filter((f) => f !== filterValue);
+        ? [...currentFilters, filterString]
+        : currentFilters.filter((f) => f !== filterString);
 
-      setFilters(newFilters);
+      setStoreFilters(newFilters as unknown as Status[]);
       const params = new URLSearchParams(searchParams);
       if (newFilters.length > 0) {
         params.set('filter', newFilters.join(','));
@@ -59,7 +72,7 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
 
     const handleSort = (sortValue: string, checked: boolean) => {
       const newSort = checked ? sortValue : '';
-      setSort(newSort);
+      setStoreSort(newSort);
       const params = new URLSearchParams(searchParams);
       if (newSort) {
         params.set('sort', newSort);
@@ -101,28 +114,28 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
                 <div className="flex flex-col gap-2 px-3">
                   <Checkbox
                     title="Draft"
-                    checked={filters.includes(Status.Draft)}
+                    checked={currentFilters.includes(Status.Draft.toString())}
                     onCheckedChange={(checked: boolean) => {
                       handleFilter(Status.Draft, checked);
                     }}
                   />
                   <Checkbox
                     title="Compiled"
-                    checked={filters.includes(Status.Done)}
+                    checked={currentFilters.includes(Status.Done.toString())}
                     onCheckedChange={(checked: boolean) => {
                       handleFilter(Status.Done, checked);
                     }}
                   />
                   <Checkbox
                     title="In Progress"
-                    checked={filters.includes(Status.InProgress)}
+                    checked={currentFilters.includes(Status.InProgress.toString())}
                     onCheckedChange={(checked: boolean) => {
                       handleFilter(Status.InProgress, checked);
                     }}
                   />
                   <Checkbox
                     title="Failed"
-                    checked={filters.includes(Status.Failed)}
+                    checked={currentFilters.includes(Status.Failed.toString())}
                     onCheckedChange={(checked: boolean) => {
                       handleFilter(Status.Failed, checked);
                     }}
@@ -144,21 +157,21 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
             <div className="flex flex-col gap-2 px-3">
               <Checkbox
                 title="Most Stars"
-                checked={sort === 'stars'}
+                checked={currentSort === 'stars'}
                 onCheckedChange={(checked: boolean) => {
                   handleSort('stars', checked);
                 }}
               />
               <Checkbox
                 title="Last Updated"
-                checked={sort === 'updatedAt'}
+                checked={currentSort === 'updatedAt'}
                 onCheckedChange={(checked: boolean) => {
                   handleSort('updatedAt', checked);
                 }}
               />
               <Checkbox
                 title="Total Proofs"
-                checked={sort === 'totalProofs'}
+                checked={currentSort === 'totalProofs'}
                 onCheckedChange={(checked: boolean) => {
                   handleSort('totalProofs', checked);
                 }}

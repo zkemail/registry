@@ -1,12 +1,37 @@
 'use client';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import SearchBar from '@/app/components/SearchBar';
 import BlueprintList from './BlueprintList';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import FilterAndSortButton from './FilterAndSortButton';
 import { Status } from '@zk-email/sdk';
+import { useBlueprintFiltersStore } from '@/lib/stores/useBlueprintFiltersStore';
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const { search, filters, sort, updateFromUrl, clearFilters } = useBlueprintFiltersStore();
+
+  // Restore filters and sort from store on page load if URL is clean
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    const urlFilters = searchParams.get('filter');
+    const urlSort = searchParams.get('sort');
+
+    // If URL has no parameters but store has data, restore filters and sort (but not search)
+    if (!urlFilters && !urlSort && (filters.length > 0 || sort !== 'totalProofs')) {
+      const params = new URLSearchParams();
+      if (filters.length > 0) params.set('filter', filters.join(','));
+      if (sort && sort !== 'totalProofs') params.set('sort', sort);
+      
+      const queryString = params.toString();
+      if (queryString) {
+        router.replace(`${pathname}?${queryString}`);
+      }
+    }
+  }, [searchParams, filters, sort, router, pathname, updateFromUrl]);
+
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8 flex flex-col gap-2 items-start justify-between md:flex-row md:items-center">
@@ -26,14 +51,18 @@ export default function Home() {
 
 function BlueprintListWrapper() {
   const searchParams = useSearchParams();
-  const search = searchParams.get('search');
-  const filters =
-    (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || [];
-  const sort = searchParams.get('sort') || 'totalProofs';
+
+  // Use URL parameters for immediate API calls
+  const urlSearch = searchParams.get('search');
+  const urlFilters = (searchParams.get('filter')?.split(',').filter(Boolean) as unknown as Status[]) || [];
+  const urlSort = searchParams.get('sort') || 'totalProofs';
+
+  // Use URL values for API calls (immediate response)
+  const searchValue = urlSearch || null;
 
   return (
     <div className="">
-      <BlueprintList search={search} filters={filters} sort={sort} />
+      <BlueprintList search={searchValue} filters={urlFilters} sort={urlSort} />
     </div>
   );
 }
