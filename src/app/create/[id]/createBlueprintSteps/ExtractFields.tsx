@@ -471,7 +471,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef:
-                                "[A-Za-z0-9!#$%&'\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                                "[A-Za-z0-9!#$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
                             },
                             {
                               isPublic: false,
@@ -503,7 +503,7 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(\r\n|^)from:[^\r\n]*@',
+                              regexDef: '(?:\r\n|^)from:[^\r\n]*@',
                             },
                             {
                               isPublic: true,
