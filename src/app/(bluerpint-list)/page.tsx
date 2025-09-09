@@ -60,6 +60,8 @@ function BlueprintListWrapper() {
   // Use URL values for API calls (immediate response)
   const searchValue = urlSearch || null;
 
+  console.log(searchValue, urlFilters, urlSort, "blueprint list wrapper");
+
   return (
     <div className="">
       <BlueprintList search={searchValue} filters={urlFilters} sort={urlSort} />
