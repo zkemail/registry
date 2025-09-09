@@ -39,8 +39,6 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
   // Guard against double-invoked effects (e.g., React Strict Mode) by deduping on signature
   const lastAppliedSignatureRef = useRef<string | null>(null);
 
-  console.log(search, filters, sort, "blueprint list");
-
   const fetchBlueprints = useCallback(
     async (
       params?: {
