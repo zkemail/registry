@@ -31,6 +31,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
   const router = useRouter();
   const store = useCreateBlueprintStore();
+  const searchParams = useSearchParams();
   const posthog = usePostHog();
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
@@ -71,9 +72,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
   const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
-  const [skipEmlUpload, setSkipEmlUpload] = useState(false);
+  const [skipEmlUpload, setSkipEmlUpload] = useState(searchParams.get('skipEmlUpload') === 'true' ? true : false);
 
-  const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
 
   const setStep = (step: Step, id?: string) => {
@@ -312,12 +312,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     console.log('skipEmlUpload', skipEmlUpload);
     if (step === '1') {
       return (
-        !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
+        !store.emailQuery || (!store.emailBodyMaxLength && store.ignoreBodyHashCheck) || store.ignoreBodyHashCheck === undefined
       );
     }
 
     if (step === '2') {
-      return !store.decomposedRegexes.length;
+      return !store.decomposedRegexes.length || !skipEmlUpload;
     }
 
     return !!errors.length || isDKIMMissing;

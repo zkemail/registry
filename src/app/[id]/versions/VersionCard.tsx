@@ -17,6 +17,7 @@ import { getFileContent } from '@/lib/utils';
 import { Step } from '../store';
 import DragAndDropFile from '@/app/components/DragAndDropFile';
 import { useEmlStore } from '@/lib/stores/useEmlStore';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -533,6 +534,17 @@ const VersionCard = ({
                     router.push(`/create/${blueprint.props.id}`);
                   }}
                 />
+                <div className="flex items-center gap-2 w-full">
+                  <Checkbox
+                    checked={false}
+                    onCheckedChange={(checked) => {
+                      router.push(`/create/${blueprint.props.id}?skipEmlUpload=true`);
+                    }}
+                  />
+                  <p className="text-sm text-grey-700">
+                    Skip EML upload and use the default .eml file
+                  </p>
+                </div>
               </div>
             )}
           </div>
