@@ -33,8 +33,6 @@ const FilterAndSortButton = forwardRef<HTMLButtonElement, FilterAndSortButtonPro
       }
     }, [searchParams, setStoreFilters, setStoreSort]);
 
-    console.log(currentFilters, Status.Draft)
-
     // Handle clicks outside the component
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
