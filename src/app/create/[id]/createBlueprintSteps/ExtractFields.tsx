@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 
 const AIPromptInput = ({
   aiPrompt,
@@ -726,54 +727,54 @@ const ExtractFields = ({
                           </span>
                           <Label>Field</Label>
                         </div>
-                        <Button
-                          variant="destructive"
-                          size="smIcon"
-                          onClick={() => {
-                            const parts = parseRegexParts(regex.parts);
-                            parts.splice(partIndex, 1);
-                            const updatedRegexes = [...store.decomposedRegexes];
-                            updatedRegexes[index] = {
-                              ...regex,
-                              parts: parts,
-                            };
-                            setField('decomposedRegexes', updatedRegexes);
-                          }}
-                        >
-                          <Image
-                            src="/assets/Trash.svg"
-                            alt="trash"
-                            width={16}
-                            height={16}
-                            style={{
-                              maxWidth: '100%',
-                              height: 'auto',
+                        <div className="flex flex-row items-center gap-2">
+                          <div className="flex flex-row items-center gap-2">
+                            <Switch
+                              id={`${regex.name}-${partIndex}-isPublic`}
+                              className="mr-2"
+                              checked={!part.isPublic}
+                              onCheckedChange={(checked) => {
+                                const parts = parseRegexParts(regex.parts);
+                                parts[partIndex].isPublic = !checked;
+                                const updatedRegexes = [...store.decomposedRegexes];
+                                updatedRegexes[index] = {
+                                  ...regex,
+                                  parts: parts,
+                                };
+                                setField('decomposedRegexes', updatedRegexes);
+                              }}
+                            />
+                            <Label htmlFor={`${regex.name}-${partIndex}-isPublic`}>Private</Label>
+                          </div>
+
+                          <Button
+                            variant="destructive"
+                            size="smIcon"
+                            onClick={() => {
+                              const parts = parseRegexParts(regex.parts);
+                              parts.splice(partIndex, 1);
+                              const updatedRegexes = [...store.decomposedRegexes];
+                              updatedRegexes[index] = {
+                                ...regex,
+                                parts: parts,
+                              };
+                              setField('decomposedRegexes', updatedRegexes);
                             }}
-                          />
-                        </Button>
+                          >
+                            <Image
+                              src="/assets/Trash.svg"
+                              alt="trash"
+                              width={16}
+                              height={16}
+                              style={{
+                                maxWidth: '100%',
+                                height: 'auto',
+                              }}
+                            />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="ml-3 flex flex-col gap-3">
-                        <Label>Public / Private</Label>
-                        <Select
-                          value={part.isPublic ? 'public' : 'private'}
-                          onChange={(value) => {
-                            const parts = parseRegexParts(regex.parts);
-                            parts[partIndex].isPublic = value === 'public';
-                            const updatedRegexes = [...store.decomposedRegexes];
-                            updatedRegexes[index] = {
-                              ...regex,
-                              parts: parts,
-                            };
-                            setField('decomposedRegexes', updatedRegexes);
-                          }}
-                          options={[
-                            { label: 'Public', value: 'public' },
-                            { label: 'Private', value: 'private' },
-                          ]}
-                        />
-                      </div>
-                      <div className="ml-3 flex flex-col gap-3">
-                        <Label>Define Regex</Label>
+                      <div className="flex flex-col gap-3">
                         <div className="relative">
                           <Input
                             value={part.regexDef?.replace(/\r/g, '\\r').replace(/\n/g, '\\n')}
@@ -800,6 +801,30 @@ const ExtractFields = ({
                             placeholder="Enter regex definition"
                           />
                         </div>
+                        {part.isPublic ? (
+                          <div className="relative mx-3">
+                            <Label>Max Length</Label>
+                            <Input
+                              value={part.maxLength}
+                              onChange={(e) => {
+                                const parts = [...parseRegexParts(regex.parts)];
+                                const rawValue = e.target.value;
+                                console.log(rawValue, 'rawValue');
+                                parts[partIndex] = {
+                                  ...parts[partIndex],
+                                  maxLength: parseInt(rawValue),
+                                };
+                                const updatedRegexes = [...store.decomposedRegexes];
+                                updatedRegexes[index] = {
+                                  ...regex,
+                                  parts: parts,
+                                };
+                                setField('decomposedRegexes', updatedRegexes);
+                              }}
+                              placeholder="Enter max length for this regex"
+                            />
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                   );
