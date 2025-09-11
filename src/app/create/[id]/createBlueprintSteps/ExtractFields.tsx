@@ -670,17 +670,6 @@ const ExtractFields = ({
                     { label: 'Email Header', value: 'header' },
                   ]}
                 />
-                <Input
-                  title="Max Length"
-                  placeholder="64"
-                  type="number"
-                  value={regex.maxLength}
-                  onChange={(e) => {
-                    const updatedRegexes = [...store.decomposedRegexes];
-                    updatedRegexes[index] = { ...regex, maxLength: parseInt(e.target.value) };
-                    setField('decomposedRegexes', updatedRegexes);
-                  }}
-                />
                 <Checkbox
                   title="Hash Public Output"
                   checked={regex.isHashed}
