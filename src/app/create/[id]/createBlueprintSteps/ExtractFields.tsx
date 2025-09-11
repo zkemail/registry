@@ -822,7 +822,7 @@ const ExtractFields = ({
                                 updatedRegexes[index] = {
                                   ...regex,
                                   parts: parts,
-                                  maxLength:
+                                  maxMatchLength:
                                     updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
                                       ? updatedMaxLength
                                       : updatedRegexes[index].maxLength,
