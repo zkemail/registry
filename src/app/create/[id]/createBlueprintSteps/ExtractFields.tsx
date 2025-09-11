@@ -7,7 +7,13 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { DecomposedRegex, ExternalInput, parseEmail, testDecomposedRegex } from '@zk-email/sdk';
+import {
+  DecomposedRegex,
+  DecomposedRegexPart,
+  ExternalInput,
+  parseEmail,
+  testDecomposedRegex,
+} from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import { posthog } from 'posthog-js';
 import { Separator } from '@/components/ui/separator';
@@ -807,7 +813,9 @@ const ExtractFields = ({
                             <Input
                               value={part.maxLength}
                               onChange={(e) => {
-                                const parts = [...parseRegexParts(regex.parts)];
+                                const parts: DecomposedRegexPart[] = [
+                                  ...parseRegexParts(regex.parts),
+                                ];
                                 const rawValue = e.target.value;
                                 console.log(rawValue, 'rawValue');
                                 parts[partIndex] = {
