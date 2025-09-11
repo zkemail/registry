@@ -823,9 +823,20 @@ const ExtractFields = ({
                                   maxLength: parseInt(rawValue),
                                 };
                                 const updatedRegexes = [...store.decomposedRegexes];
+                                const updatedMaxLength = parts.reduce((acc: number, p: any) => {
+                                  const partMax =
+                                    p && p.isPublic && typeof p.maxLength === 'number'
+                                      ? p.maxLength
+                                      : 0;
+                                  return acc + partMax;
+                                }, 0);
                                 updatedRegexes[index] = {
                                   ...regex,
                                   parts: parts,
+                                  maxLength:
+                                    updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
+                                      ? updatedMaxLength
+                                      : updatedRegexes[index].maxLength,
                                 };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
