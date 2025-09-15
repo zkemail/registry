@@ -295,6 +295,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     };
   }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
+  useEffect(() => {
+    if (step === '2') {
+      genrateHighlightRegexContent();
+    }
+  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
+
   const isNextButtonDisabled = () => {
     if (!savedEmls[id] || isFileInvalid) {
       return true;
@@ -356,12 +362,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (step === '2') {
-      genrateHighlightRegexContent();
-    }
-  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
 
   const genrateHighlightRegexContent = async () => {
     if (!savedEmls[id]) {
