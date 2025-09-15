@@ -12,6 +12,11 @@ const Navbar = () => {
   const pathname = usePathname();
   const router = useRouter();
 
+  const handleCreateBlueprint = () => {
+    localStorage.removeItem('create-blueprint');
+    router.push('/create');
+  };
+
   return (
     <nav className="flex items-center justify-between border-b bg-white px-6 py-3 dark:border-grey-800 dark:bg-black">
       <Link href="/" className="flex items-center gap-2">
@@ -28,19 +33,15 @@ const Navbar = () => {
         <span className="text-xl font-semibold text-[#1C1C1C] dark:text-white">registry</span>
       </Link>
       <div className="flex items-center gap-4">
-        {token && !pathname.includes('/create') ? (
-          <Button
-            onClick={() => {
-              localStorage.removeItem('create-blueprint');
-              router.push('/create/new');
-            }}
-            className="rounded-xl"
-            data-testid="create-blueprint-button"
-          >
-            Create Blueprint
-          </Button>
-        ) : null}
         <div className="flex items-center gap-4">
+          {token && (
+            <Button
+              onClick={handleCreateBlueprint}
+              className="hidden rounded-xl px-4 py-2 md:inline-flex"
+            >
+              Create Blueprint
+            </Button>
+          )}
           <LoginButton />
         </div>
       </div>

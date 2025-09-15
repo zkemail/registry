@@ -23,6 +23,7 @@ import HighlightText from '@/app/components/HighlightRegex';
 import { REGEX_COLORS } from '@/app/constants';
 import { debounce } from '@/app/utils';
 import ModalGenerator from '@/components/ModalGenerator';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 
 type Step = '0' | '1' | '2';
 
@@ -33,11 +34,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const posthog = usePostHog();
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
-  const [savedEmls, setSavedEmls] = useState<Record<string, string>>(
-    JSON.parse(localStorage.getItem('blueprintEmls') || '{}')
-  );
+  const emlStore = useEmlStore();
+  const [savedEmls, setSavedEmls] = useState<Record<string, string>>({});
 
-  
   const {
     saveDraft,
     getParsedDecomposedRegexes,
@@ -48,7 +47,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setFile,
     blueprint,
   } = store;
-  
+
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
@@ -71,6 +70,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [canCompile, setCanCompile] = useState(false);
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
+  const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
+  const [skipEmlUpload, setSkipEmlUpload] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -115,18 +116,23 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [id, step]);
 
+  useEffect(() => {
+    // Load all EMLs from IndexedDB on mount
+    emlStore.getAllEmls().then(setSavedEmls);
+  }, []);
+
   const handleSaveDraft = async (notify = true) => {
     setIsSaveDraftLoading(true);
     try {
       const newId = await saveDraft();
       if (step === '0') {
-        localStorage.setItem(
-          'blueprintEmls',
-          JSON.stringify({
-            ...savedEmls,
-            [newId]: savedEmls[id],
-          })
-        );
+        // Save EML to IndexedDB
+        if (savedEmls[id]) {
+          await emlStore.setEml(newId, savedEmls[id]);
+          // Refresh local state
+          const allEmls = await emlStore.getAllEmls();
+          setSavedEmls(allEmls);
+        }
       }
       if (notify) {
         toast.success('Successfully saved draft');
@@ -135,7 +141,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         return newId;
       }
     } catch (err) {
-      // TODO: Handle different kind of errors, e.g. per field errors
       toast.error('Failed to submit blueprint');
       console.error('Failed to submit blueprint: ', err);
       setErrors(['Unknown error while submitting blueprint']);
@@ -148,7 +153,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     setIsCompileLoading(true);
     try {
       await handleSaveDraft(false);
-      const blueprintId = await compile();
+      const blueprintId = await compile(skipEmlUpload);
       router.push(`/${blueprintId}`);
     } catch (error) {
       console.error('Failed to compile:', error);
@@ -302,7 +307,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
 
   const isNextButtonDisabled = () => {
-    if (!savedEmls[id] || isFileInvalid) {
+    if ((!savedEmls[id] || isFileInvalid) && !skipEmlUpload) {
       return true;
     }
 
@@ -310,6 +315,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return !store.circuitName || !store.title || !store.description || store.title?.includes(' ');
     }
 
+    console.log('skipEmlUpload', skipEmlUpload);
     if (step === '1') {
       return (
         !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
@@ -325,10 +331,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const onClickNext = async () => {
     try {
+      setIsNextButtonClicked(true);
       const newId = await handleSaveDraft();
       setStep((parseInt(step) + 1).toString() as Step, newId);
     } catch (err) {
       console.error('failed to save draft and move to next step: ', err);
+    } finally {
+      setIsNextButtonClicked(false);
     }
   };
 
@@ -417,7 +426,11 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   return (
     <div className="flex flex-col justify-center gap-2 px-4 xl:flex-row">
-      <div className="mt-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] xl:my-16">
+      <div
+        className={`mt-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] xl:my-16 ${
+          pathname.includes('create') && step === '2' ? 'mb-0' : 'mb-16'
+        }`}
+      >
         <div className="mb-4 rounded-md border border-grey-200 bg-neutral-100 p-2">
           <div className="flex items-center">
             <Switch
@@ -425,7 +438,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               className="mr-2"
               checked={optOut}
               onCheckedChange={(checked) => {
-                setOptOut(checked);
+                setOptOut(!checked); // On toggle means data sharing is on
                 localStorage.setItem('optOut', checked.toString());
               }}
             />
@@ -482,6 +495,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         )}
         {step === '0' && (
           <PatternDetails
+            skipEmlUpload={skipEmlUpload}
+            setSkipEmlUpload={setSkipEmlUpload}
             isFileInvalid={isFileInvalid}
             id={id}
             file={file}
@@ -519,7 +534,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   id="sample-eml-preview-button"
                   data-testid="sample-eml-preview-button"
-                  className='w-full sm:w-auto'
+                  className="w-full sm:w-auto"
                   variant="secondary"
                   onClick={() => setShowSampleEMLPreview(!showSampleEMLPreview)}
                 >
@@ -531,7 +546,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               <Button
                 variant="secondary"
                 onClick={handleSaveDraft}
-                loading={isSaveDraftLoading}
+                loading={isSaveDraftLoading && !isNextButtonClicked}
                 disabled={!store.circuitName || !store.title}
                 startIcon={
                   <Image
@@ -551,6 +566,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               {parseInt(step) < 2 ? (
                 <Button
                   onClick={onClickNext}
+                  loading={isNextButtonClicked}
                   endIcon={
                     <Image
                       src="/assets/ArrowRight.svg"
@@ -571,7 +587,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!savedEmls[id] || !canCompile}
+                  disabled={(!savedEmls[id] || !canCompile) && (!skipEmlUpload || !store.decomposedRegexes.length)}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"

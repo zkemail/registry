@@ -10,10 +10,13 @@ import sdk from '@/lib/sdk';
 import { Blueprint, Status } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import Loader from '@/components/ui/loader';
+import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { getCombinedBlueprintStatus } from '@/app/utils';
 
 const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
   const { id } = use(params);
+  const { isAdmin, username } = useAuthStore();
   const [mainBlueprint, setMainBlueprint] = useState<Blueprint | null>(null);
   const [versions, setVersions] = useState<Blueprint[]>([]);
   const [isFetchingBlueprintLoading, setIsFetchingBlueprintLoading] = useState(false);
@@ -83,7 +86,9 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       <div>
         <div className="mb-2 flex items-center justify-between">
           <div className="flex w-full flex-col items-start gap-2">
-            <Link href={mainBlueprint?.props.status === Status.Draft ? `/` : `/${id}`}>
+            <Link
+              href={getCombinedBlueprintStatus(mainBlueprint) === Status.Draft ? `/` : `/${id}`}
+            >
               <Button
                 variant="ghost"
                 startIcon={
@@ -149,15 +154,22 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
         </div>
 
         <div className="mt-10 flex flex-col gap-4">
-          {versions.map((version, i) => (
-            <VersionCard
-              key={version.props.id}
-              blueprint={version}
-              isLatest={i + 1 === versions.length}
-              onDelete={() => onDelete(version)}
-              isDeleteBlueprintLoading={isDeleteBlueprintLoading}
-            />
-          ))}
+          {versions
+            .filter(
+              (version) =>
+                version.props.githubUsername === username ||
+                getCombinedBlueprintStatus(version) === Status.Done ||
+                isAdmin
+            )
+            .map((version, i) => (
+              <VersionCard
+                key={version.props.id}
+                blueprint={version}
+                isLatest={i + 1 === versions.length}
+                onDelete={() => onDelete(version)}
+                isDeleteBlueprintLoading={isDeleteBlueprintLoading}
+              />
+            ))}
         </div>
       </div>
     </div>

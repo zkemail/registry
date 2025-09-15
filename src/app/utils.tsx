@@ -1,5 +1,5 @@
 import { getFileContent } from '@/lib/utils';
-import { parseEmail, Status, extractEMLDetails } from '@zk-email/sdk';
+import { parseEmail, Status, extractEMLDetails, Blueprint, ZkFramework } from '@zk-email/sdk';
 
 const getStatusColorLight = (status?: Status) => {
   switch (status) {
@@ -67,19 +67,15 @@ const getDateToNowStr = (date?: Date) => {
 const formatDate = (timestamp: string) => {
   try {
     let date: Date;
-    console.log('Input timestamp:', timestamp, typeof timestamp);
 
     // Try parsing as milliseconds first
     const msTimestamp = parseInt(timestamp);
-    console.log('Parsed msTimestamp:', msTimestamp);
 
     if (!isNaN(msTimestamp) && msTimestamp.toString().length > 4) {
       date = new Date(msTimestamp);
     } else {
       date = new Date(timestamp);
     }
-
-    console.log('Resulting date object:', date);
 
     if (date.toString() === 'Invalid Date') {
       throw new Error('Invalid date format');
@@ -170,11 +166,11 @@ const findOrCreateDSP = async (file: File) => {
 // TODO: This should be moved to the SDK
 const getSenderDomainAndSelectorPair = (emlContent: string) => {
   const headerLines: string[] = [];
-  const lines = emlContent.split("\n");
+  const lines = emlContent.split('\n');
   for (const line of lines) {
-    if (line.trim() === "") break;
+    if (line.trim() === '') break;
     // If line starts with whitespace, it's a continuation of previous header
-    if (line.startsWith(" ") || line.startsWith("\t")) {
+    if (line.startsWith(' ') || line.startsWith('\t')) {
       headerLines[headerLines.length - 1] += line.trim();
     } else {
       headerLines.push(line);
@@ -183,7 +179,7 @@ const getSenderDomainAndSelectorPair = (emlContent: string) => {
 
   // Then look for DKIM-Signature in the joined headers
   for (const line of headerLines) {
-    if (line.includes("DKIM-Signature")) {
+    if (line.includes('DKIM-Signature')) {
       const selectorMatch = line.match(/s=([^;]+)/);
       const domainMatch = line.match(/d=([^;]+)/);
       if (selectorMatch && domainMatch) {
@@ -197,6 +193,59 @@ const getSenderDomainAndSelectorPair = (emlContent: string) => {
   return null;
 };
 
+function getCombinedBlueprintStatus(blueprint: Blueprint | null) {
+  if (blueprint === null) {
+    return Status.Draft;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.Done &&
+    blueprint.props.serverStatus === Status.Done
+  ) {
+    return Status.Done;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.InProgress ||
+    blueprint.props.serverStatus === Status.InProgress
+  ) {
+    return Status.InProgress;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.Draft ||
+    blueprint.props.serverStatus === Status.Draft
+  ) {
+    return Status.Draft;
+  }
+
+  if (
+    blueprint.props.clientStatus === Status.Failed ||
+    blueprint.props.serverStatus === Status.Failed
+  ) {
+    return Status.Failed;
+  }
+}
+
+export const getZkFrameworkName = (framework: ZkFramework | undefined): string => {
+  switch (framework) {
+    case ZkFramework.None:
+      return 'None';
+    case ZkFramework.Circom:
+      return 'Circom';
+    case ZkFramework.Sp1:
+      return 'SP1';
+    case ZkFramework.Noir:
+      return 'Noir';
+    default:
+      // Handle potential undefined or unexpected values gracefully
+      const frameworkName = Object.keys(ZkFramework).find(
+        (key) => ZkFramework[key as keyof typeof ZkFramework] === framework
+      );
+      return frameworkName || 'Unknown';
+  }
+};
+
 export {
   getStatusColorLight,
   getStatusIcon,
@@ -206,4 +255,5 @@ export {
   formatDateAndTime,
   debounce,
   findOrCreateDSP,
+  getCombinedBlueprintStatus,
 };

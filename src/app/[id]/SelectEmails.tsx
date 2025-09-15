@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { fetchEmailsRaw, RawEmailResponse } from '../hooks/useGmailClient';
 import { fetchEmailList } from '../hooks/useGmailClient';
 import useGoogleAuth from '../hooks/useGoogleAuth';
@@ -15,21 +15,35 @@ import Loader from '@/components/ui/loader';
 import { decodeMimeEncodedText } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'react-toastify';
+import { useEmailCacheStore } from '@/lib/stores/useEmailCacheStore';
 
 type Email = RawEmailResponse & {
   valid: boolean;
 };
 
+const CACHE_KEY = 'zk_email_cache';
+const CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+interface CacheData {
+  emails: Email[];
+  timestamp: number;
+  query: string;
+}
+
 const SelectEmails = ({ id }: { id: string }) => {
-  const { setStep, file, setEmailContent, blueprint, startProofGeneration } = useProofStore();
+  const { setStep, file, setEmailContent, blueprint, startProofGeneration, emlUploadMode } =
+    useProofStore();
   const store = useCreateBlueprintStore();
   const { getParsedDecomposedRegexes, setToExistingBlueprint, reset } = store;
   const pathname = usePathname();
   const { replace } = useRouter();
   const searchParams = useSearchParams();
+  const isFetchingRef = useRef(false);
+  const emailCacheStore = useEmailCacheStore();
 
   const [isCreateProofLoading, setIsCreateProofLoading] = useState<'local' | 'remote' | null>(null);
   const [isFetchEmailLoading, setIsFetchEmailLoading] = useState(false);
+  const [areAllEmailsFetched, setAreAllEmailsFetched] = useState(false);
   const [pageToken, setPageToken] = useState<string | null>('0');
   const [fetchedEmails, setFetchedEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
@@ -53,25 +67,16 @@ const SelectEmails = ({ id }: { id: string }) => {
   }, [blueprint]);
 
   const handleValidateEmail = async (content: string) => {
-    try {
-      console.log('validating email: ', content);
-      console.log('blueprint: ', blueprint!.props);
+    // TODO: Uncomment this when we have testBlueprint fixed for the new compiler
+    // try {
+    //   await testBlueprint(content, blueprint?.props!);
 
-      const output = await testBlueprint(
-        content,
-        // {
-        //   blueprint,
-        //   decomposedRegexes: getParsedDecomposedRegexes(),
-        // },
-        blueprint?.props!
-      );
-      console.log('output: ', output);
-
-      return true;
-    } catch (err) {
-      console.error('Failed to test decomposed regex on eml: ', err);
-      return false;
-    }
+    //   return true;
+    // } catch (err) {
+    //   console.error('Failed to test decomposed regex on eml: ', err);
+    //   return false;
+    // }
+    return true;
   };
 
   const handleStartProofGeneration = async (isLocal = false) => {
@@ -98,7 +103,7 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   useEffect(() => {
     const checkFileValidity = async (file: string | null) => {
-      if (file) {
+      if (file && emlUploadMode === 'upload') {
         const valid = await handleValidateEmail(file);
 
         const subject = file.match(/Subject: (.*)/)?.[1] || 'No Subject';
@@ -120,6 +125,7 @@ const SelectEmails = ({ id }: { id: string }) => {
         };
 
         setFetchedEmails([selectedEmail]);
+        saveEmailsToCache([selectedEmail], blueprint?.props.emailQuery || '');
       }
     };
 
@@ -128,102 +134,131 @@ const SelectEmails = ({ id }: { id: string }) => {
 
   console.log('selectedEmail: ', fetchedEmails, selectedEmail);
 
-  const handleFetchEmails = async () => {
-    console.log('fetching emails');
+  // Function to save emails to cache
+  const saveEmailsToCache = async (emails: Email[], query: string) => {
+    await emailCacheStore.saveEmailsToCache(emails, query);
+  };
+
+  // Function to get emails from cache
+  const getEmailsFromCache = async () => {
+    return await emailCacheStore.getEmailsFromCache();
+  };
+
+  const handleFetchEmails = async (newEmails = false) => {
+    if (isFetchingRef.current) {
+      console.log('Already fetching, skipping');
+      return;
+    }
+
+    console.log('handleFetchEmails called');
+    isFetchingRef.current = true;
+
     try {
+      setAreAllEmailsFetched(false);
       setIsFetchEmailLoading(true);
+
+      // Check cache first
+      const cachedData = await getEmailsFromCache();
+      const currentQuery = blueprint?.props.emailQuery || '';
+
+      console.log('cachedData: ', cachedData);
+      console.log('currentQuery: ', currentQuery);
+
+      if (cachedData && cachedData.query === currentQuery && !newEmails) {
+        console.log('Using cached emails');
+        setFetchedEmails(cachedData.emails);
+        setIsFetchEmailLoading(false);
+        return;
+      }
+
       const emailListResponse = await fetchEmailList(googleAuthToken.access_token, {
         pageToken: pageToken,
-        q: blueprint?.props.emailQuery,
+        q: currentQuery,
       });
 
-      console.log('emailQuery: ', blueprint?.props.emailQuery);
+      console.log('emailQuery: ', currentQuery);
 
       const emailResponseMessages = emailListResponse.messages;
       if (emailResponseMessages?.length > 0) {
         const emailIds = emailResponseMessages.map((message) => message.id);
         const emails = await fetchEmailsRaw(googleAuthToken.access_token, emailIds);
 
-        const validatedEmails: {
-          email: RawEmailResponse;
-          senderDomain: string;
-          selector: string;
-        }[] = await Promise.all(
-          emails.map(async (email) => {
-            const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
-            return {
-              email,
-              senderDomain,
-              selector,
-            };
-          })
-        );
+        // Process emails one at a time
+        const processedEmails: Email[] = [];
+        const uniquePairs = new Set<string>();
 
-        // Get unique domain-selector pairs
-        const uniquePairs = Array.from(
-          new Set(
-            validatedEmails.map(({ senderDomain, selector }) => `${senderDomain}:${selector}`)
-          )
-        ).map((pair) => {
-          const [domain, selector] = pair.split(':');
-          return { domain, selector };
-        });
+        for (const email of emails) {
+          // Extract EML details
+          const { senderDomain, selector } = await extractEMLDetails(email.decodedContents);
+          const pairKey = `${senderDomain}:${selector}`;
 
-        // Make API calls only for unique pairs
-        await Promise.all(
-          uniquePairs.map((pair) =>
-            fetch('https://archive.zk.email/api/dsp', {
+          // Add to unique pairs if not already present
+          if (!uniquePairs.has(pairKey)) {
+            uniquePairs.add(pairKey);
+            // Make API call for this unique pair
+            await fetch('https://archive.zk.email/api/dsp', {
               method: 'POST',
-              body: JSON.stringify({
-                domain: pair.domain,
-                selector: pair.selector,
-              }),
-            })
-          )
-        );
+              body: JSON.stringify({ domain: senderDomain, selector }),
+            });
+          }
 
-        // Process validation for all emails
-        const processedEmails: Email[] = await Promise.all(
-          validatedEmails.map(async ({ email }) => {
-            const validationResult = await handleValidateEmail(email.decodedContents);
-            return {
-              ...email,
-              valid: validationResult ?? false,
-            };
-          })
-        );
+          // Validate the email
+          const validationResult = await handleValidateEmail(email.decodedContents);
+          const processedEmail = {
+            ...email,
+            valid: validationResult ?? false,
+          };
 
-        if (validatedEmails.length === 0 && emailListResponse.nextPageToken) {
+          processedEmails.push(processedEmail);
+          // Update the UI with the new email
+          setFetchedEmails((prev) => [...prev, processedEmail]);
+          setIsFetchEmailLoading(false);
+        }
+
+        if (processedEmails.length === 0 && emailListResponse.nextPageToken) {
           setPageToken(emailListResponse.nextPageToken || null);
-          handleFetchEmails();
+          handleFetchEmails(true);
           return;
         }
 
-        console.log('fetchedEmails: ', fetchedEmails, validatedEmails);
-        setFetchedEmails([...fetchedEmails, ...processedEmails]);
+        const newEmails = [...fetchedEmails, ...processedEmails];
+        console.log('fetchedEmails: ', newEmails);
+        setFetchedEmails(newEmails);
+
+        // Save to cache
+        await saveEmailsToCache(newEmails, currentQuery);
 
         setPageToken(emailListResponse.nextPageToken || null);
       } else {
         setFetchedEmails([]);
+        // Clear cache if no emails found
+        await emailCacheStore.clearCache();
+        setAreAllEmailsFetched(true);
       }
     } catch (error) {
       console.error('Error in fetching data:', error);
     } finally {
-      setIsFetchEmailLoading(false);
+      isFetchingRef.current = false;
     }
   };
 
   useEffect(() => {
-    if (file) {
+    console.log('useEffect triggered', {
+      hasToken: !!googleAuthToken?.access_token,
+      isFile: !!file,
+      isFetching: isFetchingRef.current,
+    });
+
+    if (file && emlUploadMode === 'upload') {
       return;
     }
-    if (googleAuthToken?.access_token) {
+    if (googleAuthToken?.access_token && !isFetchingRef.current) {
       handleFetchEmails();
     }
-  }, [googleAuthToken?.access_token]);
+  }, [googleAuthToken?.access_token, file]);
 
   const renderEmailsTable = () => {
-    if (isFetchEmailLoading) {
+    if (isFetchEmailLoading && fetchedEmails.length === 0) {
       return (
         <div className="mt-6 flex w-full justify-center">
           <Loader />
@@ -333,13 +368,29 @@ const SelectEmails = ({ id }: { id: string }) => {
                 ))}
             </AnimatePresence>
           </RadioGroup>
+          {isFetchingRef.current || isFetchEmailLoading ? (
+            <Button variant="ghost" className="gap-2 text-grey-700" disabled={isFetchEmailLoading}>
+              <Image
+                src="/assets/ArrowsClockwise.svg"
+                alt="arrow down"
+                width={16}
+                height={16}
+                className={'animate-spin'}
+                style={{
+                  maxWidth: '100%',
+                  height: 'auto',
+                }}
+              />
+              Loading...
+            </Button>
+          ) : null}
         </div>
         <div className="mt-6 flex w-full flex-col items-center gap-4">
-          {!file ? (
+          {emlUploadMode === 'connect' && !isFetchingRef.current ? (
             <Button
               variant="ghost"
               className="gap-2 text-grey-700"
-              onClick={handleFetchEmails}
+              onClick={() => handleFetchEmails(true)}
               disabled={isFetchEmailLoading}
             >
               <Image
@@ -347,6 +398,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                 alt="arrow down"
                 width={16}
                 height={16}
+                // className={areAllEmailsFetched && !isFetchEmailLoading ? 'animate-spin' : ''}
                 className={isFetchEmailLoading ? 'animate-spin' : ''}
                 style={{
                   maxWidth: '100%',
@@ -418,7 +470,9 @@ const SelectEmails = ({ id }: { id: string }) => {
                 className={`rounded-2xl border border-grey-200 p-6 ${
                   selectedEmail === null ||
                   !!isCreateProofLoading ||
-                  blueprint?.props.zkFramework !== ZkFramework.Circom
+                  !blueprint?.props.clientZkFramework ||
+                  // @ts-ignore ZkFramework can be None
+                  blueprint?.props.clientZkFramework === ZkFramework.None
                     ? 'cursor-not-allowed bg-neutral-100'
                     : 'cursor-pointer'
                 }`}
@@ -446,7 +500,9 @@ const SelectEmails = ({ id }: { id: string }) => {
                   </div>
                 </div>
                 <p className="text-base text-grey-700">
-                  {blueprint?.props.zkFramework === ZkFramework.Circom ? (
+                  {blueprint?.props.serverZkFramework &&
+                  // @ts-ignore ZkFramework can be None
+                  blueprint?.props.serverZkFramework !== ZkFramework.None ? (
                     <>
                       This method prioritizes your privacy by generating proofs directly on your
                       device. While it may take a bit more time, your email remains securely on your

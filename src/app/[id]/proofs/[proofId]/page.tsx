@@ -8,16 +8,16 @@ import Image from 'next/image';
 import { toast } from 'react-toastify';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore';
 import PostalMime, { Email } from 'postal-mime';
-import { Proof, ProofStatus } from '@zk-email/sdk';
+import { Proof, ProofStatus, startJsonFileDownload, ZkFramework } from '@zk-email/sdk';
 import { handleGetStatusIcon } from '../../ProofRow';
-import { formatDate, formatDateAndTime } from '@/app/utils';
+import { formatDateAndTime } from '@/app/utils';
 import Loader from '@/components/ui/loader';
 import Link from 'next/link';
-import { log } from 'console';
 import { useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { initNoirWasm } from '@/lib/utils';
 
 const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }> }) => {
   const { reset, blueprint, setBlueprint } = useProofStore();
@@ -33,6 +33,9 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const emailProof = localProofInfo
     ? JSON.parse(localProofInfo)
     : useProofEmailStore((state) => state.data[id!]?.[proofId]);
+
+  console.log('emailProof: ', emailProof);
+
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
   const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
@@ -131,38 +134,50 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   const onVerifyProof = async () => {
     setIsVerifyingProofLoading(true);
-    let proof: Proof;
-    try {
-      proof = await getProof(proofId);
-      console.log('proof: ', proof);
-    } catch (err) {
-      console.error(`Failed to get proof for id: ${proofId}: `, err);
-      toast.error('Failed to get proof');
+
+    if (!blueprint) {
+      toast.error('Failed to verify proof: could not find matching blueprint');
       setIsVerifyingProofLoading(false);
       return;
     }
 
     try {
-      console.log('verifying proof');
-      const verified = await blueprint?.verifyProof(proof);
+      const proof = new Proof(blueprint, emailProof);
+      let verified;
+      if (proof.props.zkFramework === ZkFramework.Noir) {
+        const noirWasm = await initNoirWasm();
+        const options = { noirWasm };
+        verified = await blueprint?.verifyProof(proof, options);
+      } else {
+        verified = await blueprint?.verifyProof(proof);
+      }
 
       // toast.success('Proof verified successfully on chain');
       if (verified) {
         toast.success('Proof verified successfully');
+        setIsExploding(true);
+        setTimeout(() => {
+          setIsExploding(false);
+        }, 5000);
       } else {
         throw new Error('Failed to verify proof');
       }
-
-      setIsExploding(true);
-      setTimeout(() => {
-        setIsExploding(false);
-      }, 5000);
-      toast.success('Proof verified successfully');
     } catch (err) {
       console.error(`Failed to verify proof with id: ${proofId}: `, err);
       toast.error('Failed to verify proof');
     }
     setIsVerifyingProofLoading(false);
+  };
+
+  const handleProofDownload = () => {
+    const proofData = {
+      publicData: emailProof.publicData,
+      proofData: emailProof.proofData,
+      publicOutputs: emailProof.publicOutputs,
+      externalInputs: emailProof.externalInputs,
+      input: emailProof.input,
+    };
+    startJsonFileDownload(JSON.stringify(proofData), emailProof.id);
   };
 
   if (!blueprint || !emailProof) {
@@ -196,6 +211,23 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
         <h4 className="text-xl font-bold text-grey-900">Proof Details</h4>
         <div className="flex flex-row flex-wrap gap-2">
           <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleProofDownload}
+            disabled={!emailProof?.publicData}
+          >
+            <Image
+              src="/assets/Download.svg"
+              alt="download"
+              width={20}
+              height={20}
+              style={{
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+            />
+          </Button>
+          <Button
             loading={isVerifyingProofLoading}
             variant="secondary"
             size="sm"
@@ -219,6 +251,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <Button
             className="flex flex-row gap-2"
             size="sm"
+            disabled={emailProof.zkFramework === ZkFramework.Noir}
             onClick={() => {
               navigator.clipboard.writeText(window.location.href + `?${urlProofParams}`);
               toast.success('Link successfully copied to clipboard');
@@ -363,6 +396,17 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             id="proof-data"
           >
             <pre>{JSON.stringify(emailProof.proofData, null, 2)}</pre>
+          </div>
+        </div>
+      ) : null}
+      {emailProof ? (
+        <div>
+          <h4 className="rounded text-base font-medium text-grey-900">Public Outputs</h4>
+          <div
+            className="overflow-x-auto border border-grey-500 bg-neutral-100 px-3 py-2 text-gray-600"
+            id="public-outputs"
+          >
+            <pre>{JSON.stringify(emailProof.publicOutputs, null, 2)}</pre>
           </div>
         </div>
       ) : null}

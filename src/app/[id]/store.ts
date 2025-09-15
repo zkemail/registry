@@ -1,12 +1,23 @@
 import { getFileContent } from '@/lib/utils';
-import { Blueprint, ExternalInputInput, parseEmail, Proof } from '@zk-email/sdk';
+import {
+  Blueprint,
+  ExternalInputInput,
+  GenerateProofOptions,
+  parseEmail,
+  Proof,
+  ZkFramework,
+} from '@zk-email/sdk';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useProofEmailStore } from '@/lib/stores/useProofEmailStore'; // Import the other store
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 import sdk from '@/lib/sdk';
+import { initNoirWasm } from '@/lib/utils';
+import { get, set } from 'idb-keyval';
 
 export type Step = '0' | '1' | '2' | '3';
+export type EmlUploadMode = 'upload' | 'connect';
 
 interface ProofState {
   step: Step;
@@ -26,6 +37,8 @@ interface ProofState {
   setIsUserStarred: () => Promise<void>;
   isUserStarred: boolean;
   starBlueprint: () => Promise<void>;
+  emlUploadMode: EmlUploadMode | null;
+  setEmlUploadMode: (mode: EmlUploadMode) => void;
   unStarBlueprint: () => Promise<void>;
 }
 
@@ -36,6 +49,7 @@ const initialState = {
   blueprint: null,
   externalInputs: null,
   isUserStarred: false,
+  emlUploadMode: null,
 };
 
 // seperate store
@@ -55,6 +69,7 @@ export const useProofStore = create<ProofState>()(
   persist(
     (set, get) => ({
       ...initialState,
+      setEmlUploadMode: (mode: EmlUploadMode) => set({ emlUploadMode: mode }),
       setEmailContent: (content: string | null) => set({ file: content }),
       setExternalInputs: (inputs: ExternalInputInput[]) => set({ externalInputs: inputs }),
       setStep: (step: Step) => {
@@ -80,7 +95,6 @@ export const useProofStore = create<ProofState>()(
         } catch (err) {
           console.error('Failed to get file contents: ', err);
           throw err;
-          // TODO: Notify user about this
         }
 
         const { blueprint } = get();
@@ -91,7 +105,11 @@ export const useProofStore = create<ProofState>()(
         } catch (err) {
           console.error('Failed to parse email, email is invalid: ', err);
           throw err;
-          // TODO: Notify user about this, cannot go to next step, email is invalid
+        }
+
+        // Save to IndexedDB if we have a blueprint ID
+        if (blueprint?.props.id) {
+          await useEmlStore.getState().setEml(blueprint.props.id, content);
         }
 
         set({ file: content });
@@ -143,7 +161,12 @@ export const useProofStore = create<ProofState>()(
         const prover = blueprint.createProver({ isLocal });
         let proof: Proof;
         try {
-          proof = await prover.generateProof(file, externalInputs || []);
+          let options: GenerateProofOptions = {};
+          if (isLocal && blueprint.props.clientZkFramework === ZkFramework.Noir) {
+            const noirWasm = await initNoirWasm();
+            options.noirWasm = noirWasm;
+          }
+          proof = await prover.generateProof(file, externalInputs || [], options);
           // save proof.props with blueprint.props.id as proof on useProofEmailStore here
         } catch (err) {
           console.error('Failed to generate a proof request');
@@ -162,6 +185,18 @@ export const useProofStore = create<ProofState>()(
     }),
     {
       name: 'proof-storage',
+      storage: {
+        getItem: async (name) => {
+          const value = await get(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: async (name, value) => {
+          await set(name, JSON.stringify(value));
+        },
+        removeItem: async (name) => {
+          await set(name, null);
+        },
+      },
     }
   )
 );

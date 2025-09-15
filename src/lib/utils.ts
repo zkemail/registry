@@ -1,6 +1,15 @@
 import { clsx, type ClassValue } from 'clsx';
-import PostalMime from 'postal-mime';
 import { twMerge } from 'tailwind-merge';
+import { initNoirWasm as _initNoirWasm } from '@zk-email/sdk/initNoirWasm';
+
+// Memoized version of initNoirWasm that only initializes once
+let noirWasmPromise: Promise<any> | null = null;
+export async function initNoirWasm() {
+  if (!noirWasmPromise) {
+    noirWasmPromise = _initNoirWasm();
+  }
+  return noirWasmPromise;
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -34,9 +43,10 @@ export function decodeMimeEncodedText(encodedText: string) {
       .replace(/_/g, ' ') // Replace underscores with spaces
       .replace(/=([A-Fa-f0-9]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))); // Decode =XX to characters
     const remainingText = matches[4] ? matches[4].trim() : ''; // Capture any text after the encoded part
-    return new TextDecoder(charset).decode(
-      new Uint8Array([...decoded].map((c) => c.charCodeAt(0)))
-    ) + remainingText;
+    return (
+      new TextDecoder(charset).decode(new Uint8Array([...decoded].map((c) => c.charCodeAt(0)))) +
+      remainingText
+    );
   } else if (encoding === 'B') {
     // Decode Base64
     const decoded = atob(encodedContent); // Decode Base64

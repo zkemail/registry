@@ -1,5 +1,6 @@
 import sdk from '@/lib/sdk';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
+import { useEmlStore } from '@/lib/stores/useEmlStore';
 import {
   Blueprint,
   BlueprintProps,
@@ -13,6 +14,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import posthog from 'posthog-js';
 import { getFileContent } from '@/lib/utils';
+import { get, set } from 'idb-keyval';
 
 type CreateBlueprintState = BlueprintProps & {
   blueprint: Blueprint | null;
@@ -22,7 +24,7 @@ type CreateBlueprintState = BlueprintProps & {
   validateAll: () => boolean;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
   setToExistingBlueprint: (id: string) => void;
-  compile: () => Promise<string>;
+  compile: (skipValidation?: boolean) => Promise<string>;
   saveDraft: () => Promise<string>;
   reset: () => void;
   file: File | null;
@@ -53,7 +55,8 @@ const initialState: BlueprintProps = {
   },
   externalInputs: [],
   decomposedRegexes: [],
-  zkFramework: ZkFramework.Circom,
+  clientZkFramework: ZkFramework.Circom,
+  serverZkFramework: ZkFramework.Circom,
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
@@ -132,12 +135,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       saveDraft: async (): Promise<string> => {
         const state = get();
-        const savedEmls = JSON.parse(localStorage.getItem('blueprintEmls') || '{}');
-
-        // Page logic should already prevent saving a draft without having a file
-        // if (!state.file && !savedEmls[state.id ?? 'new']) {
-        //   throw new Error('Can only save a draft with an example email provided');
-        // }
+        const emlStore = useEmlStore.getState();
+        const savedEmls = await emlStore.getAllEmls();
 
         // Remove functions from the state data and clone
         const data = JSON.parse(
@@ -181,7 +180,14 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
-            console.log('Assigned zkFramework: ', blueprint.props.zkFramework);
+            if (emlStr) {
+              await blueprint.assignPreferredZkFramework(emlStr);
+            } else {
+              data.clientZkFramework = ZkFramework.Noir;
+              data.serverZkFramework = ZkFramework.Sp1;
+            }
+            console.log('Assigned clientZkFramework: ', blueprint.props.clientZkFramework);
+            console.log('Assigned serverZkFramework: ', blueprint.props.serverZkFramework);
             await blueprint.submitDraft();
             console.log('saved draft');
             set({ blueprint });
@@ -189,14 +195,13 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           }
 
           // Update an existing blueprint
-          if (state.blueprint && state.blueprint.canUpdate()) {
-            console.log('updating');
+          if (state.blueprint && state.blueprint.canUpdate(data)) {
             await state.blueprint.update(data);
             return state.blueprint.props.id!;
           }
 
           // Create a new version of an blueprint
-          if (state.blueprint && !state.blueprint.canUpdate()) {
+          if (state.blueprint && !state.blueprint.canUpdate(data)) {
             console.log('creating new version');
             await state.blueprint.submitNewVersionDraft(data);
             return state.blueprint.props.id!;
@@ -233,7 +238,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           throw err;
         }
       },
-      compile: async (): Promise<string> => {
+      compile: async (skipValidation: boolean = false): Promise<string> => {
         const state = get();
 
         posthog.capture('$compile_blueprint', {
@@ -246,7 +251,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         }
 
         try {
-          if (!state.validateAll()) {
+          if (!skipValidation && !state.validateAll()) {
             throw new Error('Validation failed');
           }
         } catch (err) {
@@ -274,12 +279,43 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           validationErrors: {},
         });
       },
-      setFile: (file: File | null) => {
-        set({ file });
+      setFile: async (file: File | null) => {
+        if (!file) {
+          set({ file });
+          return;
+        }
+
+        try {
+          const content = await getFileContent(file);
+          const emlStore = useEmlStore.getState();
+          const state = get();
+
+          // Save to IndexedDB if we have an ID
+          if (state.id && state.id !== 'new') {
+            await emlStore.setEml(state.id, content);
+          }
+
+          set({ file });
+        } catch (err) {
+          console.error('Failed to get file contents:', err);
+          throw err;
+        }
       },
     }),
     {
       name: 'create-blueprint',
+      storage: {
+        getItem: async (name) => {
+          const value = await get(name);
+          return value ? JSON.parse(value) : null;
+        },
+        setItem: async (name, value) => {
+          await set(name, JSON.stringify(value));
+        },
+        removeItem: async (name) => {
+          await set(name, null);
+        },
+      },
     }
   )
 );
