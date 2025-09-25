@@ -123,7 +123,11 @@ const EmailDetails = ({
         type="number"
         min={0}
         error={!!validationErrors.emailHeaderMaxLength}
-        errorMessage={validationErrors.emailHeaderMaxLength}
+        errorMessage={
+          validationErrors.emailHeaderMaxLength
+            ? `${validationErrors.emailHeaderMaxLength} (Next multiple of 64 is ${Math.ceil((store.emailHeaderMaxLength ?? 0) / 64) * 64})`
+            : ''
+        }
         helpText="Must be a multiple of 64"
         value={store.emailHeaderMaxLength || ''}
         onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
@@ -228,7 +232,11 @@ const EmailDetails = ({
             disabled={store.ignoreBodyHashCheck}
             placeholder="4032"
             error={!!validationErrors.emailBodyMaxLength}
-            errorMessage={validationErrors.emailBodyMaxLength}
+            errorMessage={
+              validationErrors.emailBodyMaxLength
+                ? `${validationErrors.emailBodyMaxLength} (Next multiple of 64 is ${Math.ceil((store.emailBodyMaxLength ?? 0) / 64) * 64})`
+                : ''
+            }
             max={9984}
             min={0}
             startIcon={<Image src="/assets/Info.svg" alt="info" width={16} height={16} />}
