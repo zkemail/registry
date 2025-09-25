@@ -184,10 +184,12 @@ const ExtractFields = ({
             // update the max length of the regex at that particular index
             // Only update when the output changes, so we can still set maxLength
             if (outputUpdated) {
-              const totalLength = regexOutputs.reduce((acc, cur) => (acc += cur.length), 0);
               const decomposedRegexes = [...store.decomposedRegexes];
               decomposedRegexes[index].maxLength = totalLength ?? 64;
-              setField('decomposedRegexes', decomposedRegexes);
+              if (decomposedRegexes[index].maxLength < totalLength) {
+                decomposedRegexes[index].maxLength = totalLength;
+                setField('decomposedRegexes', decomposedRegexes);
+              }
             }
           } catch (error) {
             console.error('Error testing decomposed regex:', error);
