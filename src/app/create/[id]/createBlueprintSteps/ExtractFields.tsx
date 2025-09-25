@@ -837,27 +837,36 @@ const ExtractFields = ({
                   </Button>
                 </div>
                 {/* Only show output if there are regex parts and valid outputs */}
-                {parseRegexParts(regex.parts).length > 0 &&
-                regexGeneratedOutputs[index] !== undefined &&
-                regexGeneratedOutputs[index] !== null &&
-                regexGeneratedOutputs[index].length > 0 ? (
+                {regex.parts.some((p: any) => p.isPublic) ? (
+                  parseRegexParts(regex.parts).length > 0 &&
+                  regexGeneratedOutputs[index] !== undefined &&
+                  regexGeneratedOutputs[index] !== null &&
+                  regexGeneratedOutputs[index].length > 0 ? (
+                    <>
+                      <Label>Output</Label>
+                      <div
+                        className={`rounded-lg border p-2 text-sm ${
+                          regexGeneratedOutputErrors[index]
+                            ? 'border-red-500 bg-red-100'
+                            : 'border-grey-500 bg-neutral-100'
+                        }`}
+                      >
+                        {regexGeneratedOutputErrors[index]
+                          ? JSON.stringify(regexGeneratedOutputErrors[index])
+                          : regexGeneratedOutputs
+                            ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
+                            : ''}
+                      </div>
+                    </>
+                  ) : null
+                ) : (
                   <>
                     <Label>Output</Label>
-                    <div
-                      className={`rounded-lg border p-2 text-sm ${
-                        regexGeneratedOutputErrors[index]
-                          ? 'border-red-500 bg-red-100'
-                          : 'border-grey-500 bg-neutral-100'
-                      }`}
-                    >
-                      {regexGeneratedOutputErrors[index]
-                        ? JSON.stringify(regexGeneratedOutputErrors[index])
-                        : regexGeneratedOutputs
-                          ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
-                          : ''}
+                    <div className={`rounded-lg border border-red-500 bg-red-100 p-2 text-sm`}>
+                      Please add at least one public regex
                     </div>
                   </>
-                ) : null}
+                )}
               </div>
             </div>
           );
