@@ -51,7 +51,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
-  const steps = ['Pattern Details', 'Email Details', 'Extract Fields'];
+  const steps = ['Pattern Details', 'Extract Fields', 'Optional Details'];
   const [showSampleEMLPreview, setShowSampleEMLPreview] = useState(false);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [isDKIMMissing, setIsDKIMMissing] = useState(false);
@@ -67,6 +67,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
   const [isBodyExpanded, setIsBodyExpanded] = useState(false);
   const [isVerifyDKIMLoading, setIsVerifyDKIMLoading] = useState(false);
+  const [publicDkimKey, setPublicDkimKey] = useState<string | null>(null);
   const [canCompile, setCanCompile] = useState(false);
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
@@ -279,6 +280,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
       if (savedEmls[id]) {
         setIsDKIMMissing(!data.length);
+      }
+      if (data.length > 0) {
+        setPublicDkimKey(data[0].value);
       }
     } catch (error) {
       console.error('Failed to verify DKIM:', error);
@@ -504,18 +508,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
             emlContent={savedEmls[id]}
             savedEmls={savedEmls}
             setSavedEmls={setSavedEmls}
+            isVerifyDKIMLoading={isVerifyDKIMLoading}
+            isDKIMMissing={isDKIMMissing}
           />
         )}
         {step === '1' && (
-          <EmailDetails
-            emlContent={savedEmls[id]}
-            isDKIMMissing={isDKIMMissing}
-            isVerifyDKIMLoading={isVerifyDKIMLoading}
-          />
-        )}
-        {step === '2' && (
           <ExtractFields emlContent={savedEmls[id]} optOut={optOut} setCanCompile={setCanCompile} />
         )}
+        {step === '2' && <EmailDetails emlContent={savedEmls[id]} publicDkimKey={publicDkimKey} />}
         <div
           style={{
             width: '100%',

@@ -34,6 +34,7 @@
     "@zk-email/sdk": "2.0.1-6",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "crypto": "^1.0.1",
     "framer-motion": "^11.11.11",
     "idb-keyval": "^6.2.1",
     "immer": "^10.1.1",
