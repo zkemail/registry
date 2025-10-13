@@ -53,7 +53,7 @@ const config: Config = {
         },
         info: '#007AFF',
         red: {
-          '100': '#FFF6F7',
+          '100': '#FFE2E2',
           '200': '#FFDBDE',
           '300': '#E15E56',
           '400': '#C72C22',

@@ -607,14 +607,11 @@ const ExtractFields = ({
           return (
             <div
               key={index}
-              className="mb-2 flex flex-col gap-3 overflow-hidden rounded-lg border border-gray-200"
+              className="mb-2 flex flex-col gap-3 px-1"
             >
-              <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
+              <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium">
-                    {index + 1}
-                  </span>
-                  <Label className="font-medium">Extracted data</Label>
+                  <Label className="font-medium">Extracted data #{index + 1}</Label>
                 </div>
                 <Button
                   size="sm"
@@ -648,7 +645,7 @@ const ExtractFields = ({
               </div>
               <div className="flex flex-col gap-3 px-4 py-3">
                 <Input
-                  title="Name"
+                  title="Data Name"
                   placeholder="receiverName"
                   value={regex.name}
                   onChange={(e) => {
@@ -658,7 +655,7 @@ const ExtractFields = ({
                   }}
                 />
                 <Select
-                  label="Location"
+                  label="Data Location"
                   value={regex.location}
                   onChange={(value: string) => {
                     const updatedRegexes = [...store.decomposedRegexes];
@@ -680,7 +677,7 @@ const ExtractFields = ({
                   }}
                 />
               </div>
-              <div className="flex flex-col gap-3 rounded-xl border-t border-grey-500 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-base font-medium text-gray-900">Regex Definition</p>
                   <Link
