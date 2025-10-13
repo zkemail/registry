@@ -305,7 +305,9 @@ const ExtractFields = ({
     if (
       !regexGeneratedOutputs.length ||
       regexGeneratedOutputs.some((output) =>
-        Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error')
+        Array.isArray(output)
+          ? output.join('').includes('Error')
+          : typeof output === 'string' && output.includes('Error')
       )
     ) {
       setCanCompile(false);
