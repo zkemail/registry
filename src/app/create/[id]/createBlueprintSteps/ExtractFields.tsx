@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   DecomposedRegex,
   DecomposedRegexPart,
@@ -20,7 +21,6 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
 
 const AIPromptInput = ({
   aiPrompt,
@@ -605,11 +605,8 @@ const ExtractFields = ({
 
         {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => {
           return (
-            <div
-              key={index}
-              className="mb-2 flex flex-col gap-3 px-1"
-            >
-              <div className="flex items-center justify-between py-3">
+            <div key={index} className="mb-2 flex flex-col gap-3 px-1">
+              <div className="flex items-center justify-between py-3 pb-1">
                 <div className="flex items-center gap-2">
                   <Label className="font-medium">Extracted data #{index + 1}</Label>
                 </div>
@@ -720,23 +717,65 @@ const ExtractFields = ({
                           <Label>Field</Label>
                         </div>
                         <div className="flex flex-row items-center gap-2">
-                          <div className="flex flex-row items-center gap-2">
-                            <Switch
-                              id={`${regex.name}-${partIndex}-isPublic`}
-                              className="mr-2"
-                              checked={!part.isPublic}
-                              onCheckedChange={(checked) => {
-                                const parts = parseRegexParts(regex.parts);
-                                parts[partIndex].isPublic = !checked;
-                                const updatedRegexes = [...store.decomposedRegexes];
-                                updatedRegexes[index] = {
-                                  ...regex,
-                                  parts: parts,
-                                };
-                                setField('decomposedRegexes', updatedRegexes);
+                          <div className="relative inline-flex items-center rounded-xl border border-grey-500 bg-white p-1 shadow-sm">
+                            {/* Animated active background */}
+                            <motion.div
+                              layout
+                              transition={{
+                                type: 'spring',
+                                stiffness: 500,
+                                damping: 40,
+                                mass: 0.3,
+                              }}
+                              className={`absolute inset-y-1 ${part.isPublic ? 'w-[calc(50%-6px)]' : 'w-[calc(55%-6px)]'} rounded-lg bg-gray-900`}
+                              style={{
+                                left: part.isPublic ? 'calc(50%)' : '6px',
+                                padding: 4,
                               }}
                             />
-                            <Label htmlFor={`${regex.name}-${partIndex}-isPublic`}>Private</Label>
+                            <button
+                              type="button"
+                              className={`relative z-[1] flex items-center gap-2 rounded-lg px-3 py-1 text-sm transition-colors ${
+                                !part.isPublic ? 'text-white' : 'text-gray-700'
+                              }`}
+                              onClick={() => {
+                                const parts = parseRegexParts(regex.parts);
+                                parts[partIndex].isPublic = false;
+                                const updatedRegexes = [...store.decomposedRegexes];
+                                updatedRegexes[index] = { ...regex, parts };
+                                setField('decomposedRegexes', updatedRegexes);
+                              }}
+                              aria-pressed={!part.isPublic}
+                            >
+                              {!part.isPublic ? (
+                                <Image
+                                  src="/assets/EyeSlash.svg"
+                                  alt="eye-slash"
+                                  width={16}
+                                  height={16}
+                                />
+                              ) : null}
+                              <span>Private</span>
+                            </button>
+                            <button
+                              type="button"
+                              className={`relative z-[1] ml-1 flex items-center gap-2 rounded-lg px-3 py-1 text-sm transition-colors ${
+                                part.isPublic ? 'text-white' : 'text-gray-700'
+                              }`}
+                              onClick={() => {
+                                const parts = parseRegexParts(regex.parts);
+                                parts[partIndex].isPublic = true;
+                                const updatedRegexes = [...store.decomposedRegexes];
+                                updatedRegexes[index] = { ...regex, parts };
+                                setField('decomposedRegexes', updatedRegexes);
+                              }}
+                              aria-pressed={part.isPublic}
+                            >
+                              {part.isPublic ? (
+                                <Image src="/assets/EyeWhite.svg" alt="eye" width={16} height={16} />
+                              ) : null}
+                              <span>Public</span>
+                            </button>
                           </div>
 
                           <Button
@@ -793,43 +832,53 @@ const ExtractFields = ({
                             placeholder="Enter regex definition"
                           />
                         </div>
-                        {part.isPublic ? (
-                          <div className="relative mx-3">
-                            <Label>Max Length</Label>
-                            <Input
-                              value={part.maxLength}
-                              onChange={(e) => {
-                                const parts: DecomposedRegexPart[] = [
-                                  ...parseRegexParts(regex.parts),
-                                ];
-                                const rawValue = e.target.value;
-                                console.log(rawValue, 'rawValue');
-                                parts[partIndex] = {
-                                  ...parts[partIndex],
-                                  maxLength: parseInt(rawValue),
-                                };
-                                const updatedRegexes = [...store.decomposedRegexes];
-                                const updatedMaxLength = parts.reduce((acc: number, p: any) => {
-                                  const partMax =
-                                    p && p.isPublic && typeof p.maxLength === 'number'
-                                      ? p.maxLength
-                                      : 0;
-                                  return acc + partMax;
-                                }, 0);
-                                updatedRegexes[index] = {
-                                  ...regex,
-                                  parts: parts,
-                                  maxMatchLength:
-                                    updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
-                                      ? updatedMaxLength
-                                      : updatedRegexes[index].maxLength,
-                                };
-                                setField('decomposedRegexes', updatedRegexes);
-                              }}
-                              placeholder="Enter max length for this regex"
-                            />
-                          </div>
-                        ) : null}
+                        <AnimatePresence initial={false}>
+                          {part.isPublic ? (
+                            <motion.div
+                              key="max-length"
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: 'easeOut' }}
+                              className="overflow-hidden"
+                            >
+                              <div className="relative mx-3 pt-2">
+                                <Label>Max Length</Label>
+                                <Input
+                                  value={part.maxLength}
+                                  onChange={(e) => {
+                                    const parts: DecomposedRegexPart[] = [
+                                      ...parseRegexParts(regex.parts),
+                                    ];
+                                    const rawValue = e.target.value;
+                                    parts[partIndex] = {
+                                      ...parts[partIndex],
+                                      maxLength: parseInt(rawValue),
+                                    };
+                                    const updatedRegexes = [...store.decomposedRegexes];
+                                    const updatedMaxLength = parts.reduce((acc: number, p: any) => {
+                                      const partMax =
+                                        p && p.isPublic && typeof p.maxLength === 'number'
+                                          ? p.maxLength
+                                          : 0;
+                                      return acc + partMax;
+                                    }, 0);
+                                    updatedRegexes[index] = {
+                                      ...regex,
+                                      parts: parts,
+                                      maxMatchLength:
+                                        updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
+                                          ? updatedMaxLength
+                                          : updatedRegexes[index].maxLength,
+                                    };
+                                    setField('decomposedRegexes', updatedRegexes);
+                                  }}
+                                  placeholder="Enter max length for this regex"
+                                />
+                              </div>
+                            </motion.div>
+                          ) : null}
+                        </AnimatePresence>
                       </div>
                     </div>
                   );
