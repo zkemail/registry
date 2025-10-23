@@ -156,11 +156,12 @@ const ExtractFields = ({
               return;
             }
 
-            const regexOutputs = await testDecomposedRegex(
+            const {result: regexOutputs, length: totalLength} = await testDecomposedRegex(
               body,
               header,
               parsedRegex,
-              revealPrivateFields
+              revealPrivateFields,
+              true
             );
 
             const outputUpdated =
