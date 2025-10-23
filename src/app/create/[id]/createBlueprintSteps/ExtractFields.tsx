@@ -21,7 +21,6 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
 
 const AIPromptInput = ({
   aiPrompt,
@@ -377,207 +376,287 @@ const ExtractFields = ({
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center justify-between">
-          <div className="mb-4 w-full overflow-hidden rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
+          <div className="mb-4 w-full overflow-hidden rounded-lg">
+            <div className="flex items-center justify-between py-3">
               <div className="flex flex-col gap-1">
-                <Label className="font-medium">Quick header extraction</Label>
-                <p className="text-sm text-gray-500">
+                <Label className="font-medium text-grey-900">Quick header extraction</Label>
+                <p className="text-base font-medium text-grey-700">
                   We auto-write the regexes for all the toggled fields
                 </p>
               </div>
             </div>
-            <div className="px-4 py-3">
-              <div className="flex">
-                {/* Left column with 3 options */}
-                <div className="flex w-1/2 flex-col gap-2 pr-4">
-                  <div className="flex items-center justify-between rounded-md border border-grey-500 bg-white px-3 py-2">
-                    <span className="text-sm text-grey-700">Subject</span>
-                    <Switch
-                      checked={isExtractSubjectChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        setIsExtractSubjectChecked(checked);
-                        if (checked) {
-                          const subjectRegex: DecomposedRegex = {
-                            name: 'subject',
-                            location: 'header',
-                            parts: [
-                              {
-                                isPublic: false,
-                                regexDef: '(?:\\r\\n|^)subject:',
-                              },
-                              {
-                                isPublic: true,
-                                regexDef: '[^\\r\\n]+',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '\\r\\n',
-                              },
-                            ],
-                            maxLength: 64,
-                          };
-                          setField('decomposedRegexes', [
-                            ...(store.decomposedRegexes ?? []),
-                            subjectRegex,
-                          ]);
-                        }
+            <div className="flex flex-col">
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractSubjectChecked;
+                      setIsExtractSubjectChecked(checked);
+                      if (checked) {
+                        const subjectRegex: DecomposedRegex = {
+                          name: 'subject',
+                          location: 'header',
+                          parts: [
+                            {
+                              isPublic: false,
+                              regexDef: '(?:\\r\\n|^)subject:',
+                            },
+                            {
+                              isPublic: true,
+                              regexDef: '[^\\r\\n]+',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '\\r\\n',
+                            },
+                          ],
+                          maxLength: 64,
+                        };
+                        setField('decomposedRegexes', [
+                          ...(store.decomposedRegexes ?? []),
+                          subjectRegex,
+                        ]);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractSubjectChecked ? '/assets/AddField.svg' : '/assets/removeField.svg'
+                      }
+                      alt="toggle subject"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
                       }}
                     />
-                  </div>
-                  <div className="flex items-center justify-between rounded-md border border-grey-500 bg-white px-3 py-2">
-                    <span className="text-sm text-grey-700">To field</span>
-                    <Switch
-                      checked={isExtractReceiverChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        setIsExtractReceiverChecked(checked);
-                        if (checked) {
-                          const receiverRegex: DecomposedRegex = {
-                            name: 'email_recipient',
-                            parts: [
-                              {
-                                isPublic: false,
-                                regexDef: '(?:\\r\\n|^)to:',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '(?:[^\\r\\n]+<)?',
-                              },
-                              {
-                                isPublic: true,
-                                regexDef:
-                                  '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '>?\\r\\n',
-                              },
-                            ],
-                            location: 'header',
-                            maxLength: 64,
-                          };
-                          setField('decomposedRegexes', [
-                            ...(store.decomposedRegexes ?? []),
-                            receiverRegex,
-                          ]);
-                        }
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between rounded-md border border-grey-500 bg-white px-3 py-2">
-                    <span className="text-sm text-grey-700">Sender email</span>
-                    <Switch
-                      checked={isExtractSenderNameChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        setIsExtractSenderNameChecked(checked);
-                        if (checked) {
-                          const senderNameRegex: DecomposedRegex = {
-                            name: 'email_sender',
-                            parts: [
-                              {
-                                isPublic: false,
-                                regexDef: '(?:\\r\\n|^)from:',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '(?:[^\\r\\n]+<)?',
-                              },
-                              {
-                                isPublic: true,
-                                regexDef:
-                                  "[A-Za-z0-9!#$%&'\\\\*\\\\+\\\\-\\\\/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[A-Za-z0-9\\\\.-]+",
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '>?\\r\\n',
-                              },
-                            ],
-                            location: 'header',
-                            maxLength: 64,
-                          };
-                          setField('decomposedRegexes', [
-                            ...(store.decomposedRegexes ?? []),
-                            senderNameRegex,
-                          ]);
-                        }
-                      }}
-                    />
-                  </div>
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Subject</span>
                 </div>
+              </div>
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractReceiverChecked;
+                      setIsExtractReceiverChecked(checked);
+                      if (checked) {
+                        const receiverRegex: DecomposedRegex = {
+                          name: 'email_recipient',
+                          parts: [
+                            {
+                              isPublic: false,
+                              regexDef: '(?:\\r\\n|^)to:',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '(?:[^\\r\\n]+<)?',
+                            },
+                            {
+                              isPublic: true,
+                              regexDef:
+                                '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '>?\\r\\n',
+                            },
+                          ],
+                          location: 'header',
+                          maxLength: 64,
+                        };
+                        setField('decomposedRegexes', [
+                          ...(store.decomposedRegexes ?? []),
+                          receiverRegex,
+                        ]);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractReceiverChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle receiver"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">To field</span>
+                </div>
+              </div>
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractSenderNameChecked;
+                      setIsExtractSenderNameChecked(checked);
+                      if (checked) {
+                        const senderNameRegex: DecomposedRegex = {
+                          name: 'email_sender',
+                          parts: [
+                            {
+                              isPublic: false,
+                              regexDef: '(?:\\r\\n|^)from:',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '(?:[^\\r\\n]+<)?',
+                            },
+                            {
+                              isPublic: true,
+                              regexDef:
+                                "[A-Za-z0-9!#$%&'\\\\*\\\\+\\\\-\\\\/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[A-Za-z0-9\\\\.-]+",
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '>?\\r\\n',
+                            },
+                          ],
+                          location: 'header',
+                          maxLength: 64,
+                        };
+                        setField('decomposedRegexes', [
+                          ...(store.decomposedRegexes ?? []),
+                          senderNameRegex,
+                        ]);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractSenderNameChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle sender"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Sender email</span>
+                </div>
+              </div>
 
-                {/* Right column with 2 options */}
-                <div className="flex w-1/2 flex-col gap-2">
-                  <div className="flex items-center justify-between rounded-md border border-grey-500 bg-white px-3 py-2">
-                    <span className="text-sm text-grey-700">Sender domain</span>
-                    <Switch
-                      checked={isExtractSenderDomainChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        setIsExtractSenderDomainChecked(checked);
-                        if (checked) {
-                          const senderDomainRegex: DecomposedRegex = {
-                            name: 'sender_domain',
-                            parts: [
-                              {
-                                isPublic: false,
-                                regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
-                              },
-                              {
-                                isPublic: true,
-                                regexDef: '[A-Za-z0-9][A-Za-z0-9\\\\.-]+\\\\.[A-Za-z]{2,}',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '[>\\r\\n]',
-                              },
-                            ],
-                            location: 'header',
-                            maxLength: 64,
-                          };
-                          setField('decomposedRegexes', [
-                            ...(store.decomposedRegexes ?? []),
-                            senderDomainRegex,
-                          ]);
-                        }
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractSenderDomainChecked;
+                      setIsExtractSenderDomainChecked(checked);
+                      if (checked) {
+                        const senderDomainRegex: DecomposedRegex = {
+                          name: 'sender_domain',
+                          parts: [
+                            {
+                              isPublic: false,
+                              regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
+                            },
+                            {
+                              isPublic: true,
+                              regexDef: '[A-Za-z0-9][A-Za-z0-9\\\\.-]+\\\\.[A-Za-z]{2,}',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '[>\\r\\n]',
+                            },
+                          ],
+                          location: 'header',
+                          maxLength: 64,
+                        };
+                        setField('decomposedRegexes', [
+                          ...(store.decomposedRegexes ?? []),
+                          senderDomainRegex,
+                        ]);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractSenderDomainChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle domain"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
                       }}
                     />
-                  </div>
-                  <div className="flex items-center justify-between rounded-md border border-grey-500 bg-white px-3 py-2">
-                    <span className="text-sm text-grey-700">Timestamp</span>
-                    <Switch
-                      checked={isExtractTimestampChecked}
-                      onCheckedChange={(checked: boolean) => {
-                        setIsExtractTimestampChecked(checked);
-                        if (checked) {
-                          const timestampRegex: DecomposedRegex = {
-                            name: 'email_timestamp',
-                            parts: [
-                              {
-                                isPublic: false,
-                                regexDef: '(?:\\r\\n|^)dkim-signature:',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: '(?:[a-z]+=[^;]+; )+t=',
-                              },
-                              {
-                                isPublic: true,
-                                regexDef: '[0-9]+',
-                              },
-                              {
-                                isPublic: false,
-                                regexDef: ';',
-                              },
-                            ],
-                            location: 'header',
-                            maxLength: 64,
-                          };
-                          setField('decomposedRegexes', [
-                            ...(store.decomposedRegexes ?? []),
-                            timestampRegex,
-                          ]);
-                        }
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Sender domain</span>
+                </div>
+              </div>
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractTimestampChecked;
+                      setIsExtractTimestampChecked(checked);
+                      if (checked) {
+                        const timestampRegex: DecomposedRegex = {
+                          name: 'email_timestamp',
+                          parts: [
+                            {
+                              isPublic: false,
+                              regexDef: '(?:\\r\\n|^)dkim-signature:',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: '(?:[a-z]+=[^;]+; )+t=',
+                            },
+                            {
+                              isPublic: true,
+                              regexDef: '[0-9]+',
+                            },
+                            {
+                              isPublic: false,
+                              regexDef: ';',
+                            },
+                          ],
+                          location: 'header',
+                          maxLength: 64,
+                        };
+                        setField('decomposedRegexes', [
+                          ...(store.decomposedRegexes ?? []),
+                          timestampRegex,
+                        ]);
+                      }
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractTimestampChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle timestamp"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
                       }}
                     />
-                  </div>
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Timestamp</span>
                 </div>
               </div>
             </div>
@@ -783,7 +862,12 @@ const ExtractFields = ({
                               aria-pressed={part.isPublic}
                             >
                               {part.isPublic ? (
-                                <Image src="/assets/EyeWhite.svg" alt="eye" width={16} height={16} />
+                                <Image
+                                  src="/assets/EyeWhite.svg"
+                                  alt="eye"
+                                  width={16}
+                                  height={16}
+                                />
                               ) : null}
                               <span>Public</span>
                             </button>
