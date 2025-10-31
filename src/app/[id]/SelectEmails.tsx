@@ -67,16 +67,14 @@ const SelectEmails = ({ id }: { id: string }) => {
   }, [blueprint]);
 
   const handleValidateEmail = async (content: string) => {
-    // TODO: Uncomment this when we have testBlueprint fixed for the new compiler
-    // try {
-    //   await testBlueprint(content, blueprint?.props!);
+    try {
+      await testBlueprint(content, blueprint?.props!);
 
-    //   return true;
-    // } catch (err) {
-    //   console.error('Failed to test decomposed regex on eml: ', err);
-    //   return false;
-    // }
-    return true;
+      return true;
+    } catch (err) {
+      console.error('Failed to test decomposed regex on eml: ', err);
+      return false;
+    }
   };
 
   const handleStartProofGeneration = async (isLocal = false) => {
