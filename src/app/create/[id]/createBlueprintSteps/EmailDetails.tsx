@@ -8,21 +8,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
 import Image from 'next/image';
 import { Select } from '@/components/ui/select';
+// Client computes DKIM modulus length via server API to use Node crypto
 
 const EmailDetails = ({
   emlContent,
-  isDKIMMissing,
-  isVerifyDKIMLoading,
+  publicDkimKey,
 }: {
   emlContent: string;
-  isDKIMMissing: boolean;
-  isVerifyDKIMLoading: boolean;
+  publicDkimKey: string | null;
 }) => {
   const store = useCreateBlueprintStore();
   const validationErrors = useCreateBlueprintStore((state) => state.validationErrors);
   const { setField } = store;
   const [shaPrecomputeSelectorValidationErrors, setShaPrecomputeSelectorValidationErrors] =
     useState('');
+  const [isNoirIncompatible, setIsNoirIncompatible] = useState(false);
 
   useEffect(() => {
     const updateEmailBodyMaxLength = async () => {
@@ -47,123 +47,10 @@ const EmailDetails = ({
     }
   }, [emlContent]);
 
+  console.log(isNoirIncompatible, "isNoirIncompatible", store.clientZkFramework)
+
   return (
     <div className="flex flex-col gap-6">
-      <Input
-        title="Email Query"
-        disabled={store.clientStatus === Status.Done && store.serverStatus === Status.Done}
-        value={store.emailQuery}
-        onChange={(e) => setField('emailQuery', e.target.value)}
-        placeholder="Password request from: contact@x.com"
-        error={!!validationErrors.emailQuery}
-        errorMessage={validationErrors.emailQuery}
-        tooltipComponent={
-          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
-            <Image
-              src="/assets/emailQueryInfo.svg"
-              className="rounded-t-xl"
-              alt="emailQueryInfo"
-              width={360}
-              height={80}
-            />
-            <p className="mt-3 text-base font-medium text-grey-700">
-              As if you were searching for the email in your Gmail inbox. Only emails matching this
-              query will be shown to the user to prove when they sign in with Gmail
-            </p>
-          </div>
-        }
-      />
-      <Input
-        title="Sender domain"
-        loading={isVerifyDKIMLoading}
-        placeholder="twitter.com"
-        helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
-        value={store.senderDomain}
-        onChange={(e) => setField('senderDomain', e.target.value)}
-        error={(!!validationErrors.senderDomain || isDKIMMissing) && !isVerifyDKIMLoading}
-        errorMessage={
-          isVerifyDKIMLoading ? (
-            'Finding DKIM in archive...'
-          ) : isDKIMMissing ? (
-            <span className="text-red-500">
-              DKIM publickey is missing. Please add a DKIM record at{' '}
-              <a
-                href="https://archive.zk.email"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                https://archive.zk.email
-              </a>
-            </span>
-          ) : (
-            validationErrors.senderDomain
-          )
-        }
-        tooltipComponent={
-          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
-            <Image
-              src="/assets/senderDomainInfo.svg"
-              className="rounded-t-xl"
-              alt="emailQueryInfo"
-              width={360}
-              height={80}
-            />
-            <p className="mt-3 text-base font-medium text-grey-700">
-              This is the domain used for DKIM verification, which may not exactly match the senders
-              domain (you can check via the d= field in the DKIM-Signature header in your sample
-              .eml). Note to only include the part after the @ symbol
-            </p>
-          </div>
-        }
-      />
-      <Input
-        title="Max Email Header Length"
-        placeholder="1024"
-        type="number"
-        min={0}
-        error={!!validationErrors.emailHeaderMaxLength}
-        errorMessage={
-          validationErrors.emailHeaderMaxLength
-            ? `${validationErrors.emailHeaderMaxLength} (Next multiple of 64 is ${Math.ceil((store.emailHeaderMaxLength ?? 0) / 64) * 64})`
-            : ''
-        }
-        helpText="Must be a multiple of 64"
-        value={store.emailHeaderMaxLength || ''}
-        onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
-      />
-      <Select
-        label="Client Zk Framework"
-        value={store.clientZkFramework}
-        onChange={(value) => {
-          console.log('setting clientZkFramework to ', value);
-          setField('clientZkFramework', value);
-        }}
-        options={
-          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-            ? [
-                { label: 'Circom', value: ZkFramework.Circom },
-                { label: 'Noir', value: ZkFramework.Noir },
-              ]
-            : [{ label: 'Circom', value: ZkFramework.Circom }]
-        }
-      />
-      <Select
-        label="Server Zk Framework"
-        value={store.serverZkFramework}
-        onChange={(value) => {
-          console.log('setting serverzkframework to ', value);
-          setField('serverZkFramework', value);
-        }}
-        options={
-          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-            ? [
-                { label: 'SP1', value: ZkFramework.Sp1 },
-                { label: 'Circom', value: ZkFramework.Circom },
-              ]
-            : [{ label: 'Circom', value: ZkFramework.Circom }]
-        }
-      />
       <Checkbox
         title="Skip body hash check"
         helpText="Enable to ignore the contents on the email and only extract data from the headers"
@@ -174,7 +61,25 @@ const EmailDetails = ({
         }}
       />
       {!store.ignoreBodyHashCheck && (
-        <div className="ml-2">
+        <div className="">
+          <Input
+            title="Max Email Body Length"
+            disabled={store.ignoreBodyHashCheck}
+            placeholder="4032"
+            error={!!validationErrors.emailBodyMaxLength}
+            errorMessage={
+              validationErrors.emailBodyMaxLength
+                ? `${validationErrors.emailBodyMaxLength} (Next multiple of 64 is ${Math.ceil((store.emailBodyMaxLength ?? 0) / 64) * 64})`
+                : ''
+            }
+            max={9984}
+            min={0}
+            startIcon={<Image src="/assets/Info.svg" alt="info" width={16} height={16} />}
+            type="number"
+            helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
+            value={store.emailBodyMaxLength}
+            onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
+          />
           <Input
             title="Email Body Cutoff Value (optional)"
             placeholder=">Not my Account<"
@@ -227,26 +132,80 @@ const EmailDetails = ({
               </div>
             }
           />
-          <Input
-            title="Max Email Body Length"
-            disabled={store.ignoreBodyHashCheck}
-            placeholder="4032"
-            error={!!validationErrors.emailBodyMaxLength}
-            errorMessage={
-              validationErrors.emailBodyMaxLength
-                ? `${validationErrors.emailBodyMaxLength} (Next multiple of 64 is ${Math.ceil((store.emailBodyMaxLength ?? 0) / 64) * 64})`
-                : ''
-            }
-            max={9984}
-            min={0}
-            startIcon={<Image src="/assets/Info.svg" alt="info" width={16} height={16} />}
-            type="number"
-            helpText="Must be a multiple of 64. If you have a Email Body Cutoff Value, it should be the length of the body after that value"
-            value={store.emailBodyMaxLength}
-            onChange={(e) => setField('emailBodyMaxLength', parseInt(e.target.value))}
-          />
         </div>
       )}
+      <Select
+        label="Client Zk Framework"
+        value={store.clientZkFramework}
+        onChange={async (value) => {
+          console.log('dkimPublicKey: ', publicDkimKey);
+          let dkimKeyBitLength: number | undefined = undefined;
+          try {
+            const res = await fetch('/api/dkimKeyBitLength', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ p: publicDkimKey ?? '' }),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              dkimKeyBitLength = data?.bits;
+            }
+          } catch (e) {
+            // ignore; will treat as unknown length
+          }
+          console.log('dkimKeyBitLength: ', dkimKeyBitLength);
+
+          if (value === ZkFramework.Noir && dkimKeyBitLength && dkimKeyBitLength !== 2048) {
+            console.log(isNoirIncompatible, "isNoirIncompatible")
+            setIsNoirIncompatible(true);
+          } else {
+            setIsNoirIncompatible(false);
+          }
+          console.log('setting clientZkFramework to ', value);
+          setField('clientZkFramework', value);
+        }}
+        options={
+          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+            ? [
+                { label: 'Circom', value: ZkFramework.Circom },
+                { label: 'Noir', value: ZkFramework.Noir },
+              ]
+            : [{ label: 'Circom', value: ZkFramework.Circom }]
+        }
+      />
+      {isNoirIncompatible ? (
+        <div className="flex w-full flex-row gap-7 rounded-2xl border border-[#FFF085] bg-[#FEFCE8] px-4 py-6">
+          <Image src="/assets/ClientFrameworkWarning.svg" alt="warning" width={160} height={120} />
+          <div>
+            <p className="text-lg font-medium text-grey-900">Temporary compatibility issue!</p>
+            <p className="text-base font-medium text-grey-700">
+              The uploaded eml uses an older security key(1024-bit RSA).
+            </p>
+            <p className="flex flex-row items-start gap-2 text-base font-medium text-grey-700">
+              <Image src="/assets/YellowWarningCircle.svg" alt="info" width={16} height={16} />
+              We're running into some issues with Noir proofs for 1024-bit RSA emails. But don't
+              worry, we're on it and working to get past this!
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      <Select
+        label="Server Zk Framework"
+        value={store.serverZkFramework}
+        onChange={(value) => {
+          console.log('setting serverzkframework to ', value);
+          setField('serverZkFramework', value);
+        }}
+        options={
+          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+            ? [
+                { label: 'SP1', value: ZkFramework.Sp1 },
+                { label: 'Circom', value: ZkFramework.Circom },
+              ]
+            : [{ label: 'Circom', value: ZkFramework.Circom }]
+        }
+      />
     </div>
   );
 };
