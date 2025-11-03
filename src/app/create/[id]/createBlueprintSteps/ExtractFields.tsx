@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   DecomposedRegex,
   DecomposedRegexPart,
@@ -20,7 +21,6 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
 
 const AIPromptInput = ({
   aiPrompt,
@@ -376,23 +376,21 @@ const ExtractFields = ({
       {/* Decomposed Regexes */}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col items-center justify-between">
-          <div className="mb-4 w-full overflow-hidden rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
+          <div className="mb-4 w-full overflow-hidden rounded-lg">
+            <div className="flex items-center justify-between py-3">
               <div className="flex flex-col gap-1">
-                <Label className="font-medium">Quick header extraction</Label>
-                <p className="text-sm text-gray-500">
-                  We auto-write the regexes for all the checked fields
+                <Label className="font-medium text-grey-900">Quick header extraction</Label>
+                <p className="text-base font-medium text-grey-700">
+                  We auto-write the regexes for all the toggled fields
                 </p>
               </div>
             </div>
-            <div className="px-4 py-3">
-              <div className="flex">
-                {/* Left column with 3 options */}
-                <div className="flex w-1/2 flex-col gap-2 pr-4">
-                  <Checkbox
-                    title="Subject"
-                    checked={isExtractSubjectChecked}
-                    onCheckedChange={(checked: boolean) => {
+            <div className="flex flex-col">
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractSubjectChecked;
                       setIsExtractSubjectChecked(checked);
                       if (checked) {
                         const subjectRegex: DecomposedRegex = {
@@ -401,15 +399,15 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(?:\r\n|^)subject:',
+                              regexDef: '(?:\\r\\n|^)subject:',
                             },
                             {
                               isPublic: true,
-                              regexDef: '[^\r\n]+',
+                              regexDef: '[^\\r\\n]+',
                             },
                             {
                               isPublic: false,
-                              regexDef: '\r\n',
+                              regexDef: '\\r\\n',
                             },
                           ],
                           maxLength: 64,
@@ -420,11 +418,29 @@ const ExtractFields = ({
                         ]);
                       }
                     }}
-                  />
-                  <Checkbox
-                    title="Receiver"
-                    checked={isExtractReceiverChecked}
-                    onCheckedChange={(checked: boolean) => {
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractSubjectChecked ? '/assets/AddField.svg' : '/assets/removeField.svg'
+                      }
+                      alt="toggle subject"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Subject</span>
+                </div>
+              </div>
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractReceiverChecked;
                       setIsExtractReceiverChecked(checked);
                       if (checked) {
                         const receiverRegex: DecomposedRegex = {
@@ -432,20 +448,20 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(?:\r\n|^)to:',
+                              regexDef: '(?:\\r\\n|^)to:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '(?:[^\r\n]+<)?',
+                              regexDef: '(?:[^\\r\\n]+<)?',
                             },
                             {
                               isPublic: true,
                               regexDef:
-                                '[a-zA-Z0-9!#$%&\\*\\+-/=\\\?\\^_`{\\|}~\\.]+@[a-zA-Z0-9_\\\.-]+',
+                                '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
                             },
                             {
                               isPublic: false,
-                              regexDef: '>?\r\n',
+                              regexDef: '>?\\r\\n',
                             },
                           ],
                           location: 'header',
@@ -457,11 +473,31 @@ const ExtractFields = ({
                         ]);
                       }
                     }}
-                  />
-                  <Checkbox
-                    title="Sender email"
-                    checked={isExtractSenderNameChecked}
-                    onCheckedChange={(checked: boolean) => {
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractReceiverChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle receiver"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">To field</span>
+                </div>
+              </div>
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractSenderNameChecked;
                       setIsExtractSenderNameChecked(checked);
                       if (checked) {
                         const senderNameRegex: DecomposedRegex = {
@@ -469,20 +505,20 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(?:\r\n|^)from:',
+                              regexDef: '(?:\\r\\n|^)from:',
                             },
                             {
                               isPublic: false,
-                              regexDef: '(?:[^\r\n]+<)?',
+                              regexDef: '(?:[^\\r\\n]+<)?',
                             },
                             {
                               isPublic: true,
                               regexDef:
-                                "[A-Za-z0-9!#$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                                "[A-Za-z0-9!#$%&'\\\\*\\\\+\\\\-\\\\/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[A-Za-z0-9\\\\.-]+",
                             },
                             {
                               isPublic: false,
-                              regexDef: '>?\r\n',
+                              regexDef: '>?\\r\\n',
                             },
                           ],
                           location: 'header',
@@ -494,15 +530,32 @@ const ExtractFields = ({
                         ]);
                       }
                     }}
-                  />
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractSenderNameChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle sender"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Sender email</span>
                 </div>
+              </div>
 
-                {/* Right column with 2 options */}
-                <div className="flex w-1/2 flex-col gap-2">
-                  <Checkbox
-                    title="Sender domain"
-                    checked={isExtractSenderDomainChecked}
-                    onCheckedChange={(checked: boolean) => {
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractSenderDomainChecked;
                       setIsExtractSenderDomainChecked(checked);
                       if (checked) {
                         const senderDomainRegex: DecomposedRegex = {
@@ -510,15 +563,15 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(?:\r\n|^)from:[^\r\n]*@',
+                              regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
                             },
                             {
                               isPublic: true,
-                              regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+\\.[A-Za-z]{2,}',
+                              regexDef: '[A-Za-z0-9][A-Za-z0-9\\\\.-]+\\\\.[A-Za-z]{2,}',
                             },
                             {
                               isPublic: false,
-                              regexDef: '[>\r\n]',
+                              regexDef: '[>\\r\\n]',
                             },
                           ],
                           location: 'header',
@@ -530,11 +583,31 @@ const ExtractFields = ({
                         ]);
                       }
                     }}
-                  />
-                  <Checkbox
-                    title="Timestamp"
-                    checked={isExtractTimestampChecked}
-                    onCheckedChange={(checked: boolean) => {
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractSenderDomainChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle domain"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Sender domain</span>
+                </div>
+              </div>
+              <div className="flex justify-between rounded-md px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      const checked = !isExtractTimestampChecked;
                       setIsExtractTimestampChecked(checked);
                       if (checked) {
                         const timestampRegex: DecomposedRegex = {
@@ -542,7 +615,7 @@ const ExtractFields = ({
                           parts: [
                             {
                               isPublic: false,
-                              regexDef: '(?:\r\n|^)dkim-signature:',
+                              regexDef: '(?:\\r\\n|^)dkim-signature:',
                             },
                             {
                               isPublic: false,
@@ -566,7 +639,24 @@ const ExtractFields = ({
                         ]);
                       }
                     }}
-                  />
+                    className="cursor-pointer"
+                  >
+                    <Image
+                      src={
+                        isExtractTimestampChecked
+                          ? '/assets/AddField.svg'
+                          : '/assets/removeField.svg'
+                      }
+                      alt="toggle timestamp"
+                      width={16}
+                      height={16}
+                      style={{
+                        maxWidth: '100%',
+                        height: 'auto',
+                      }}
+                    />
+                  </button>
+                  <span className="text-base font-medium text-grey-900">Timestamp</span>
                 </div>
               </div>
             </div>
@@ -605,16 +695,10 @@ const ExtractFields = ({
 
         {store.decomposedRegexes?.map((regex: DecomposedRegex, index: number) => {
           return (
-            <div
-              key={index}
-              className="mb-2 flex flex-col gap-3 overflow-hidden rounded-lg border border-gray-200"
-            >
-              <div className="flex items-center justify-between bg-gray-100 px-4 py-3">
+            <div key={index} className="mb-2 flex flex-col gap-3 px-1">
+              <div className="flex items-center justify-between py-3 pb-1">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium">
-                    {index + 1}
-                  </span>
-                  <Label className="font-medium">Extracted data</Label>
+                  <Label className="font-medium">Extracted data #{index + 1}</Label>
                 </div>
                 <Button
                   size="sm"
@@ -648,7 +732,7 @@ const ExtractFields = ({
               </div>
               <div className="flex flex-col gap-3 px-4 py-3">
                 <Input
-                  title="Name"
+                  title="Data Name"
                   placeholder="receiverName"
                   value={regex.name}
                   onChange={(e) => {
@@ -658,7 +742,7 @@ const ExtractFields = ({
                   }}
                 />
                 <Select
-                  label="Location"
+                  label="Data Location"
                   value={regex.location}
                   onChange={(value: string) => {
                     const updatedRegexes = [...store.decomposedRegexes];
@@ -680,7 +764,7 @@ const ExtractFields = ({
                   }}
                 />
               </div>
-              <div className="flex flex-col gap-3 rounded-xl border-t border-grey-500 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-base font-medium text-gray-900">Regex Definition</p>
                   <Link
@@ -723,23 +807,70 @@ const ExtractFields = ({
                           <Label>Field</Label>
                         </div>
                         <div className="flex flex-row items-center gap-2">
-                          <div className="flex flex-row items-center gap-2">
-                            <Switch
-                              id={`${regex.name}-${partIndex}-isPublic`}
-                              className="mr-2"
-                              checked={!part.isPublic}
-                              onCheckedChange={(checked) => {
-                                const parts = parseRegexParts(regex.parts);
-                                parts[partIndex].isPublic = !checked;
-                                const updatedRegexes = [...store.decomposedRegexes];
-                                updatedRegexes[index] = {
-                                  ...regex,
-                                  parts: parts,
-                                };
-                                setField('decomposedRegexes', updatedRegexes);
+                          <div className="relative inline-flex items-center rounded-xl border border-grey-500 bg-white p-1 shadow-sm">
+                            {/* Animated active background */}
+                            <motion.div
+                              layout
+                              transition={{
+                                type: 'spring',
+                                stiffness: 500,
+                                damping: 40,
+                                mass: 0.3,
+                              }}
+                              className={`absolute inset-y-1 ${part.isPublic ? 'w-[calc(50%-6px)]' : 'w-[calc(55%-6px)]'} rounded-lg bg-gray-900`}
+                              style={{
+                                left: part.isPublic ? 'calc(50%)' : '6px',
+                                padding: 4,
                               }}
                             />
-                            <Label htmlFor={`${regex.name}-${partIndex}-isPublic`}>Private</Label>
+                            <button
+                              type="button"
+                              className={`relative z-[1] flex items-center gap-2 rounded-lg px-3 py-1 text-sm transition-colors ${
+                                !part.isPublic ? 'text-white' : 'text-gray-700'
+                              }`}
+                              onClick={() => {
+                                const parts = parseRegexParts(regex.parts);
+                                parts[partIndex].isPublic = false;
+                                const updatedRegexes = [...store.decomposedRegexes];
+                                updatedRegexes[index] = { ...regex, parts };
+                                setField('decomposedRegexes', updatedRegexes);
+                              }}
+                              aria-pressed={!part.isPublic}
+                            >
+                              {!part.isPublic ? (
+                                <Image
+                                  src="/assets/EyeSlash.svg"
+                                  alt="eye-slash"
+                                  width={16}
+                                  height={16}
+                                />
+                              ) : null}
+                              <span>Private</span>
+                            </button>
+                            <button
+                              type="button"
+                              className={`relative z-[1] ml-1 flex items-center gap-2 rounded-lg px-3 py-1 text-sm transition-colors ${
+                                part.isPublic ? 'text-white' : 'text-gray-700'
+                              }`}
+                              onClick={() => {
+                                const parts = parseRegexParts(regex.parts);
+                                parts[partIndex].isPublic = true;
+                                const updatedRegexes = [...store.decomposedRegexes];
+                                updatedRegexes[index] = { ...regex, parts };
+                                setField('decomposedRegexes', updatedRegexes);
+                              }}
+                              aria-pressed={part.isPublic}
+                            >
+                              {part.isPublic ? (
+                                <Image
+                                  src="/assets/EyeWhite.svg"
+                                  alt="eye"
+                                  width={16}
+                                  height={16}
+                                />
+                              ) : null}
+                              <span>Public</span>
+                            </button>
                           </div>
 
                           <Button
@@ -796,43 +927,53 @@ const ExtractFields = ({
                             placeholder="Enter regex definition"
                           />
                         </div>
-                        {part.isPublic ? (
-                          <div className="relative mx-3">
-                            <Label>Max Length</Label>
-                            <Input
-                              value={part.maxLength}
-                              onChange={(e) => {
-                                const parts: DecomposedRegexPart[] = [
-                                  ...parseRegexParts(regex.parts),
-                                ];
-                                const rawValue = e.target.value;
-                                console.log(rawValue, 'rawValue');
-                                parts[partIndex] = {
-                                  ...parts[partIndex],
-                                  maxLength: parseInt(rawValue),
-                                };
-                                const updatedRegexes = [...store.decomposedRegexes];
-                                const updatedMaxLength = parts.reduce((acc: number, p: any) => {
-                                  const partMax =
-                                    p && p.isPublic && typeof p.maxLength === 'number'
-                                      ? p.maxLength
-                                      : 0;
-                                  return acc + partMax;
-                                }, 0);
-                                updatedRegexes[index] = {
-                                  ...regex,
-                                  parts: parts,
-                                  maxMatchLength:
-                                    updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
-                                      ? updatedMaxLength
-                                      : updatedRegexes[index].maxLength,
-                                };
-                                setField('decomposedRegexes', updatedRegexes);
-                              }}
-                              placeholder="Enter max length for this regex"
-                            />
-                          </div>
-                        ) : null}
+                        <AnimatePresence initial={false}>
+                          {part.isPublic ? (
+                            <motion.div
+                              key="max-length"
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2, ease: 'easeOut' }}
+                              className="overflow-hidden"
+                            >
+                              <div className="relative mx-3 pt-2">
+                                <Label>Max Length</Label>
+                                <Input
+                                  value={part.maxLength}
+                                  onChange={(e) => {
+                                    const parts: DecomposedRegexPart[] = [
+                                      ...parseRegexParts(regex.parts),
+                                    ];
+                                    const rawValue = e.target.value;
+                                    parts[partIndex] = {
+                                      ...parts[partIndex],
+                                      maxLength: parseInt(rawValue),
+                                    };
+                                    const updatedRegexes = [...store.decomposedRegexes];
+                                    const updatedMaxLength = parts.reduce((acc: number, p: any) => {
+                                      const partMax =
+                                        p && p.isPublic && typeof p.maxLength === 'number'
+                                          ? p.maxLength
+                                          : 0;
+                                      return acc + partMax;
+                                    }, 0);
+                                    updatedRegexes[index] = {
+                                      ...regex,
+                                      parts: parts,
+                                      maxMatchLength:
+                                        updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
+                                          ? updatedMaxLength
+                                          : updatedRegexes[index].maxLength,
+                                    };
+                                    setField('decomposedRegexes', updatedRegexes);
+                                  }}
+                                  placeholder="Enter max length for this regex"
+                                />
+                              </div>
+                            </motion.div>
+                          ) : null}
+                        </AnimatePresence>
                       </div>
                     </div>
                   );
@@ -843,7 +984,7 @@ const ExtractFields = ({
                   }`}
                 >
                   {parseRegexParts(regex.parts).length !== 0 ? (
-                    <p className="text-gray-700">More regex fields?</p>
+                    <p className="text-gray-700">Add another regex field?</p>
                   ) : null}
                   <Button
                     variant="default"
@@ -874,7 +1015,7 @@ const ExtractFields = ({
                       setField('decomposedRegexes', updatedRegexes);
                     }}
                   >
-                    Add regex manually
+                    New field
                   </Button>
                 </div>
                 {/* Only show output if there are regex parts and valid outputs */}
@@ -902,7 +1043,7 @@ const ExtractFields = ({
         })}
         {store?.decomposedRegexes?.length !== 0 ? (
           <div className="flex items-center justify-between pt-3">
-            <p className="text-gray-700">Need more data to extract?</p>
+            <p className="text-gray-700">Need more data to be captured?</p>
             <Button
               variant="default"
               size="sm"
@@ -928,7 +1069,7 @@ const ExtractFields = ({
                 ]);
               }}
             >
-              Add values to extract
+              Add data
             </Button>
           </div>
         ) : null}
@@ -963,7 +1104,7 @@ const ExtractFields = ({
                 setField('externalInputs', updatedInputs);
               }}
             >
-              Add values to extract
+              New data
             </Button>
           ) : null}
         </div>
@@ -1020,7 +1161,7 @@ const ExtractFields = ({
         ))}
         {store.externalInputs?.length !== 0 ? (
           <div className="flex items-center justify-between pt-3">
-            <p className="text-gray-700">Need more external fields?</p>
+            <p className="text-gray-700">Need more external data?</p>
             <Button
               variant="default"
               size="sm"
@@ -1044,7 +1185,7 @@ const ExtractFields = ({
                 setField('externalInputs', updatedInputs);
               }}
             >
-              Add values to extract
+              New data
             </Button>
           </div>
         ) : null}
