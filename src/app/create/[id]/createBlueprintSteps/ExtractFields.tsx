@@ -132,6 +132,15 @@ const ExtractFields = ({
 
   const [isGeneratingFields, setIsGeneratingFields] = useState(false);
 
+  // Sync checkbox states with decomposedRegexes
+  useEffect(() => {
+    setIsExtractSubjectChecked(store.decomposedRegexes?.some(r => r.name === 'subject') ?? false);
+    setIsExtractReceiverChecked(store.decomposedRegexes?.some(r => r.name === 'email_recipient') ?? false);
+    setIsExtractSenderNameChecked(store.decomposedRegexes?.some(r => r.name === 'email_sender') ?? false);
+    setIsExtractSenderDomainChecked(store.decomposedRegexes?.some(r => r.name === 'sender_domain') ?? false);
+    setIsExtractTimestampChecked(store.decomposedRegexes?.some(r => r.name === 'email_timestamp') ?? false);
+  }, [store.decomposedRegexes]);
+
   // Handle canCompile state updates based on conditions
   useEffect(() => {
     const hasNoEmail = !emlContent;
@@ -157,6 +166,9 @@ const ExtractFields = ({
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
       if (!emlContent || !store.decomposedRegexes?.length) {
+        // Clear outputs when there are no regexes
+        setRegexGeneratedOutputs([]);
+        setRegexGeneratedOutputErrors([]);
         setIsGeneratingFields(false);
         return;
       }
@@ -434,6 +446,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           subjectRegex,
                         ]);
+                      } else {
+                        // Remove the subject regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'subject') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -489,6 +505,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           receiverRegex,
                         ]);
+                      } else {
+                        // Remove the email_recipient regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_recipient') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -546,6 +566,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           senderNameRegex,
                         ]);
+                      } else {
+                        // Remove the email_sender regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_sender') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -599,6 +623,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           senderDomainRegex,
                         ]);
+                      } else {
+                        // Remove the sender_domain regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'sender_domain') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -655,6 +683,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           timestampRegex,
                         ]);
+                      } else {
+                        // Remove the email_timestamp regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_timestamp') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
