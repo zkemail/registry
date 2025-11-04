@@ -718,7 +718,8 @@ const ExtractFields = ({
                   onClick={() => {
                     const updatedRegexes = [...store.decomposedRegexes];
                     updatedRegexes.splice(index, 1);
-                    aiPrompts.splice(index, 1);
+                    const updatedAiPrompts = aiPrompts.filter((_, i) => i !== index);
+                    setAiPrompts(updatedAiPrompts);
                     setField('decomposedRegexes', updatedRegexes);
 
                     setRegexGeneratedOutputs(regexGeneratedOutputs.filter((_, i) => i !== index));
