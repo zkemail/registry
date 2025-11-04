@@ -567,7 +567,7 @@ const ExtractFields = ({
                             },
                             {
                               isPublic: true,
-                              regexDef: '[A-Za-z0-9][A-Za-z0-9\\\\.-]+\\\\.[A-Za-z]{2,}',
+                              regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+',
                             },
                             {
                               isPublic: false,
