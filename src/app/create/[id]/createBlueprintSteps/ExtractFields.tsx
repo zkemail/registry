@@ -114,7 +114,6 @@ const ExtractFields = ({
     Array(store.decomposedRegexes?.length ?? 0).fill(false)
   );
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
   const [aiPrompts, setAiPrompts] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
@@ -132,6 +131,27 @@ const ExtractFields = ({
   const [isExtractTimestampChecked, setIsExtractTimestampChecked] = useState(false);
 
   const [isGeneratingFields, setIsGeneratingFields] = useState(false);
+
+  // Handle canCompile state updates based on conditions
+  useEffect(() => {
+    const hasNoEmail = !emlContent;
+    const isGenerating = isGeneratingFields;
+    const noRegexes = !regexGeneratedOutputs.length;
+
+    // Check for errors in regexGeneratedOutputErrors array
+    const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+
+    // Check for errors in the output itself
+    const hasOutputErrors = regexGeneratedOutputs.some((output) =>
+      Array.isArray(output)
+        ? output.join('').includes('Error')
+        : output
+          ? output.includes('Error')
+          : true
+    );
+
+    setCanCompile(!hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors);
+  }, [emlContent, isGeneratingFields, regexGeneratedOutputs, regexGeneratedOutputErrors, setCanCompile]);
 
   useEffect(() => {
     const generateRegexOutputs = async () => {
@@ -268,35 +288,7 @@ const ExtractFields = ({
   };
 
   const Status = () => {
-    if (errors.length || !emlContent) {
-      setCanCompile(false);
-      return errors.map((error) => (
-        <div key={error} className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">{error}</span>
-        </div>
-      ));
-    }
-    if (isGeneratingFields) {
-      setCanCompile(false);
-      return (
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-          <span className="text-base font-medium">Generating fields...</span>
-        </div>
-      );
-    }
-    if (!regexGeneratedOutputs.length) {
-      setCanCompile(false);
+    if (!emlContent) {
       return (
         <div className="flex items-center gap-2 text-red-400">
           <Image
@@ -309,12 +301,41 @@ const ExtractFields = ({
               height: 'auto',
             }}
           />
-          <span className="text-base font-medium">Please add atleast one regex</span>
+          <span className="text-base font-medium">Please provide an email file</span>
         </div>
       );
     }
+    if (isGeneratingFields) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+          <span className="text-base font-medium">Generating fields...</span>
+        </div>
+      );
+    }
+    if (!regexGeneratedOutputs.length) {
+      return (
+        <div className="flex items-center gap-2 text-red-400">
+          <Image
+            src="/assets/WarningCircle.svg"
+            alt="fail"
+            width={20}
+            height={20}
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
+          <span className="text-base font-medium">Please add at least one regex</span>
+        </div>
+      );
+    }
+    // Check for errors in regexGeneratedOutputErrors array
+    const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+
     if (
       !regexGeneratedOutputs.length ||
+      hasRegexErrors ||
       regexGeneratedOutputs.some((output) =>
         Array.isArray(output)
           ? output.join('').includes('Error')
@@ -323,7 +344,6 @@ const ExtractFields = ({
             : true
       )
     ) {
-      setCanCompile(false);
       return (
         <div className="flex items-center gap-2 text-red-400">
           <Image
@@ -340,8 +360,6 @@ const ExtractFields = ({
         </div>
       );
     } else {
-      console.log('canCompile', regexGeneratedOutputs);
-      setCanCompile(true);
       return (
         <div className="flex items-center gap-2 text-green-300">
           <Image
