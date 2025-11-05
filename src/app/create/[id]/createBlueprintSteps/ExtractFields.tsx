@@ -289,8 +289,11 @@ const ExtractFields = ({
   );
 
   useEffect(() => {
+    let cancelled = false;
+
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
+
       if (!emlContent || !store.decomposedRegexes?.length) {
         // Clear outputs when there are no regexes
         setRegexGeneratedOutputs([]);
@@ -321,6 +324,9 @@ const ExtractFields = ({
               revealPrivateFields
             );
 
+            // Only update state if component is still mounted
+            if (cancelled) return;
+
             const outputUpdated =
               JSON.stringify(regexOutputs) !== JSON.stringify(regexGeneratedOutputs[index]);
 
@@ -342,74 +348,86 @@ const ExtractFields = ({
               validationError = `Max length exceeded: ${errorParts.join(', ')}`;
             }
 
-            setRegexGeneratedOutputs((prev) => {
-              const updated = [...prev];
-              // @ts-ignore
-              updated[index] = regexOutputs;
-              return updated;
-            });
-
-            setRegexGeneratedOutputErrors((prev) => {
-              const updated = [...prev];
-              // @ts-ignore
-              updated[index] = validationError;
-              return updated;
-            });
-
-            // update the max length of the regex at that particular index
-            // Only update when the output changes and there's no validation error
-            if (outputUpdated && !validationError) {
-              // Calculate total length only for public parts
-              let publicPartsTotalLength = 0;
-              const parts = parseRegexParts(parsedRegex.parts);
-
-              // Update individual part max lengths only if not manually set
-              // This preserves user-defined values
-              const updatedParts = parts.map((part: any, partIndex: number) => {
-                if (part.isPublic && regexOutputs[partIndex]) {
-                  const partLength = regexOutputs[partIndex].length;
-                  // Only auto-update if maxLength is undefined (not manually set)
-                  if (part.maxLength === undefined) {
-                    publicPartsTotalLength += partLength;
-                    return {
-                      ...part,
-                      maxLength: partLength
-                    };
-                  } else {
-                    // Use the manually set value in calculation
-                    publicPartsTotalLength += part.maxLength;
-                    return part;
-                  }
-                }
-                return part;
+            // Check again before state updates
+            if (!cancelled) {
+              setRegexGeneratedOutputs((prev) => {
+                const updated = [...prev];
+                // @ts-ignore
+                updated[index] = regexOutputs;
+                return updated;
               });
 
-              const decomposedRegexes = [...store.decomposedRegexes];
-              decomposedRegexes[index] = {
-                ...decomposedRegexes[index],
-                parts: updatedParts,
-                maxLength: publicPartsTotalLength || 64
-              };
-              setField('decomposedRegexes', decomposedRegexes);
+              setRegexGeneratedOutputErrors((prev) => {
+                const updated = [...prev];
+                // @ts-ignore
+                updated[index] = validationError;
+                return updated;
+              });
+
+              // update the max length of the regex at that particular index
+              // Only update when the output changes and there's no validation error
+              if (outputUpdated && !validationError) {
+                // Calculate total length only for public parts
+                let publicPartsTotalLength = 0;
+                const parts = parseRegexParts(parsedRegex.parts);
+
+                // Update individual part max lengths only if not manually set
+                // This preserves user-defined values
+                const updatedParts = parts.map((part: any, partIndex: number) => {
+                  if (part.isPublic && regexOutputs[partIndex]) {
+                    const partLength = regexOutputs[partIndex].length;
+                    // Only auto-update if maxLength is undefined (not manually set)
+                    if (part.maxLength === undefined) {
+                      publicPartsTotalLength += partLength;
+                      return {
+                        ...part,
+                        maxLength: partLength
+                      };
+                    } else {
+                      // Use the manually set value in calculation
+                      publicPartsTotalLength += part.maxLength;
+                      return part;
+                    }
+                  }
+                  return part;
+                });
+
+                const decomposedRegexes = [...store.decomposedRegexes];
+                decomposedRegexes[index] = {
+                  ...decomposedRegexes[index],
+                  parts: updatedParts,
+                  maxLength: publicPartsTotalLength || 64
+                };
+                setField('decomposedRegexes', decomposedRegexes);
+              }
             }
           } catch (error) {
             console.error('Error testing decomposed regex:', error);
-            setRegexGeneratedOutputErrors((prev) => {
-              const updated = [...prev];
-              // @ts-ignore
-              updated[index] = 'Error: ' + error;
-              return updated;
-            });
+            // Check if cancelled before error state update
+            if (!cancelled) {
+              setRegexGeneratedOutputErrors((prev) => {
+                const updated = [...prev];
+                // @ts-ignore
+                updated[index] = 'Error: ' + error;
+                return updated;
+              });
+            }
           }
         })
       );
 
-      setIsGeneratingFields(false);
+      // Only update if not cancelled
+      if (!cancelled) {
+        setIsGeneratingFields(false);
+      }
     };
 
-    generateRegexOutputs().finally(() => {
-      setIsGeneratingFields(false);
-    });
+    generateRegexOutputs();
+
+    // Cleanup function to set cancelled flag
+    return () => {
+      cancelled = true;
+    };
   }, [emlContent, decomposedRegexesKey]);
 
   const handleGenerateFields = async (index: number) => {
