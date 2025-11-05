@@ -13,7 +13,7 @@ import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { getFileContent } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
+import { Blueprint, getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
 
 const PatternDetails = ({
   id,
@@ -51,31 +51,60 @@ const PatternDetails = ({
 
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
     setIsCheckExistingBlueprintLoading(true);
-    let existingBlueprint = false;
-    try {
-      const blueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
-      existingBlueprint = !!blueprint;
-    } catch {
-      console.log('Blueprint does not exist yet');
-    }
 
-    if (!existingBlueprint) {
-      setField('circuitName', `${circuitName}`);
-      setField('slug', `${githubUserName}/${circuitName}`);
-    } else {
-      // need to check the number of circuits that exists with same name
+    try {
+      let exactMatch: Blueprint | null = null;
+      let existingBlueprint = false;
+
+      try {
+        exactMatch = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
+        // Verify it's truly an exact match (not fuzzy match)
+        const expectedSlug = `${githubUserName}/${circuitName}`;
+        existingBlueprint = !!(exactMatch && exactMatch.props?.slug === expectedSlug);
+      } catch {
+        console.log('Blueprint does not exist yet');
+      }
+
+      // If no conflict, we're done - slug is already correct from immediate update
+      if (!existingBlueprint) {
+        return;
+      }
+
+      // Blueprint exists - need to increment
       const results = await sdk.listBlueprints({
         search: circuitName,
       });
 
-      const incrementedCircuitName = `${circuitName}_${
-        results.filter((bp) => bp.props.slug?.split('_')[0] === `${githubUserName}/${circuitName}`)
-          .length
-      }`;
+      // Check for blueprints with the same base name (including those with _N suffix)
+      // Must be very precise to avoid matching similar names
+      const baseSlug = `${githubUserName}/${circuitName}`;
+      const matchingBlueprints = results.filter((bp) => {
+        const slug = bp.props.slug;
+        if (!slug) return false;
+
+        // Exact match
+        if (slug === baseSlug) return true;
+
+        // Incremented version: must be base + "_" + digits only
+        if (slug.startsWith(`${baseSlug}_`)) {
+          const suffix = slug.substring(baseSlug.length + 1); // Get part after "base_"
+          // Only match if suffix is purely numeric (e.g., "1", "2", "10")
+          return /^\d+$/.test(suffix);
+        }
+
+        return false;
+      });
+
+      const incrementedCircuitName = `${circuitName}_${matchingBlueprints.length}`;
       setField('circuitName', incrementedCircuitName);
       setField('slug', `${githubUserName}/${incrementedCircuitName}`);
+    } finally {
+      // Always turn off loading in finally block, ensuring it happens after all work
+      // Using requestAnimationFrame ensures this runs after React has painted the updated slug
+      requestAnimationFrame(() => {
+        setIsCheckExistingBlueprintLoading(false);
+      });
     }
-    setIsCheckExistingBlueprintLoading(false);
   }, 300);
 
   return (
@@ -91,7 +120,12 @@ const PatternDetails = ({
 
           // Only check for blueprint name if there are no spaces
           if (!newTitle.includes(' ')) {
-            checkExistingBlueprint(newTitle.replace(/\s+/g, '_'));
+            const sanitizedName = newTitle.replace(/\s+/g, '_');
+            // Immediately update circuitName and slug to keep them in sync
+            setField('circuitName', sanitizedName);
+            setField('slug', `${githubUserName}/${sanitizedName}`);
+            // Then check for conflicts and increment if needed (debounced)
+            checkExistingBlueprint(sanitizedName);
           }
         }}
         error={!!validationErrors.title || store.title?.includes(' ')}
