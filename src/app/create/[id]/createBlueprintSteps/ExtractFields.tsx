@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,125 @@ import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
 
-const AIPromptInput = ({
+// Memoized Status component to prevent recreation on each render
+interface StatusProps {
+  emlContent: string;
+  isGeneratingFields: boolean;
+  regexGeneratedOutputs: string[];
+  regexGeneratedOutputErrors: string[];
+}
+
+// Pure utility function - doesn't need to be recreated on each render
+const parseRegexParts = (parts: any): any => {
+  if (typeof parts === 'string') {
+    try {
+      return JSON.parse(parts);
+    } catch {
+      return [];
+    }
+  }
+  return parts || [];
+};
+
+const Status = memo(({
+  emlContent,
+  isGeneratingFields,
+  regexGeneratedOutputs,
+  regexGeneratedOutputErrors
+}: StatusProps) => {
+  if (!emlContent) {
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <Image
+          src="/assets/WarningCircle.svg"
+          alt="fail"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">Please provide an email file</span>
+      </div>
+    );
+  }
+  if (isGeneratingFields) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+        <span className="text-base font-medium">Generating fields...</span>
+      </div>
+    );
+  }
+  if (!regexGeneratedOutputs.length) {
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <Image
+          src="/assets/WarningCircle.svg"
+          alt="fail"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">Please add at least one regex</span>
+      </div>
+    );
+  }
+  // Check for errors in regexGeneratedOutputErrors array
+  const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+
+  if (
+    !regexGeneratedOutputs.length ||
+    hasRegexErrors ||
+    regexGeneratedOutputs.some((output) =>
+      Array.isArray(output)
+        ? output.join('').includes('Error')
+        : output
+          ? output.includes('Error')
+          : true
+    )
+  ) {
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <Image
+          src="/assets/WarningCircle.svg"
+          alt="fail"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">Some regexes failed to generate output</span>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex items-center gap-2 text-green-300">
+        <Image
+          src="/assets/CheckCircle.svg"
+          alt="check"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">All tests passed. Ready to compile</span>
+      </div>
+    );
+  }
+});
+
+Status.displayName = 'Status';
+
+const AIPromptInput = memo(({
   aiPrompt,
   setAiPrompt,
   handleGenerateFields,
@@ -95,7 +213,9 @@ const AIPromptInput = ({
       </div>
     </div>
   );
-};
+});
+
+AIPromptInput.displayName = 'AIPromptInput';
 
 const ExtractFields = ({
   emlContent,
@@ -114,7 +234,6 @@ const ExtractFields = ({
     Array(store.decomposedRegexes?.length ?? 0).fill(false)
   );
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
-  const [errors, setErrors] = useState<string[]>([]);
   const [aiPrompts, setAiPrompts] = useState<string[]>(
     Array(store.decomposedRegexes?.length ?? 0).fill('')
   );
@@ -133,10 +252,52 @@ const ExtractFields = ({
 
   const [isGeneratingFields, setIsGeneratingFields] = useState(false);
 
+  // Sync checkbox states with decomposedRegexes
   useEffect(() => {
+    setIsExtractSubjectChecked(store.decomposedRegexes?.some(r => r.name === 'subject') ?? false);
+    setIsExtractReceiverChecked(store.decomposedRegexes?.some(r => r.name === 'email_recipient') ?? false);
+    setIsExtractSenderNameChecked(store.decomposedRegexes?.some(r => r.name === 'email_sender') ?? false);
+    setIsExtractSenderDomainChecked(store.decomposedRegexes?.some(r => r.name === 'sender_domain') ?? false);
+    setIsExtractTimestampChecked(store.decomposedRegexes?.some(r => r.name === 'email_timestamp') ?? false);
+  }, [store.decomposedRegexes]);
+
+  // Handle canCompile state updates based on conditions
+  useEffect(() => {
+    const hasNoEmail = !emlContent;
+    const isGenerating = isGeneratingFields;
+    const noRegexes = !regexGeneratedOutputs.length;
+
+    // Check for errors in regexGeneratedOutputErrors array
+    const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+
+    // Check for errors in the output itself
+    const hasOutputErrors = regexGeneratedOutputs.some((output) =>
+      Array.isArray(output)
+        ? output.join('').includes('Error')
+        : output
+          ? output.includes('Error')
+          : true
+    );
+
+    setCanCompile(!hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors);
+  }, [emlContent, isGeneratingFields, regexGeneratedOutputs, regexGeneratedOutputErrors, setCanCompile]);
+
+  // Memoize the stringified value to avoid expensive recalculation on every render
+  const decomposedRegexesKey = useMemo(
+    () => JSON.stringify(store.decomposedRegexes),
+    [store.decomposedRegexes]
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
+
       if (!emlContent || !store.decomposedRegexes?.length) {
+        // Clear outputs when there are no regexes
+        setRegexGeneratedOutputs([]);
+        setRegexGeneratedOutputErrors([]);
         setIsGeneratingFields(false);
         return;
       }
@@ -163,50 +324,111 @@ const ExtractFields = ({
               revealPrivateFields
             );
 
+            // Only update state if component is still mounted
+            if (cancelled) return;
+
             const outputUpdated =
               JSON.stringify(regexOutputs) !== JSON.stringify(regexGeneratedOutputs[index]);
 
-            setRegexGeneratedOutputs((prev) => {
-              const updated = [...prev];
-              // @ts-ignore
-              updated[index] = regexOutputs;
-              return updated;
+            // Validate output lengths against maxLength for public parts
+            const parts = parseRegexParts(parsedRegex.parts);
+            let validationError = '';
+            const errorParts: string[] = [];
+
+            parts.forEach((part: any, partIndex: number) => {
+              if (part.isPublic && part.maxLength !== undefined && regexOutputs[partIndex]) {
+                const actualLength = regexOutputs[partIndex].length;
+                if (actualLength > part.maxLength) {
+                  errorParts.push(`Part ${partIndex + 1}: length ${actualLength} exceeds max ${part.maxLength}`);
+                }
+              }
             });
 
-            setRegexGeneratedOutputErrors((prev) => {
-              const updated = [...prev];
-              // @ts-ignore
-              updated[index] = '';
-              return updated;
-            });
+            if (errorParts.length > 0) {
+              validationError = `Max length exceeded: ${errorParts.join(', ')}`;
+            }
 
-            // update the max length of the regex at that particular index
-            // Only update when the output changes, so we can still set maxLength
-            if (outputUpdated) {
-              const totalLength = regexOutputs.reduce((acc, cur) => (acc += cur.length), 0);
-              const decomposedRegexes = [...store.decomposedRegexes];
-              decomposedRegexes[index].maxLength = totalLength ?? 64;
-              setField('decomposedRegexes', decomposedRegexes);
+            // Check again before state updates
+            if (!cancelled) {
+              setRegexGeneratedOutputs((prev) => {
+                const updated = [...prev];
+                // @ts-ignore
+                updated[index] = regexOutputs;
+                return updated;
+              });
+
+              setRegexGeneratedOutputErrors((prev) => {
+                const updated = [...prev];
+                // @ts-ignore
+                updated[index] = validationError;
+                return updated;
+              });
+
+              // update the max length of the regex at that particular index
+              // Only update when the output changes and there's no validation error
+              if (outputUpdated && !validationError) {
+                // Calculate total length only for public parts
+                let publicPartsTotalLength = 0;
+                const parts = parseRegexParts(parsedRegex.parts);
+
+                // Update individual part max lengths only if not manually set
+                // This preserves user-defined values
+                const updatedParts = parts.map((part: any, partIndex: number) => {
+                  if (part.isPublic && regexOutputs[partIndex]) {
+                    const partLength = regexOutputs[partIndex].length;
+                    // Only auto-update if maxLength is undefined (not manually set)
+                    if (part.maxLength === undefined) {
+                      publicPartsTotalLength += partLength;
+                      return {
+                        ...part,
+                        maxLength: partLength
+                      };
+                    } else {
+                      // Use the manually set value in calculation
+                      publicPartsTotalLength += part.maxLength;
+                      return part;
+                    }
+                  }
+                  return part;
+                });
+
+                const decomposedRegexes = [...store.decomposedRegexes];
+                decomposedRegexes[index] = {
+                  ...decomposedRegexes[index],
+                  parts: updatedParts,
+                  maxLength: publicPartsTotalLength || 64
+                };
+                setField('decomposedRegexes', decomposedRegexes);
+              }
             }
           } catch (error) {
             console.error('Error testing decomposed regex:', error);
-            setRegexGeneratedOutputErrors((prev) => {
-              const updated = [...prev];
-              // @ts-ignore
-              updated[index] = 'Error: ' + error;
-              return updated;
-            });
+            // Check if cancelled before error state update
+            if (!cancelled) {
+              setRegexGeneratedOutputErrors((prev) => {
+                const updated = [...prev];
+                // @ts-ignore
+                updated[index] = 'Error: ' + error;
+                return updated;
+              });
+            }
           }
         })
       );
 
-      setIsGeneratingFields(false);
+      // Only update if not cancelled
+      if (!cancelled) {
+        setIsGeneratingFields(false);
+      }
     };
 
-    generateRegexOutputs().finally(() => {
-      setIsGeneratingFields(false);
-    });
-  }, [emlContent, JSON.stringify(store.decomposedRegexes)]);
+    generateRegexOutputs();
+
+    // Cleanup function to set cancelled flag
+    return () => {
+      cancelled = true;
+    };
+  }, [emlContent, decomposedRegexesKey]);
 
   const handleGenerateFields = async (index: number) => {
     const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
@@ -239,11 +461,18 @@ const ExtractFields = ({
       const data = await response.json();
 
       const updatedRegexes = [...store.decomposedRegexes];
+      // Calculate total max length for public parts (using 64 as default)
+      const totalPublicMaxLength = data[0].parts.reduce((acc: number, part: any) => {
+        if (part.isPublic) {
+          return acc + (part.maxLength ?? 64);
+        }
+        return acc;
+      }, 0);
       updatedRegexes[index] = {
         name: data[0].name,
         location: data[0].location === 'body' ? 'body' : 'header',
         parts: data[0].parts,
-        maxLength: 64,
+        maxLength: totalPublicMaxLength || 64,
       };
 
       setField('decomposedRegexes', updatedRegexes);
@@ -265,110 +494,6 @@ const ExtractFields = ({
       setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
       // handleTestEmail();
     }
-  };
-
-  const Status = () => {
-    if (errors.length || !emlContent) {
-      setCanCompile(false);
-      return errors.map((error) => (
-        <div key={error} className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">{error}</span>
-        </div>
-      ));
-    }
-    if (isGeneratingFields) {
-      setCanCompile(false);
-      return (
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-          <span className="text-base font-medium">Generating fields...</span>
-        </div>
-      );
-    }
-    if (!regexGeneratedOutputs.length) {
-      setCanCompile(false);
-      return (
-        <div className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">Please add atleast one regex</span>
-        </div>
-      );
-    }
-    if (
-      !regexGeneratedOutputs.length ||
-      regexGeneratedOutputs.some((output) =>
-        Array.isArray(output)
-          ? output.join('').includes('Error')
-          : output
-            ? output.includes('Error')
-            : true
-      )
-    ) {
-      setCanCompile(false);
-      return (
-        <div className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">Some regexes failed to generate output</span>
-        </div>
-      );
-    } else {
-      console.log('canCompile', regexGeneratedOutputs);
-      setCanCompile(true);
-      return (
-        <div className="flex items-center gap-2 text-green-300">
-          <Image
-            src="/assets/CheckCircle.svg"
-            alt="check"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">All tests passed. Ready to compile</span>
-        </div>
-      );
-    }
-  };
-
-  const parseRegexParts = (parts: any): any => {
-    if (typeof parts === 'string') {
-      try {
-        return JSON.parse(parts);
-      } catch {
-        return [];
-      }
-    }
-    return parts || [];
   };
 
   return (
@@ -404,6 +529,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef: '[^\\r\\n]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -416,6 +542,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           subjectRegex,
                         ]);
+                      } else {
+                        // Remove the subject regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'subject') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -458,6 +588,7 @@ const ExtractFields = ({
                               isPublic: true,
                               regexDef:
                                 '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -471,6 +602,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           receiverRegex,
                         ]);
+                      } else {
+                        // Remove the email_recipient regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_recipient') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -515,6 +650,7 @@ const ExtractFields = ({
                               isPublic: true,
                               regexDef:
                                 "[A-Za-z0-9!#$%&'\\\\*\\\\+\\\\-\\\\/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[A-Za-z0-9\\\\.-]+",
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -528,6 +664,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           senderNameRegex,
                         ]);
+                      } else {
+                        // Remove the email_sender regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_sender') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -568,6 +708,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -581,6 +722,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           senderDomainRegex,
                         ]);
+                      } else {
+                        // Remove the sender_domain regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'sender_domain') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -624,6 +769,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef: '[0-9]+',
+                              maxLength: 64,
                             },
                             {
                               isPublic: false,
@@ -637,6 +783,10 @@ const ExtractFields = ({
                           ...(store.decomposedRegexes ?? []),
                           timestampRegex,
                         ]);
+                      } else {
+                        // Remove the email_timestamp regex when unchecked
+                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_timestamp') ?? [];
+                        setField('decomposedRegexes', filtered);
                       }
                     }}
                     className="cursor-pointer"
@@ -718,7 +868,8 @@ const ExtractFields = ({
                   onClick={() => {
                     const updatedRegexes = [...store.decomposedRegexes];
                     updatedRegexes.splice(index, 1);
-                    aiPrompts.splice(index, 1);
+                    const updatedAiPrompts = aiPrompts.filter((_, i) => i !== index);
+                    setAiPrompts(updatedAiPrompts);
                     setField('decomposedRegexes', updatedRegexes);
 
                     setRegexGeneratedOutputs(regexGeneratedOutputs.filter((_, i) => i !== index));
@@ -831,8 +982,19 @@ const ExtractFields = ({
                               onClick={() => {
                                 const parts = parseRegexParts(regex.parts);
                                 parts[partIndex].isPublic = false;
+                                // Recalculate total max length for all public parts
+                                const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
+                                  if (p && p.isPublic) {
+                                    return acc + (p.maxLength ?? 64);
+                                  }
+                                  return acc;
+                                }, 0);
                                 const updatedRegexes = [...store.decomposedRegexes];
-                                updatedRegexes[index] = { ...regex, parts };
+                                updatedRegexes[index] = {
+                                  ...regex,
+                                  parts,
+                                  maxLength: totalPublicMaxLength || 64
+                                };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
                               aria-pressed={!part.isPublic}
@@ -855,8 +1017,20 @@ const ExtractFields = ({
                               onClick={() => {
                                 const parts = parseRegexParts(regex.parts);
                                 parts[partIndex].isPublic = true;
+                                // Recalculate total max length for all public parts
+                                // Use 64 as default when maxLength is undefined
+                                const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
+                                  if (p && p.isPublic) {
+                                    return acc + (p.maxLength ?? 64);
+                                  }
+                                  return acc;
+                                }, 0);
                                 const updatedRegexes = [...store.decomposedRegexes];
-                                updatedRegexes[index] = { ...regex, parts };
+                                updatedRegexes[index] = {
+                                  ...regex,
+                                  parts,
+                                  maxLength: totalPublicMaxLength || 64
+                                };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
                               aria-pressed={part.isPublic}
@@ -940,35 +1114,43 @@ const ExtractFields = ({
                               <div className="relative mx-3 pt-2">
                                 <Label>Max Length</Label>
                                 <Input
-                                  value={part.maxLength}
+                                  type="number"
+                                  min="1"
+                                  value={part.maxLength === undefined ? '' : part.maxLength}
                                   onChange={(e) => {
                                     const parts: DecomposedRegexPart[] = [
                                       ...parseRegexParts(regex.parts),
                                     ];
                                     const rawValue = e.target.value;
+                                    // Allow empty string, but treat as undefined
+                                    // Also handle invalid numbers by treating them as undefined
+                                    const parsedValue = parseInt(rawValue);
+                                    const newMaxLength = rawValue === '' || isNaN(parsedValue) ? undefined : parsedValue;
+
                                     parts[partIndex] = {
                                       ...parts[partIndex],
-                                      maxLength: parseInt(rawValue),
+                                      maxLength: newMaxLength,
                                     };
+
                                     const updatedRegexes = [...store.decomposedRegexes];
-                                    const updatedMaxLength = parts.reduce((acc: number, p: any) => {
-                                      const partMax =
-                                        p && p.isPublic && typeof p.maxLength === 'number'
-                                          ? p.maxLength
-                                          : 0;
-                                      return acc + partMax;
+
+                                    // Calculate total max length for all public parts
+                                    // Use 64 as default when maxLength is undefined
+                                    const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
+                                      if (p && p.isPublic) {
+                                        return acc + (p.maxLength ?? 64);
+                                      }
+                                      return acc;
                                     }, 0);
+
                                     updatedRegexes[index] = {
                                       ...regex,
                                       parts: parts,
-                                      maxMatchLength:
-                                        updatedMaxLength > (updatedRegexes[index].maxLength ?? 0)
-                                          ? updatedMaxLength
-                                          : updatedRegexes[index].maxLength,
+                                      maxLength: totalPublicMaxLength || 64,
                                     };
                                     setField('decomposedRegexes', updatedRegexes);
                                   }}
-                                  placeholder="Enter max length for this regex"
+                                  placeholder="Default: 64"
                                 />
                               </div>
                             </motion.div>
@@ -1030,7 +1212,7 @@ const ExtractFields = ({
                       }`}
                     >
                       {regexGeneratedOutputErrors[index]
-                        ? JSON.stringify(regexGeneratedOutputErrors[index])
+                        ? regexGeneratedOutputErrors[index]
                         : regexGeneratedOutputs && regexGeneratedOutputs[index]
                           ? `${regex.name}: ${JSON.stringify(regexGeneratedOutputs[index])}`
                           : ''}
@@ -1191,7 +1373,12 @@ const ExtractFields = ({
         ) : null}
       </div>
       <div data-testid="regex-status">
-        <Status />
+        <Status
+          emlContent={emlContent}
+          isGeneratingFields={isGeneratingFields}
+          regexGeneratedOutputs={regexGeneratedOutputs}
+          regexGeneratedOutputErrors={regexGeneratedOutputErrors}
+        />
       </div>
     </div>
   );

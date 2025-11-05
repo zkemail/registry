@@ -181,10 +181,19 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           console.log('saving draft with state: ', state);
           console.log('getting email content');
           let emlStr = '';
-          if (state.file) {
-            emlStr = await getFileContent(state.file);
-          } else {
-            emlStr = savedEmls[state.id ?? 'new'];
+          // Always use savedEmls for email content
+          // File objects cannot be properly serialized/deserialized from storage
+          const blueprintId = state.id ?? 'new';
+          emlStr = savedEmls[blueprintId] || '';
+
+          // If we don't have the email content in savedEmls and have a valid File object,
+          // try to read it (this only works for fresh uploads, not persisted state)
+          if (!emlStr && state.file && state.file instanceof File) {
+            try {
+              emlStr = await getFileContent(state.file);
+            } catch (error) {
+              console.warn('Could not read file content, file may be invalid:', error);
+            }
           }
           console.log('got email content');
           // Create a new blueprint
@@ -315,6 +324,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
     }),
     {
       name: 'create-blueprint',
+      // Exclude 'file' from persistence as File objects cannot be serialized
+      partialize: (state) => {
+        const { file, ...rest } = state;
+        return rest;
+      },
       storage: {
         getItem: async (name) => {
           const value = await get(name);

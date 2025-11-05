@@ -313,11 +313,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       return !store.circuitName || !store.title || !store.description || store.title?.includes(' ');
     }
 
-    console.log('skipEmlUpload', skipEmlUpload);
     if (step === '1') {
-      return (
-        !store.emailQuery || !store.emailBodyMaxLength || store.ignoreBodyHashCheck === undefined
-      );
+      // Check canCompile state from ExtractFields component
+      return !canCompile;
     }
 
     if (step === '2') {
