@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo, useMemo } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -140,7 +140,7 @@ const Status = memo(({
 
 Status.displayName = 'Status';
 
-const AIPromptInput = ({
+const AIPromptInput = memo(({
   aiPrompt,
   setAiPrompt,
   handleGenerateFields,
@@ -213,7 +213,9 @@ const AIPromptInput = ({
       </div>
     </div>
   );
-};
+});
+
+AIPromptInput.displayName = 'AIPromptInput';
 
 const ExtractFields = ({
   emlContent,
@@ -279,6 +281,12 @@ const ExtractFields = ({
 
     setCanCompile(!hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors);
   }, [emlContent, isGeneratingFields, regexGeneratedOutputs, regexGeneratedOutputErrors, setCanCompile]);
+
+  // Memoize the stringified value to avoid expensive recalculation on every render
+  const decomposedRegexesKey = useMemo(
+    () => JSON.stringify(store.decomposedRegexes),
+    [store.decomposedRegexes]
+  );
 
   useEffect(() => {
     const generateRegexOutputs = async () => {
@@ -402,7 +410,7 @@ const ExtractFields = ({
     generateRegexOutputs().finally(() => {
       setIsGeneratingFields(false);
     });
-  }, [emlContent, JSON.stringify(store.decomposedRegexes)]);
+  }, [emlContent, decomposedRegexesKey]);
 
   const handleGenerateFields = async (index: number) => {
     const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
