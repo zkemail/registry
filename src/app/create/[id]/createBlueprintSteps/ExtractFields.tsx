@@ -22,6 +22,14 @@ import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
 
+// Memoized Status component to prevent recreation on each render
+interface StatusProps {
+  emlContent: string;
+  isGeneratingFields: boolean;
+  regexGeneratedOutputs: string[];
+  regexGeneratedOutputErrors: string[];
+}
+
 // Pure utility function - doesn't need to be recreated on each render
 const parseRegexParts = (parts: any): any => {
   if (typeof parts === 'string') {
@@ -33,14 +41,6 @@ const parseRegexParts = (parts: any): any => {
   }
   return parts || [];
 };
-
-// Memoized Status component to prevent recreation on each render
-interface StatusProps {
-  emlContent: string;
-  isGeneratingFields: boolean;
-  regexGeneratedOutputs: string[];
-  regexGeneratedOutputErrors: string[];
-}
 
 const Status = memo(({
   emlContent,
