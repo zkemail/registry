@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,124 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { REGEX_COLORS } from '@/app/constants';
 import { Checkbox } from '@/components/ui/checkbox';
+
+// Pure utility function - doesn't need to be recreated on each render
+const parseRegexParts = (parts: any): any => {
+  if (typeof parts === 'string') {
+    try {
+      return JSON.parse(parts);
+    } catch {
+      return [];
+    }
+  }
+  return parts || [];
+};
+
+// Memoized Status component to prevent recreation on each render
+interface StatusProps {
+  emlContent: string;
+  isGeneratingFields: boolean;
+  regexGeneratedOutputs: string[];
+  regexGeneratedOutputErrors: string[];
+}
+
+const Status = memo(({
+  emlContent,
+  isGeneratingFields,
+  regexGeneratedOutputs,
+  regexGeneratedOutputErrors
+}: StatusProps) => {
+  if (!emlContent) {
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <Image
+          src="/assets/WarningCircle.svg"
+          alt="fail"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">Please provide an email file</span>
+      </div>
+    );
+  }
+  if (isGeneratingFields) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+        <span className="text-base font-medium">Generating fields...</span>
+      </div>
+    );
+  }
+  if (!regexGeneratedOutputs.length) {
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <Image
+          src="/assets/WarningCircle.svg"
+          alt="fail"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">Please add at least one regex</span>
+      </div>
+    );
+  }
+  // Check for errors in regexGeneratedOutputErrors array
+  const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+
+  if (
+    !regexGeneratedOutputs.length ||
+    hasRegexErrors ||
+    regexGeneratedOutputs.some((output) =>
+      Array.isArray(output)
+        ? output.join('').includes('Error')
+        : output
+          ? output.includes('Error')
+          : true
+    )
+  ) {
+    return (
+      <div className="flex items-center gap-2 text-red-400">
+        <Image
+          src="/assets/WarningCircle.svg"
+          alt="fail"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">Some regexes failed to generate output</span>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex items-center gap-2 text-green-300">
+        <Image
+          src="/assets/CheckCircle.svg"
+          alt="check"
+          width={20}
+          height={20}
+          style={{
+            maxWidth: '100%',
+            height: 'auto',
+          }}
+        />
+        <span className="text-base font-medium">All tests passed. Ready to compile</span>
+      </div>
+    );
+  }
+});
+
+Status.displayName = 'Status';
 
 const AIPromptInput = ({
   aiPrompt,
@@ -163,17 +281,6 @@ const ExtractFields = ({
   }, [emlContent, isGeneratingFields, regexGeneratedOutputs, regexGeneratedOutputErrors, setCanCompile]);
 
   useEffect(() => {
-    const parseRegexParts = (parts: any): any => {
-      if (typeof parts === 'string') {
-        try {
-          return JSON.parse(parts);
-        } catch {
-          return [];
-        }
-      }
-      return parts || [];
-    };
-
     const generateRegexOutputs = async () => {
       setIsGeneratingFields(true);
       if (!emlContent || !store.decomposedRegexes?.length) {
@@ -361,108 +468,6 @@ const ExtractFields = ({
       setIsGeneratingFieldsLoading(updatedIsGeneratingFieldsLoading);
       // handleTestEmail();
     }
-  };
-
-  const Status = () => {
-    if (!emlContent) {
-      return (
-        <div className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">Please provide an email file</span>
-        </div>
-      );
-    }
-    if (isGeneratingFields) {
-      return (
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-          <span className="text-base font-medium">Generating fields...</span>
-        </div>
-      );
-    }
-    if (!regexGeneratedOutputs.length) {
-      return (
-        <div className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">Please add at least one regex</span>
-        </div>
-      );
-    }
-    // Check for errors in regexGeneratedOutputErrors array
-    const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
-
-    if (
-      !regexGeneratedOutputs.length ||
-      hasRegexErrors ||
-      regexGeneratedOutputs.some((output) =>
-        Array.isArray(output)
-          ? output.join('').includes('Error')
-          : output
-            ? output.includes('Error')
-            : true
-      )
-    ) {
-      return (
-        <div className="flex items-center gap-2 text-red-400">
-          <Image
-            src="/assets/WarningCircle.svg"
-            alt="fail"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">Some regexes failed to generate output</span>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex items-center gap-2 text-green-300">
-          <Image
-            src="/assets/CheckCircle.svg"
-            alt="check"
-            width={20}
-            height={20}
-            style={{
-              maxWidth: '100%',
-              height: 'auto',
-            }}
-          />
-          <span className="text-base font-medium">All tests passed. Ready to compile</span>
-        </div>
-      );
-    }
-  };
-
-  const parseRegexParts = (parts: any): any => {
-    if (typeof parts === 'string') {
-      try {
-        return JSON.parse(parts);
-      } catch {
-        return [];
-      }
-    }
-    return parts || [];
   };
 
   return (
@@ -1342,7 +1347,12 @@ const ExtractFields = ({
         ) : null}
       </div>
       <div data-testid="regex-status">
-        <Status />
+        <Status
+          emlContent={emlContent}
+          isGeneratingFields={isGeneratingFields}
+          regexGeneratedOutputs={regexGeneratedOutputs}
+          regexGeneratedOutputErrors={regexGeneratedOutputErrors}
+        />
       </div>
     </div>
   );
