@@ -18,7 +18,7 @@
         "@radix-ui/react-switch": "^1.1.1",
         "@radix-ui/react-tooltip": "^1.1.6",
         "@react-oauth/google": "^0.12.1",
-        "@zk-email/sdk": "3.0.0-nightly.7",
+        "@zk-email/sdk": "3.0.0-nightly.8",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.1",
         "crypto": "^1.0.1",
@@ -325,9 +325,9 @@
 
     "@xobotyi/scrollbar-width": ["@xobotyi/scrollbar-width@1.9.5", "", {}, ""],
 
-    "@zk-email/relayer-utils": ["@zk-email/relayer-utils@0.4.66-9", "", {}, "sha512-9M3VCZ5pu4Q9+Je1TKMOSvYk/XXfm4kDqWBwU0FONTmyIHue1wcyFlmd19DMlJOlgr4ZRdQlKuQr2BZapeo06w=="],
+    "@zk-email/relayer-utils": ["@zk-email/relayer-utils@0.4.66-10", "", {}, "sha512-gblHx7CUvxXZEh9axRiRmF8fhSKj1qbT+E7/moxsclo2q3H0gqIp0A6ECFhco+7VnU1KWP9AloB7fuj4OiM5rA=="],
 
-    "@zk-email/sdk": ["@zk-email/sdk@3.0.0-nightly.7", "", { "dependencies": { "@azure/msal-browser": "^4.5.1", "@mach-34/noir-bignum-paramgen": "^1.1.2", "@peculiar/webcrypto": "^1.5.0", "@zk-email/relayer-utils": "0.4.66-9", "@zk-email/snarkjs": "^0.0.1", "ethers": "^6.13.4", "jszip": "^3.10.1", "poseidon-lite": "^0.3.0", "rsa-key": "^0.0.6", "snarkjs": "^0.7.5", "viem": "^2.21.53", "zod": "^3.23.8" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-aaSa0KZ/lZdW0nSWcatbvyQU3Mkhyvw1xdVjYJn104HqHglvXd7/1mDpZAufrC9Y8qxIhYBkFq/sqmAacnwqfA=="],
+    "@zk-email/sdk": ["@zk-email/sdk@3.0.0-nightly.8", "", { "dependencies": { "@azure/msal-browser": "^4.5.1", "@mach-34/noir-bignum-paramgen": "^1.1.2", "@peculiar/webcrypto": "^1.5.0", "@zk-email/relayer-utils": "0.4.66-10", "@zk-email/snarkjs": "^0.0.1", "ethers": "^6.13.4", "jszip": "^3.10.1", "poseidon-lite": "^0.3.0", "rsa-key": "^0.0.6", "snarkjs": "^0.7.5", "viem": "^2.21.53", "zod": "^3.23.8" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-PyTUV/aswMptFnDaw9g2bD+lyJjh8KF8PCfuu1qWxyyCczOD+Xox9Bg+Y2paeqjZO5GxJvYM1MNknrkm85a6yA=="],
 
     "@zk-email/snarkjs": ["@zk-email/snarkjs@0.0.1", "", { "dependencies": { "@iden3/binfileutils": "0.0.12", "bfj": "^7.0.2", "blake2b-wasm": "^2.4.0", "circom_runtime": "0.1.28", "ejs": "^3.1.6", "fastfile": "0.0.20", "ffjavascript": "0.3.1", "js-sha3": "^0.8.0", "logplease": "^1.2.15", "r1csfile": "0.0.48" }, "bin": { "snarkjs": "build/cli.cjs" } }, ""],
 
