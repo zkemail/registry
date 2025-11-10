@@ -73,6 +73,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
   const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
   const [skipEmlUpload, setSkipEmlUpload] = useState(false);
+  const [hasLoadedBlueprint, setHasLoadedBlueprint] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -109,13 +110,19 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   // Load data if an id is provided
   useEffect(() => {
-    if (id === 'new' && step === '0') {
+    if (id === 'new') {
       reset();
+      setHasLoadedBlueprint(false);
     }
-    if (id !== 'new') {
-      setToExistingBlueprint(id);
+    // Only fetch from server if we haven't loaded this blueprint yet
+    if (id !== 'new' && !hasLoadedBlueprint) {
+      const loadBlueprint = async () => {
+        await setToExistingBlueprint(id);
+        setHasLoadedBlueprint(true);
+      };
+      loadBlueprint();
     }
-  }, [id, step]);
+  }, [id]); // Only run when id changes, not on step changes
 
   useEffect(() => {
     // Load all EMLs from IndexedDB on mount
