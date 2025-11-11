@@ -61,115 +61,93 @@ const PatternDetails = ({
     // Store the circuit name being checked
     currentCircuitNameRef.current = circuitName;
 
+    // Helper functions
+    const buildSlug = (name: string) => `${githubUserName}/${name}`;
+    const isStaleRequest = () => thisRequestVersion !== requestVersionRef.current;
+    const isCircuitNameChanged = () => currentCircuitNameRef.current !== circuitName;
+
+    const matchesBlueprint = (slug: string | undefined, baseSlug: string): boolean => {
+      if (!slug) return false;
+      if (slug === baseSlug) return true;
+
+      // Incremented version: must be base + "_" + digits only
+      if (slug.startsWith(`${baseSlug}_`)) {
+        const suffix = slug.substring(baseSlug.length + 1);
+        return /^\d+$/.test(suffix);
+      }
+
+      return false;
+    };
+
+    const extractNumericSuffix = (slug: string | undefined, baseSlug: string): number => {
+      if (!slug) return -1;
+      if (slug === baseSlug) return 0; // Exact match has no suffix
+
+      if (slug.startsWith(`${baseSlug}_`)) {
+        const suffix = slug.substring(baseSlug.length + 1);
+        const num = parseInt(suffix, 10);
+        return isNaN(num) ? -1 : num;
+      }
+
+      return -1;
+    };
+
     setIsCheckExistingBlueprintLoading(true);
 
     try {
       let exactMatch: Blueprint | null = null;
       let existingBlueprint = false;
 
+      // Check if exact blueprint already exists
       try {
         exactMatch = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`);
+        if (isStaleRequest()) return;
 
-        // Check if this response is still relevant
-        if (thisRequestVersion !== requestVersionRef.current) {
-          return;
-        }
-
-        const expectedSlug = `${githubUserName}/${circuitName}`;
+        const expectedSlug = buildSlug(circuitName);
         existingBlueprint = !!(exactMatch && exactMatch.props?.slug === expectedSlug);
       } catch {
         console.log('Blueprint does not exist yet');
       }
 
-      // Check again before continuing with search
-      if (thisRequestVersion !== requestVersionRef.current) {
-        return;
-      }
+      if (isStaleRequest()) return;
 
       // If no conflict, we're done - slug is already correct from immediate update
       if (!existingBlueprint) {
-        // Only clear loading if this is still the current request
-        if (thisRequestVersion === requestVersionRef.current) {
+        if (!isStaleRequest()) {
           setIsCheckExistingBlueprintLoading(false);
         }
         return;
       }
 
-      // Blueprint exists - need to increment
-      const results = await sdk.listBlueprints({
-        search: circuitName,
-      });
+      // Blueprint exists - need to find next available increment
+      const results = await sdk.listBlueprints({ search: circuitName });
+      if (isStaleRequest()) return;
 
-      // Check once more before updating state
-      if (thisRequestVersion !== requestVersionRef.current) {
-        return;
-      }
+      // Find all blueprints with the same base name
+      const baseSlug = buildSlug(circuitName);
+      const matchingBlueprints = results.filter((bp) => matchesBlueprint(bp.props.slug, baseSlug));
 
-      // Check for blueprints with the same base name (including those with _N suffix)
-      const baseSlug = `${githubUserName}/${circuitName}`;
-      const matchingBlueprints = results.filter((bp) => {
-        const slug = bp.props.slug;
-        if (!slug) return false;
+      // Check for stale request or changed circuit name before updating state
+      if (isStaleRequest() || isCircuitNameChanged()) return;
 
-        // Exact match
-        if (slug === baseSlug) return true;
-
-        // Incremented version: must be base + "_" + digits only
-        if (slug.startsWith(`${baseSlug}_`)) {
-          const suffix = slug.substring(baseSlug.length + 1);
-          // Only match if suffix is purely numeric
-          return /^\d+$/.test(suffix);
-        }
-
-        return false;
-      });
-
-      // Final check before state update
-      if (thisRequestVersion !== requestVersionRef.current) {
-        return;
-      }
-
-      // Don't update if user typed more characters since this check started
-      if (currentCircuitNameRef.current !== circuitName) {
-        return;
-      }
-
-      // Extract all numeric suffixes from matching blueprints
+      // Extract numeric suffixes and find next available number
       const suffixes = matchingBlueprints
-        .map((bp) => {
-          const slug = bp.props.slug;
-          if (!slug) return -1;
-
-          // Exact match has no suffix (treat as 0)
-          if (slug === baseSlug) return 0;
-
-          // Extract numeric suffix from "base_N" pattern
-          if (slug.startsWith(`${baseSlug}_`)) {
-            const suffix = slug.substring(baseSlug.length + 1);
-            const num = parseInt(suffix, 10);
-            return isNaN(num) ? -1 : num;
-          }
-
-          return -1;
-        })
+        .map((bp) => extractNumericSuffix(bp.props.slug, baseSlug))
         .filter((n) => n >= 0);
 
-      // Find the next available number (max + 1)
       const maxSuffix = suffixes.length > 0 ? Math.max(...suffixes) : -1;
       const nextSuffix = maxSuffix + 1;
 
       const incrementedCircuitName = `${circuitName}_${nextSuffix}`;
       setField('circuitName', incrementedCircuitName);
-      setField('slug', `${githubUserName}/${incrementedCircuitName}`);
+      setField('slug', buildSlug(incrementedCircuitName));
     } catch (error) {
       console.error('Error checking blueprint existence:', error);
-      // Only show error if this is still the current request
-      if (thisRequestVersion === requestVersionRef.current) {
+      if (!isStaleRequest()) {
         toast.error('Failed to check blueprint name availability');
       }
     } finally {
-      // Only clear loading state if this is still the current request
-      if (thisRequestVersion === requestVersionRef.current) {
+      if (!isStaleRequest()) {
         requestAnimationFrame(() => {
           setIsCheckExistingBlueprintLoading(false);
         });
