@@ -120,11 +120,6 @@ const EmailDetails = ({
       )}
       <Checkbox
         title="Skip body hash check"
-        helpText={
-          hasBodyPatterns(store.decomposedRegexes)
-            ? "This option is disabled because you have regex patterns extracting data from the email body. Body hash verification is required when extracting body data, otherwise compilation will fail."
-            : "Recommended: Since you have no body patterns, enabling this will significantly improve performance"
-        }
         checked={store.ignoreBodyHashCheck}
         disabled={hasBodyPatterns(store.decomposedRegexes)}
         onCheckedChange={(checked) => {
