@@ -10,7 +10,7 @@ import sdk from '@/lib/sdk';
 import { useDebouncedCallback } from 'use-debounce';
 import { findOrCreateDSP } from '@/app/utils';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { getFileContent } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Blueprint, getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
@@ -49,7 +49,18 @@ const PatternDetails = ({
 
   const [isCheckExistingBlueprintLoading, setIsCheckExistingBlueprintLoading] = useState(false);
 
+  // Request version tracking to handle race conditions
+  const requestVersionRef = useRef(0);
+  const currentCircuitNameRef = useRef<string>('');
+
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
+    // Increment request version for this new check
+    requestVersionRef.current += 1;
+    const thisRequestVersion = requestVersionRef.current;
+
+    // Store the circuit name being checked
+    currentCircuitNameRef.current = circuitName;
+
     setIsCheckExistingBlueprintLoading(true);
 
     try {
@@ -57,16 +68,30 @@ const PatternDetails = ({
       let existingBlueprint = false;
 
       try {
-        exactMatch = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
-        // Verify it's truly an exact match (not fuzzy match)
+        exactMatch = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`);
+
+        // Check if this response is still relevant
+        if (thisRequestVersion !== requestVersionRef.current) {
+          return;
+        }
+
         const expectedSlug = `${githubUserName}/${circuitName}`;
         existingBlueprint = !!(exactMatch && exactMatch.props?.slug === expectedSlug);
       } catch {
         console.log('Blueprint does not exist yet');
       }
 
+      // Check again before continuing with search
+      if (thisRequestVersion !== requestVersionRef.current) {
+        return;
+      }
+
       // If no conflict, we're done - slug is already correct from immediate update
       if (!existingBlueprint) {
+        // Only clear loading if this is still the current request
+        if (thisRequestVersion === requestVersionRef.current) {
+          setIsCheckExistingBlueprintLoading(false);
+        }
         return;
       }
 
@@ -75,8 +100,12 @@ const PatternDetails = ({
         search: circuitName,
       });
 
+      // Check once more before updating state
+      if (thisRequestVersion !== requestVersionRef.current) {
+        return;
+      }
+
       // Check for blueprints with the same base name (including those with _N suffix)
-      // Must be very precise to avoid matching similar names
       const baseSlug = `${githubUserName}/${circuitName}`;
       const matchingBlueprints = results.filter((bp) => {
         const slug = bp.props.slug;
@@ -87,25 +116,74 @@ const PatternDetails = ({
 
         // Incremented version: must be base + "_" + digits only
         if (slug.startsWith(`${baseSlug}_`)) {
-          const suffix = slug.substring(baseSlug.length + 1); // Get part after "base_"
-          // Only match if suffix is purely numeric (e.g., "1", "2", "10")
+          const suffix = slug.substring(baseSlug.length + 1);
+          // Only match if suffix is purely numeric
           return /^\d+$/.test(suffix);
         }
 
         return false;
       });
 
-      const incrementedCircuitName = `${circuitName}_${matchingBlueprints.length}`;
+      // Final check before state update
+      if (thisRequestVersion !== requestVersionRef.current) {
+        return;
+      }
+
+      // Don't update if user typed more characters since this check started
+      if (currentCircuitNameRef.current !== circuitName) {
+        return;
+      }
+
+      // Extract all numeric suffixes from matching blueprints
+      const suffixes = matchingBlueprints
+        .map((bp) => {
+          const slug = bp.props.slug;
+          if (!slug) return -1;
+
+          // Exact match has no suffix (treat as 0)
+          if (slug === baseSlug) return 0;
+
+          // Extract numeric suffix from "base_N" pattern
+          if (slug.startsWith(`${baseSlug}_`)) {
+            const suffix = slug.substring(baseSlug.length + 1);
+            const num = parseInt(suffix, 10);
+            return isNaN(num) ? -1 : num;
+          }
+
+          return -1;
+        })
+        .filter((n) => n >= 0);
+
+      // Find the next available number (max + 1)
+      const maxSuffix = suffixes.length > 0 ? Math.max(...suffixes) : -1;
+      const nextSuffix = maxSuffix + 1;
+
+      const incrementedCircuitName = `${circuitName}_${nextSuffix}`;
       setField('circuitName', incrementedCircuitName);
       setField('slug', `${githubUserName}/${incrementedCircuitName}`);
+    } catch (error) {
+      console.error('Error checking blueprint existence:', error);
+      // Only show error if this is still the current request
+      if (thisRequestVersion === requestVersionRef.current) {
+        toast.error('Failed to check blueprint name availability');
+      }
     } finally {
-      // Always turn off loading in finally block, ensuring it happens after all work
-      // Using requestAnimationFrame ensures this runs after React has painted the updated slug
-      requestAnimationFrame(() => {
-        setIsCheckExistingBlueprintLoading(false);
-      });
+      // Only clear loading state if this is still the current request
+      if (thisRequestVersion === requestVersionRef.current) {
+        requestAnimationFrame(() => {
+          setIsCheckExistingBlueprintLoading(false);
+        });
+      }
     }
   }, 300);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      // Cancel any pending debounced calls when component unmounts
+      checkExistingBlueprint.cancel();
+    };
+  }, [checkExistingBlueprint]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -121,9 +199,14 @@ const PatternDetails = ({
           // Only check for blueprint name if there are no spaces
           if (!newTitle.includes(' ')) {
             const sanitizedName = newTitle.replace(/\s+/g, '_');
+
+            // Track current name synchronously
+            currentCircuitNameRef.current = sanitizedName;
+
             // Immediately update circuitName and slug to keep them in sync
             setField('circuitName', sanitizedName);
             setField('slug', `${githubUserName}/${sanitizedName}`);
+
             // Then check for conflicts and increment if needed (debounced)
             checkExistingBlueprint(sanitizedName);
           }
