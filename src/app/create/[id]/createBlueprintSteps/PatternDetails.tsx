@@ -52,6 +52,7 @@ const PatternDetails = ({
   // Request version tracking to handle race conditions
   const requestVersionRef = useRef(0);
   const currentCircuitNameRef = useRef<string>('');
+  const isMountedRef = useRef(true);
 
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
     // Increment request version for this new check
@@ -113,7 +114,7 @@ const PatternDetails = ({
 
       // If no conflict, we're done - slug is already correct from immediate update
       if (!existingBlueprint) {
-        if (!isStaleRequest()) {
+        if (!isStaleRequest() && isMountedRef.current) {
           setIsCheckExistingBlueprintLoading(false);
         }
         return;
@@ -147,9 +148,11 @@ const PatternDetails = ({
         toast.error('Failed to check blueprint name availability');
       }
     } finally {
-      if (!isStaleRequest()) {
+      if (!isStaleRequest() && isMountedRef.current) {
         requestAnimationFrame(() => {
-          setIsCheckExistingBlueprintLoading(false);
+          if (isMountedRef.current) {
+            setIsCheckExistingBlueprintLoading(false);
+          }
         });
       }
     }
@@ -157,7 +160,9 @@ const PatternDetails = ({
 
   // Cleanup on component unmount
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
+      isMountedRef.current = false;
       // Cancel any pending debounced calls when component unmounts
       checkExistingBlueprint.cancel();
     };
