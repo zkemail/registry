@@ -47,12 +47,6 @@ const EmailDetails = ({
     updateEmailBodyMaxLength();
   }, [JSON.stringify(store.shaPrecomputeSelector), JSON.stringify(store.ignoreBodyHashCheck)]);
 
-  useEffect(() => {
-    if (store.blueprint) {
-      store.blueprint.assignPreferredZkFramework(emlContent);
-    }
-  }, [emlContent]);
-
   // Auto-select skip body hash if no body patterns exist
   useEffect(() => {
     // Only auto-select if:

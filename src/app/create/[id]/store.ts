@@ -246,9 +246,13 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           console.log('setting existing blueprint');
           const currentState = get();
           const blueprint = await sdk.getBlueprintById(id);
-          // blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
-          //   dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
-          // });
+
+          // Assign preferred ZK framework based on email content if available
+          const emlStore = useEmlStore.getState();
+          const savedEmls = await emlStore.getAllEmls();
+          if (savedEmls[id]) {
+            await blueprint.assignPreferredZkFramework(savedEmls[id]);
+          }
 
           // TODO: sdk should not return undefined fields - workaround so we have sane defaults
           for (const [key, value] of Object.entries(blueprint.props)) {
@@ -337,7 +341,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       name: 'create-blueprint',
       // Exclude 'file' from persistence as File objects cannot be serialized
       partialize: (state) => {
-        const { file, ...rest } = state;
+        const { file, blueprint, ...rest } = state;
         return rest;
       },
       storage: {

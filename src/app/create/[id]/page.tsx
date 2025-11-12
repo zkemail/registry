@@ -24,6 +24,7 @@ import { REGEX_COLORS } from '@/app/constants';
 import { debounce } from '@/app/utils';
 import ModalGenerator from '@/components/ModalGenerator';
 import { useEmlStore } from '@/lib/stores/useEmlStore';
+import Loader from '@/components/ui/loader';
 
 type Step = '0' | '1' | '2';
 
@@ -34,6 +35,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const posthog = usePostHog();
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
+  const hasHydrated = useAuthStore((state) => state.hasHydrated);
   const emlStore = useEmlStore();
   const [savedEmls, setSavedEmls] = useState<Record<string, string>>({});
 
@@ -59,7 +61,10 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isCompileLoading, setIsCompileLoading] = useState(false);
   const [dkimSelector, setDkimSelector] = useState<string | null>(null);
-  const [optOut, setOptOut] = useState(localStorage.getItem('optOut') === 'true' ? true : false);
+  const [optOut, setOptOut] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('optOut') === 'true';
+  });
   const [canonicalizedHeader, setCanonicalizedHeader] = useState<string>('');
   const [canonicalizedBody, setCanonicalizedBody] = useState<string>('');
   const [headerRegexList, setHeaderRegexList] = useState<any[]>([]);
@@ -74,6 +79,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
   const [skipEmlUpload, setSkipEmlUpload] = useState(false);
   const [hasLoadedBlueprint, setHasLoadedBlueprint] = useState(false);
+  const [isBlueprintLoading, setIsBlueprintLoading] = useState(false);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -113,12 +119,21 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (id === 'new') {
       reset();
       setHasLoadedBlueprint(false);
+      setIsBlueprintLoading(false);
     }
     // Only fetch from server if we haven't loaded this blueprint yet
     if (id !== 'new' && !hasLoadedBlueprint) {
       const loadBlueprint = async () => {
-        await setToExistingBlueprint(id);
-        setHasLoadedBlueprint(true);
+        setIsBlueprintLoading(true);
+        try {
+          await setToExistingBlueprint(id);
+          setHasLoadedBlueprint(true);
+        } catch (err) {
+          console.error('Failed to load blueprint:', err);
+          toast.error('Failed to load blueprint');
+        } finally {
+          setIsBlueprintLoading(false);
+        }
       };
       loadBlueprint();
     }
@@ -311,6 +326,64 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     };
   }, [JSON.stringify(store.senderDomain), dkimSelector, step]);
 
+  const genrateHighlightRegexContent = async () => {
+    if (!savedEmls[id]) {
+      return;
+    }
+
+    const parsed = getParsedDecomposedRegexes();
+
+    const output = await testBlueprint(
+      savedEmls[id],
+      {
+        ...store,
+        decomposedRegexes: getParsedDecomposedRegexes(),
+      },
+      true
+    );
+
+    const mappedOutput = parsed
+      .map((dcr: DecomposedRegex, index: number) => ({
+        name: dcr.name,
+        value: output[index],
+      }))
+      .filter((item: { value: string[] }) => item.value?.length > 0);
+
+    const bodyRegexList: { regex: string; color: string }[] = [];
+    const headerRegexList: { regex: string; color: string }[] = [];
+
+    mappedOutput.forEach((item: { name: string; value: string[] }, index: number) => {
+      item.value.forEach((value: string, itemIndex: number) => {
+        if (parsed[index].location === 'body') {
+          bodyRegexList.push({
+            regex: value,
+            color:
+              REGEX_COLORS[index % REGEX_COLORS.length][
+                parsed[index].parts[itemIndex]?.isPublic ? 'public' : 'private'
+              ],
+          });
+        } else {
+          headerRegexList.push({
+            regex: value,
+            color:
+              REGEX_COLORS[index % REGEX_COLORS.length][
+                parsed[index].parts[itemIndex]?.isPublic ? 'public' : 'private'
+              ],
+          });
+        }
+      });
+    });
+
+    setHeaderRegexList(headerRegexList);
+    setBodyRegexList(bodyRegexList);
+  };
+
+  useEffect(() => {
+    if (step === '2') {
+      genrateHighlightRegexContent();
+    }
+  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
+
   const isNextButtonDisabled = () => {
     if ((!savedEmls[id] || isFileInvalid) && !skipEmlUpload) {
       return true;
@@ -364,6 +437,16 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     return <></>;
   };
 
+  // Show loader while auth store is hydrating from localStorage
+  if (!hasHydrated) {
+    return (
+      <div className="my-16 flex justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  // After hydration, check if user is logged in
   if (!token) {
     return (
       <div className="my-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
@@ -374,64 +457,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (step === '2') {
-      genrateHighlightRegexContent();
-    }
-  }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
-
-  const genrateHighlightRegexContent = async () => {
-    if (!savedEmls[id]) {
-      return;
-    }
-
-    const parsed = getParsedDecomposedRegexes();
-
-    const output = await testBlueprint(
-      savedEmls[id],
-      {
-        ...store,
-        decomposedRegexes: getParsedDecomposedRegexes(),
-      },
-      true
-    );
-
-    const mappedOutput = parsed
-      .map((dcr: DecomposedRegex, index: number) => ({
-        name: dcr.name,
-        value: output[index],
-      }))
-      .filter((item: { value: string[] }) => item.value?.length > 0);
-
-    const bodyRegexList: { regex: string; color: string }[] = [];
-    const headerRegexList: { regex: string; color: string }[] = [];
-
-    mappedOutput.forEach((item: { name: string; value: string[] }, index: number) => {
-      item.value.forEach((value: string, itemIndex: number) => {
-        if (parsed[index].location === 'body') {
-          bodyRegexList.push({
-            regex: value,
-            color:
-              REGEX_COLORS[index % REGEX_COLORS.length][
-                parsed[index].parts[itemIndex]?.isPublic ? 'public' : 'private'
-              ],
-          });
-        } else {
-          headerRegexList.push({
-            regex: value,
-            color:
-              REGEX_COLORS[index % REGEX_COLORS.length][
-                parsed[index].parts[itemIndex]?.isPublic ? 'public' : 'private'
-              ],
-          });
-        }
-      });
-    });
-
-    setHeaderRegexList(headerRegexList);
-    setBodyRegexList(bodyRegexList);
-  };
 
   return (
     <div className="flex flex-col justify-center gap-2 px-4 xl:flex-row">
@@ -520,7 +545,14 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
         {step === '1' && (
           <ExtractFields emlContent={savedEmls[id]} optOut={optOut} setCanCompile={setCanCompile} />
         )}
-        {step === '2' && <EmailDetails emlContent={savedEmls[id]} publicDkimKey={publicDkimKey} />}
+        {step === '2' && isBlueprintLoading && (
+          <div className="flex items-center justify-center py-8">
+            <Loader />
+          </div>
+        )}
+        {step === '2' && !isBlueprintLoading && (
+          <EmailDetails emlContent={savedEmls[id]} publicDkimKey={publicDkimKey} />
+        )}
         <div
           style={{
             width: '100%',
