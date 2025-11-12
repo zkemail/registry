@@ -13,6 +13,7 @@ import { toast } from 'react-toastify';
 import { useState } from 'react';
 import { getFileContent } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
 
 const PatternDetails = ({
   id,
@@ -24,6 +25,8 @@ const PatternDetails = ({
   setSavedEmls,
   setFile,
   emlContent,
+  isVerifyDKIMLoading,
+  isDKIMMissing,
 }: {
   id: string;
   isFileInvalid: boolean;
@@ -34,6 +37,8 @@ const PatternDetails = ({
   setSavedEmls: (savedEmls: Record<string, string>) => void;
   setFile: (file: File | null) => void;
   emlContent: string;
+  isVerifyDKIMLoading: boolean;
+  isDKIMMissing: boolean;
 }) => {
   const githubUserName = useAuthStore((state) => state.username);
   const store = useCreateBlueprintStore();
@@ -96,6 +101,14 @@ const PatternDetails = ({
         }
       />
       <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
+      <Textarea
+        title="Description"
+        placeholder="Prove that you own a particular GitHub account"
+        value={store.description}
+        rows={3}
+        onChange={(e) => setField('description', e.target.value)}
+        errorMessage={validationErrors.description}
+      />
       {/* TODO: Add check for email body max length */}
       {emlContent && id !== 'new' ? null : (
         <DragAndDropFile
@@ -150,13 +163,88 @@ const PatternDetails = ({
         />
         <p className="text-sm text-grey-700">Skip EML upload and use the default .eml file</p>
       </div>
-      <Textarea
-        title="Description"
-        placeholder="Prove that you own a particular GitHub account"
-        value={store.description}
-        rows={3}
-        onChange={(e) => setField('description', e.target.value)}
-        errorMessage={validationErrors.description}
+      <Input
+        title="Email Query"
+        disabled={store.clientStatus === Status.Done && store.serverStatus === Status.Done}
+        value={store.emailQuery}
+        onChange={(e) => setField('emailQuery', e.target.value)}
+        placeholder="Password request from: contact@x.com"
+        error={!!validationErrors.emailQuery}
+        errorMessage={validationErrors.emailQuery}
+        tooltipComponent={
+          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+            <Image
+              src="/assets/emailQueryInfo.svg"
+              className="rounded-t-xl"
+              alt="emailQueryInfo"
+              width={360}
+              height={80}
+            />
+            <p className="mt-3 text-base font-medium text-grey-700">
+              As if you were searching for the email in your Gmail inbox. Only emails matching this
+              query will be shown to the user to prove when they sign in with Gmail
+            </p>
+          </div>
+        }
+      />
+      <Input
+        title="Sender domain"
+        loading={isVerifyDKIMLoading}
+        placeholder="twitter.com"
+        helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
+        value={store.senderDomain}
+        onChange={(e) => setField('senderDomain', e.target.value)}
+        error={(!!validationErrors.senderDomain || isDKIMMissing) && !isVerifyDKIMLoading}
+        errorMessage={
+          isVerifyDKIMLoading ? (
+            'Finding DKIM in archive...'
+          ) : isDKIMMissing ? (
+            <span className="text-red-500">
+              DKIM publickey is missing. Please add a DKIM record at{' '}
+              <a
+                href="https://archive.zk.email"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                https://archive.zk.email
+              </a>
+            </span>
+          ) : (
+            validationErrors.senderDomain
+          )
+        }
+        tooltipComponent={
+          <div className="w-[380px] rounded-2xl border border-grey-500 bg-white p-2">
+            <Image
+              src="/assets/senderDomainInfo.svg"
+              className="rounded-t-xl"
+              alt="emailQueryInfo"
+              width={360}
+              height={80}
+            />
+            <p className="mt-3 text-base font-medium text-grey-700">
+              This is the domain used for DKIM verification, which may not exactly match the senders
+              domain (you can check via the d= field in the DKIM-Signature header in your sample
+              .eml). Note to only include the part after the @ symbol
+            </p>
+          </div>
+        }
+      />
+      <Input
+        title="Max Email Header Length"
+        placeholder="1024"
+        type="number"
+        min={0}
+        error={!!validationErrors.emailHeaderMaxLength}
+        errorMessage={
+          validationErrors.emailHeaderMaxLength
+            ? `${validationErrors.emailHeaderMaxLength} (Next multiple of 64 is ${Math.ceil((store.emailHeaderMaxLength ?? 0) / 64) * 64})`
+            : ''
+        }
+        helpText="Must be a multiple of 64"
+        value={store.emailHeaderMaxLength || ''}
+        onChange={(e) => setField('emailHeaderMaxLength', parseInt(e.target.value))}
       />
     </div>
   );

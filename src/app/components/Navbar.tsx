@@ -15,11 +15,6 @@ const Navbar = () => {
   const searchParams = useSearchParams();
   const { search, filters, sort } = useBlueprintFiltersStore();
 
-  const handleCreateBlueprint = () => {
-    localStorage.removeItem('create-blueprint');
-    router.push('/create');
-  };
-
   // Handle logo click to preserve filters and sort when on home page
   const handleLogoClick = () => {
     if (pathname === '/') {
@@ -42,6 +37,11 @@ const Navbar = () => {
       const url = queryString ? `/?${queryString}` : '/';
       router.push(url);
     }
+  };
+
+  const handleCreateBlueprint = () => {
+    localStorage.removeItem('create-blueprint');
+    router.push('/create');
   };
 
   return (
