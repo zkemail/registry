@@ -57,6 +57,16 @@ const EmailDetails = ({
       setField('ignoreBodyHashCheck', true);
       setField('removeSoftLinebreaks', false);
       setField('ignoreBodyHashCheckAutoSelected', true);
+
+      // Auto-save to backend to persist this optimization
+      // Use a small delay to batch the state updates
+      setTimeout(async () => {
+        try {
+          await store.saveDraft();
+        } catch (err) {
+          // Non-critical error, don't show to user
+        }
+      }, 100);
     }
     // Only run on mount - no refetch means no override
   }, []);

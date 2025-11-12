@@ -147,12 +147,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         const emlStore = useEmlStore.getState();
         const savedEmls = await emlStore.getAllEmls();
 
-        // Remove functions and custom fields from the state data and clone
+        // Remove functions from the state data and clone
         const stateData = Object.fromEntries(
           Object.entries(state).filter(([key, value]) => typeof value !== 'function')
         );
-        // Remove custom fields that aren't part of BlueprintProps
-        delete (stateData as any).ignoreBodyHashCheckAutoSelected;
         const data = JSON.parse(JSON.stringify(stateData)) as BlueprintProps;
 
         
