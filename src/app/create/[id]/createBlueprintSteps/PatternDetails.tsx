@@ -10,10 +10,10 @@ import sdk from '@/lib/sdk';
 import { useDebouncedCallback } from 'use-debounce';
 import { findOrCreateDSP } from '@/app/utils';
 import { toast } from 'react-toastify';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { getFileContent } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
+import { Blueprint, getMaxEmailBodyLength, parseEmail, Status, ZkFramework } from '@zk-email/sdk';
 
 const PatternDetails = ({
   id,
@@ -49,34 +49,124 @@ const PatternDetails = ({
 
   const [isCheckExistingBlueprintLoading, setIsCheckExistingBlueprintLoading] = useState(false);
 
+  // Request version tracking to handle race conditions
+  const requestVersionRef = useRef(0);
+  const currentCircuitNameRef = useRef<string>('');
+  const isMountedRef = useRef(true);
+
   const checkExistingBlueprint = useDebouncedCallback(async (circuitName: string) => {
+    // Increment request version for this new check
+    requestVersionRef.current += 1;
+    const thisRequestVersion = requestVersionRef.current;
+
+    // Store the circuit name being checked
+    currentCircuitNameRef.current = circuitName;
+
+    // Helper functions
+    const buildSlug = (name: string) => `${githubUserName}/${name}`;
+    const isStaleRequest = () => thisRequestVersion !== requestVersionRef.current;
+    const isCircuitNameChanged = () => currentCircuitNameRef.current !== circuitName;
+
+    const matchesBlueprint = (slug: string | undefined, baseSlug: string): boolean => {
+      if (!slug) return false;
+      if (slug === baseSlug) return true;
+
+      // Incremented version: must be base + "_" + digits only
+      if (slug.startsWith(`${baseSlug}_`)) {
+        const suffix = slug.substring(baseSlug.length + 1);
+        return /^\d+$/.test(suffix);
+      }
+
+      return false;
+    };
+
+    const extractNumericSuffix = (slug: string | undefined, baseSlug: string): number => {
+      if (!slug) return -1;
+      if (slug === baseSlug) return 0; // Exact match has no suffix
+
+      if (slug.startsWith(`${baseSlug}_`)) {
+        const suffix = slug.substring(baseSlug.length + 1);
+        const num = parseInt(suffix, 10);
+        return isNaN(num) ? -1 : num;
+      }
+
+      return -1;
+    };
+
     setIsCheckExistingBlueprintLoading(true);
-    let existingBlueprint = false;
+
     try {
-      const blueprint = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`); // If blueprint exists, it will always have v1 suffix
-      existingBlueprint = !!blueprint;
-    } catch {
-      console.log('Blueprint does not exist yet');
-    }
+      let exactMatch: Blueprint | null = null;
+      let existingBlueprint = false;
 
-    if (!existingBlueprint) {
-      setField('circuitName', `${circuitName}`);
-      setField('slug', `${githubUserName}/${circuitName}`);
-    } else {
-      // need to check the number of circuits that exists with same name
-      const results = await sdk.listBlueprints({
-        search: circuitName,
-      });
+      // Check if exact blueprint already exists
+      try {
+        exactMatch = await sdk.getBlueprint(`${githubUserName}/${circuitName}@v1`);
+        if (isStaleRequest()) return;
 
-      const incrementedCircuitName = `${circuitName}_${
-        results.filter((bp) => bp.props.slug?.split('_')[0] === `${githubUserName}/${circuitName}`)
-          .length
-      }`;
+        const expectedSlug = buildSlug(circuitName);
+        existingBlueprint = !!(exactMatch && exactMatch.props?.slug === expectedSlug);
+      } catch {
+        console.log('Blueprint does not exist yet');
+      }
+
+      if (isStaleRequest()) return;
+
+      // If no conflict, we're done - slug is already correct from immediate update
+      if (!existingBlueprint) {
+        if (!isStaleRequest() && isMountedRef.current) {
+          setIsCheckExistingBlueprintLoading(false);
+        }
+        return;
+      }
+
+      // Blueprint exists - need to find next available increment
+      const results = await sdk.listBlueprints({ search: circuitName });
+      if (isStaleRequest()) return;
+
+      // Find all blueprints with the same base name
+      const baseSlug = buildSlug(circuitName);
+      const matchingBlueprints = results.filter((bp) => matchesBlueprint(bp.props.slug, baseSlug));
+
+      // Check for stale request or changed circuit name before updating state
+      if (isStaleRequest() || isCircuitNameChanged()) return;
+
+      // Extract numeric suffixes and find next available number
+      const suffixes = matchingBlueprints
+        .map((bp) => extractNumericSuffix(bp.props.slug, baseSlug))
+        .filter((n) => n >= 0);
+
+      const maxSuffix = suffixes.length > 0 ? Math.max(...suffixes) : -1;
+      const nextSuffix = maxSuffix + 1;
+
+      const incrementedCircuitName = `${circuitName}_${nextSuffix}`;
       setField('circuitName', incrementedCircuitName);
-      setField('slug', `${githubUserName}/${incrementedCircuitName}`);
+      setField('slug', buildSlug(incrementedCircuitName));
+    } catch (error) {
+      console.error('Error checking blueprint existence:', error);
+      if (!isStaleRequest()) {
+        toast.error('Failed to check blueprint name availability');
+      }
+    } finally {
+      if (!isStaleRequest() && isMountedRef.current) {
+        requestAnimationFrame(() => {
+          if (isMountedRef.current) {
+            setIsCheckExistingBlueprintLoading(false);
+          }
+        });
+      }
     }
-    setIsCheckExistingBlueprintLoading(false);
   }, 300);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      // Cancel any pending debounced calls when component unmounts
+      checkExistingBlueprint.cancel();
+    };
+  }, [checkExistingBlueprint]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -91,7 +181,17 @@ const PatternDetails = ({
 
           // Only check for blueprint name if there are no spaces
           if (!newTitle.includes(' ')) {
-            checkExistingBlueprint(newTitle.replace(/\s+/g, '_'));
+            const sanitizedName = newTitle.replace(/\s+/g, '_');
+
+            // Track current name synchronously
+            currentCircuitNameRef.current = sanitizedName;
+
+            // Immediately update circuitName and slug to keep them in sync
+            setField('circuitName', sanitizedName);
+            setField('slug', `${githubUserName}/${sanitizedName}`);
+
+            // Then check for conflicts and increment if needed (debounced)
+            checkExistingBlueprint(sanitizedName);
           }
         }}
         error={!!validationErrors.title || store.title?.includes(' ')}

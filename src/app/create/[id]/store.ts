@@ -16,10 +16,15 @@ import posthog from 'posthog-js';
 import { getFileContent } from '@/lib/utils';
 import { get, set } from 'idb-keyval';
 
-type CreateBlueprintState = BlueprintProps & {
+// Extend BlueprintProps with auto-selection tracking
+interface ExtendedBlueprintProps extends BlueprintProps {
+  ignoreBodyHashCheckAutoSelected?: boolean; // Track if auto-selected
+}
+
+type CreateBlueprintState = ExtendedBlueprintProps & {
   blueprint: Blueprint | null;
   validationErrors: ValidationErrors;
-  setField: (field: keyof BlueprintProps, value: any) => void;
+  setField: (field: keyof ExtendedBlueprintProps, value: any) => void;
   validateField: (field: keyof BlueprintProps) => void;
   validateAll: () => boolean;
   getParsedDecomposedRegexes: () => DecomposedRegex[];
@@ -31,7 +36,7 @@ type CreateBlueprintState = BlueprintProps & {
   setFile: (file: File | null) => void;
 };
 
-const initialState: BlueprintProps = {
+const initialState: ExtendedBlueprintProps = {
   id: '',
   title: '',
   description: '',
@@ -40,6 +45,7 @@ const initialState: BlueprintProps = {
   emailQuery: '',
   circuitName: '',
   ignoreBodyHashCheck: false,
+  ignoreBodyHashCheckAutoSelected: false,
   shaPrecomputeSelector: '',
   emailBodyMaxLength: 1024,
   emailHeaderMaxLength: 10240,
@@ -62,15 +68,18 @@ const initialState: BlueprintProps = {
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
   persist(
     (set, get) => ({
-      ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps),
+      ...(JSON.parse(JSON.stringify(initialState)) as ExtendedBlueprintProps),
 
       blueprint: null,
       validationErrors: {},
       file: null,
 
-      setField: (field: keyof BlueprintProps, value: any) => {
+      setField: (field: keyof ExtendedBlueprintProps, value: any) => {
         set({ [field]: value });
-        get().validateField(field);
+        // Only validate if the field exists in the base BlueprintProps schema
+        if (field in initialState && field !== 'ignoreBodyHashCheckAutoSelected') {
+          get().validateField(field as keyof BlueprintProps);
+        }
       },
 
       validateField: (field: keyof BlueprintProps) => {
@@ -139,13 +148,10 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
         const savedEmls = await emlStore.getAllEmls();
 
         // Remove functions from the state data and clone
-        const data = JSON.parse(
-          JSON.stringify(
-            Object.fromEntries(
-              Object.entries(state).filter(([_, value]) => typeof value !== 'function')
-            )
-          )
-        ) as BlueprintProps;
+        const stateData = Object.fromEntries(
+          Object.entries(state).filter(([key, value]) => typeof value !== 'function')
+        );
+        const data = JSON.parse(JSON.stringify(stateData)) as BlueprintProps;
 
         
         // Parse decomposedRegexes since we are saving them as string to make handling TextArea easier
@@ -236,10 +242,15 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       setToExistingBlueprint: async (id: string) => {
         try {
           console.log('setting existing blueprint');
+          const currentState = get();
           const blueprint = await sdk.getBlueprintById(id);
-          // blueprint?.props?.decomposedRegexes?.forEach((dcr) => {
-          //   dcr.parts = JSON.stringify(dcr.parts) as unknown as DecomposedRegexPart[];
-          // });
+
+          // Assign preferred ZK framework based on email content if available
+          const emlStore = useEmlStore.getState();
+          const savedEmls = await emlStore.getAllEmls();
+          if (savedEmls[id]) {
+            await blueprint.assignPreferredZkFramework(savedEmls[id]);
+          }
 
           // TODO: sdk should not return undefined fields - workaround so we have sane defaults
           for (const [key, value] of Object.entries(blueprint.props)) {
@@ -252,6 +263,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           set({
             ...blueprint.props,
             blueprint,
+            // Preserve client-only fields if they exist
+            ignoreBodyHashCheckAutoSelected: currentState.ignoreBodyHashCheckAutoSelected,
           });
         } catch (err) {
           console.error('Failed to get blueprint for id ', id);
@@ -293,7 +306,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       reset: () => {
         return set({
-          ...(JSON.parse(JSON.stringify(initialState)) as BlueprintProps),
+          ...(JSON.parse(JSON.stringify(initialState)) as ExtendedBlueprintProps),
           file: null,
           blueprint: null,
           validationErrors: {},
@@ -326,7 +339,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       name: 'create-blueprint',
       // Exclude 'file' from persistence as File objects cannot be serialized
       partialize: (state) => {
-        const { file, ...rest } = state;
+        const { file, blueprint, ...rest } = state;
         return rest;
       },
       storage: {

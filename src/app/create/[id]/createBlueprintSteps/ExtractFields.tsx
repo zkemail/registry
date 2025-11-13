@@ -901,7 +901,7 @@ const ExtractFields = ({
                     setField('decomposedRegexes', updatedRegexes);
                   }}
                   options={[
-                    ...(store.ignoreBodyHashCheck ? [] : [{ label: 'Email Body', value: 'body' }]),
+                    { label: 'Email Body', value: 'body' },
                     { label: 'Email Header', value: 'header' },
                   ]}
                 />
