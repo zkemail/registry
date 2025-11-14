@@ -773,7 +773,6 @@ const ExtractFields = ({
                               const rawValue = e.target.value
                                 .replace(/\\r/g, '\r')
                                 .replace(/\\n/g, '\n');
-                              console.log(rawValue, 'rawValue');
                               parts[partIndex] = {
                                 ...parts[partIndex],
                                 isPublic: part.isPublic,
@@ -837,7 +836,8 @@ const ExtractFields = ({
                 {/* Only show output if there are regex parts and valid outputs */}
                 {
                 parseRegexParts(regex.parts).length > 0 ||
-                regexGeneratedOutputs.length > 0 ? (
+                regexGeneratedOutputs[index] ||
+                regexGeneratedOutputErrors[index] ? (
                   <>
                     <Label>Output</Label>
                     <div
