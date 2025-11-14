@@ -5,7 +5,13 @@ import { Input } from '@/components/ui/input';
 import { useCreateBlueprintStore } from '../store';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { getMaxEmailBodyLength, parseEmail, Status, ZkFramework, DecomposedRegex } from '@zk-email/sdk';
+import {
+  getMaxEmailBodyLength,
+  parseEmail,
+  Status,
+  ZkFramework,
+  DecomposedRegex,
+} from '@zk-email/sdk';
 import Image from 'next/image';
 import { Select } from '@/components/ui/select';
 import { InfoIcon } from 'lucide-react';
@@ -13,7 +19,7 @@ import { InfoIcon } from 'lucide-react';
 
 // Helper function to detect body patterns
 const hasBodyPatterns = (decomposedRegexes?: DecomposedRegex[]): boolean => {
-  return decomposedRegexes?.some(regex => regex.location === 'body') || false;
+  return decomposedRegexes?.some((regex) => regex.location === 'body') || false;
 };
 
 const EmailDetails = ({
@@ -53,7 +59,11 @@ const EmailDetails = ({
     // 1. Currently false (not manually set)
     // 2. There are no body patterns
     // 3. Not already auto-selected (to avoid re-triggering)
-    if (!store.ignoreBodyHashCheck && !hasBodyPatterns(store.decomposedRegexes) && !store.ignoreBodyHashCheckAutoSelected) {
+    if (
+      !store.ignoreBodyHashCheck &&
+      !hasBodyPatterns(store.decomposedRegexes) &&
+      !store.ignoreBodyHashCheckAutoSelected
+    ) {
       setField('ignoreBodyHashCheck', true);
       setField('removeSoftLinebreaks', false);
       setField('ignoreBodyHashCheckAutoSelected', true);
@@ -83,45 +93,46 @@ const EmailDetails = ({
     <div className="flex flex-col gap-6">
       {/* Performance optimization notification */}
       {store.ignoreBodyHashCheck && !hasBodyPatterns(store.decomposedRegexes) && (
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3">
           <div className="flex items-start gap-2">
-            <InfoIcon className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <InfoIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
             <div className="text-sm text-blue-800">
-              <p className="font-semibold mb-1">Performance Optimization Applied</p>
+              <p className="mb-1 font-semibold">Performance Optimization Applied</p>
               <p>
-                Since your blueprint doesn't extract any data from the email body,
-                the "Skip body hash check" option has been automatically enabled.
-                This significantly improves:
+                Since your blueprint doesn't extract any data from the email body, the "Skip body
+                hash check" option has been automatically enabled. This significantly improves:
               </p>
-              <ul className="list-disc ml-5 mt-1 space-y-0.5">
+              <ul className="ml-5 mt-1 list-disc space-y-0.5">
                 <li>Circuit compilation time</li>
                 <li>Proof generation time</li>
                 <li>Overall circuit constraint count</li>
               </ul>
               <p className="mt-2">
-                You can disable this option if you need body hash verification for
-                security purposes, though it will increase processing time significantly.
+                You can disable this option if you need body hash verification for security
+                purposes, though it will increase processing time significantly.
               </p>
             </div>
           </div>
         </div>
       )}
       {/* Warning when manually disabled without body patterns */}
-      {!store.ignoreBodyHashCheck && !hasBodyPatterns(store.decomposedRegexes) && store.ignoreBodyHashCheckAutoSelected === false && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-start gap-2">
-            <InfoIcon className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div className="text-sm text-yellow-800">
-              <p className="font-semibold mb-1">Performance Impact Warning</p>
-              <p>
-                Body hash verification is enabled even though your blueprint doesn't extract
-                data from the email body. This will increase compilation and proof generation
-                time significantly without providing additional functionality.
-              </p>
+      {!store.ignoreBodyHashCheck &&
+        !hasBodyPatterns(store.decomposedRegexes) &&
+        store.ignoreBodyHashCheckAutoSelected === false && (
+          <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-3">
+            <div className="flex items-start gap-2">
+              <InfoIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-600" />
+              <div className="text-sm text-yellow-800">
+                <p className="mb-1 font-semibold">Performance Impact Warning</p>
+                <p>
+                  Body hash verification is enabled even though your blueprint doesn't extract data
+                  from the email body. This will increase compilation and proof generation time
+                  significantly without providing additional functionality.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       <Checkbox
         title="Skip body hash check"
         checked={store.ignoreBodyHashCheck}
@@ -236,7 +247,7 @@ const EmailDetails = ({
           console.log('dkimKeyBitLength: ', dkimKeyBitLength);
 
           if (value === ZkFramework.Noir && dkimKeyBitLength && dkimKeyBitLength !== 2048) {
-            console.log(isNoirIncompatible, "isNoirIncompatible")
+            console.log(isNoirIncompatible, 'isNoirIncompatible');
             setIsNoirIncompatible(true);
           } else {
             setIsNoirIncompatible(false);
@@ -245,12 +256,14 @@ const EmailDetails = ({
           setField('clientZkFramework', value);
         }}
         options={
-          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-            ? [
-                { label: 'Circom', value: ZkFramework.Circom },
-                { label: 'Noir', value: ZkFramework.Noir },
-              ]
-            : [{ label: 'Circom', value: ZkFramework.Circom }]
+          // TODO: remove these comments once circom client side works
+          // process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
+          //   ?
+          [
+            // { label: 'Circom', value: ZkFramework.Circom },
+            { label: 'Noir', value: ZkFramework.Noir },
+          ]
+          // : [{ label: 'Circom', value: ZkFramework.Circom }]
         }
       />
       {isNoirIncompatible ? (
