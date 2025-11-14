@@ -151,7 +151,6 @@ const ExtractFields = ({
               parsedRegex,
               revealPrivateFields
             );
-            console.log('regexOutputs', regexOutputs);
 
             const outputUpdated =
               JSON.stringify(regexOutputs) !== JSON.stringify(regexGeneratedOutputs[index]);
