@@ -52,7 +52,6 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [errors, setErrors] = useState<string[]>([]);
   const [revealPrivateFields, setRevealPrivateFields] = useState(false);
   const [generatedOutput, setGeneratedOutput] = useState<string>('');
-  const steps = ['Pattern Details', 'Email Details', 'Extract Fields'];
   const [showSampleEMLPreview, setShowSampleEMLPreview] = useState(false);
   const [parsedEmail, setParsedEmail] = useState<Email | null>(null);
   const [isDKIMMissing, setIsDKIMMissing] = useState(false);
@@ -71,6 +70,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [canCompile, setCanCompile] = useState(false);
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
+
+  const steps = ['Pattern Details', 'Email Details', 'Extract Fields'];
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -571,7 +572,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 <Button
                   onClick={handleCompile}
                   loading={isCompileLoading}
-                  disabled={!savedEmls[id] || !canCompile}
+                  disabled={!savedEmls[id] || !canCompile || errors.length > 0}
                   startIcon={
                     <Image
                       src="/assets/Check.svg"

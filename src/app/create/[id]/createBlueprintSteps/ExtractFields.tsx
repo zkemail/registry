@@ -151,6 +151,7 @@ const ExtractFields = ({
               parsedRegex,
               revealPrivateFields
             );
+            console.log('regexOutputs', regexOutputs);
 
             const outputUpdated =
               JSON.stringify(regexOutputs) !== JSON.stringify(regexGeneratedOutputs[index]);
@@ -284,7 +285,7 @@ const ExtractFields = ({
         </div>
       );
     }
-    if (!regexGeneratedOutputs.length) {
+    if (!regexGeneratedOutputs.length && regexGeneratedOutputErrors.length === 0) {
       setCanCompile(false);
       return (
         <div className="flex items-center gap-2 text-red-400">
@@ -304,9 +305,7 @@ const ExtractFields = ({
     }
     if (
       !regexGeneratedOutputs.length ||
-      regexGeneratedOutputs.some((output) =>
-        Array.isArray(output) ? output.join('').includes('Error') : output.includes('Error')
-      )
+      regexGeneratedOutputErrors.length > 0
     ) {
       setCanCompile(false);
       return (
@@ -325,7 +324,6 @@ const ExtractFields = ({
         </div>
       );
     } else {
-      console.log('canCompile', regexGeneratedOutputs);
       setCanCompile(true);
       return (
         <div className="flex items-center gap-2 text-green-300">
@@ -837,10 +835,9 @@ const ExtractFields = ({
                   </Button>
                 </div>
                 {/* Only show output if there are regex parts and valid outputs */}
-                {parseRegexParts(regex.parts).length > 0 &&
-                regexGeneratedOutputs[index] !== undefined &&
-                regexGeneratedOutputs[index] !== null &&
-                regexGeneratedOutputs[index].length > 0 ? (
+                {
+                parseRegexParts(regex.parts).length > 0 ||
+                regexGeneratedOutputs.length > 0 ? (
                   <>
                     <Label>Output</Label>
                     <div
