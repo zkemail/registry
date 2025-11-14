@@ -303,8 +303,9 @@ const ExtractFields = ({
       );
     }
     if (
-      !regexGeneratedOutputs.length ||
-      regexGeneratedOutputErrors.some(error => error !== '')
+      (!regexGeneratedOutputs.length &&
+      regexGeneratedOutputs.some(output => output !== null && output !== undefined && output.length > 0))
+      || regexGeneratedOutputErrors.some(error => error.includes('Error'))
     ) {
       setCanCompile(false);
       return (
