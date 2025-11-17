@@ -26,6 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 interface StatusProps {
   emlContent: string;
   isGeneratingFields: boolean;
+  skipEmlUpload: boolean;
   regexGeneratedOutputs: string[];
   regexGeneratedOutputErrors: string[];
 }
@@ -42,178 +43,184 @@ const parseRegexParts = (parts: any): any => {
   return parts || [];
 };
 
-const Status = memo(({
-  emlContent,
-  isGeneratingFields,
-  regexGeneratedOutputs,
-  regexGeneratedOutputErrors
-}: StatusProps) => {
-  if (!emlContent) {
-    return (
-      <div className="flex items-center gap-2 text-red-400">
-        <Image
-          src="/assets/WarningCircle.svg"
-          alt="fail"
-          width={20}
-          height={20}
-          style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
-        <span className="text-base font-medium">Please provide an email file</span>
-      </div>
-    );
-  }
-  if (isGeneratingFields) {
-    return (
-      <div className="flex items-center gap-2">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
-        <span className="text-base font-medium">Generating fields...</span>
-      </div>
-    );
-  }
-  if (!regexGeneratedOutputs.length) {
-    return (
-      <div className="flex items-center gap-2 text-red-400">
-        <Image
-          src="/assets/WarningCircle.svg"
-          alt="fail"
-          width={20}
-          height={20}
-          style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
-        <span className="text-base font-medium">Please add at least one regex</span>
-      </div>
-    );
-  }
-  // Check for errors in regexGeneratedOutputErrors array
-  const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+const Status = memo(
+  ({
+    emlContent,
+    isGeneratingFields,
+    regexGeneratedOutputs,
+    regexGeneratedOutputErrors,
+    skipEmlUpload,
+  }: StatusProps) => {
+    if (!emlContent && !skipEmlUpload) {
+      return (
+        <div className="flex items-center gap-2 text-red-400">
+          <Image
+            src="/assets/WarningCircle.svg"
+            alt="fail"
+            width={20}
+            height={20}
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
+          <span className="text-base font-medium">Please provide an email file</span>
+        </div>
+      );
+    }
+    if (isGeneratingFields) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600" />
+          <span className="text-base font-medium">Generating fields...</span>
+        </div>
+      );
+    }
+    if (!regexGeneratedOutputs.length && !skipEmlUpload) {
+      return (
+        <div className="flex items-center gap-2 text-red-400">
+          <Image
+            src="/assets/WarningCircle.svg"
+            alt="fail"
+            width={20}
+            height={20}
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
+          <span className="text-base font-medium">Please add at least one regex</span>
+        </div>
+      );
+    }
+    // Check for errors in regexGeneratedOutputErrors array
+    const hasRegexErrors = regexGeneratedOutputErrors.some((error) => error && error.length > 0);
 
-  if (
-    !regexGeneratedOutputs.length ||
-    hasRegexErrors ||
-    regexGeneratedOutputs.some((output) =>
-      Array.isArray(output)
-        ? output.join('').includes('Error')
-        : output
-          ? output.includes('Error')
-          : true
-    )
-  ) {
-    return (
-      <div className="flex items-center gap-2 text-red-400">
-        <Image
-          src="/assets/WarningCircle.svg"
-          alt="fail"
-          width={20}
-          height={20}
-          style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
-        <span className="text-base font-medium">Some regexes failed to generate output</span>
-      </div>
-    );
-  } else {
-    return (
-      <div className="flex items-center gap-2 text-green-300">
-        <Image
-          src="/assets/CheckCircle.svg"
-          alt="check"
-          width={20}
-          height={20}
-          style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
-        <span className="text-base font-medium">All tests passed. Ready to compile</span>
-      </div>
-    );
+    if (
+      (!regexGeneratedOutputs.length ||
+        hasRegexErrors ||
+        regexGeneratedOutputs.some((output) =>
+          Array.isArray(output)
+            ? output.join('').includes('Error')
+            : output
+              ? output.includes('Error')
+              : true
+        )) &&
+      !skipEmlUpload
+    ) {
+      return (
+        <div className="flex items-center gap-2 text-red-400">
+          <Image
+            src="/assets/WarningCircle.svg"
+            alt="fail"
+            width={20}
+            height={20}
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
+          <span className="text-base font-medium">Some regexes failed to generate output</span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center gap-2 text-green-300">
+          <Image
+            src="/assets/CheckCircle.svg"
+            alt="check"
+            width={20}
+            height={20}
+            style={{
+              maxWidth: '100%',
+              height: 'auto',
+            }}
+          />
+          <span className="text-base font-medium">All tests passed. Ready to compile</span>
+        </div>
+      );
+    }
   }
-});
+);
 
 Status.displayName = 'Status';
 
-const AIPromptInput = memo(({
-  aiPrompt,
-  setAiPrompt,
-  handleGenerateFields,
-  emlContent,
-  isGeneratingFieldsLoading,
-}: {
-  aiPrompt: string;
-  setAiPrompt: (aiPrompt: string) => void;
-  handleGenerateFields: () => void;
-  emlContent: string;
-  isGeneratingFieldsLoading: boolean;
-}) => {
-  const [placeholderIndex, setPlaceholderIndex] = useState(0);
-  const placeholders = [
-    'Regex to extract email subject',
-    'Regex to extract GitHub username',
-    'Regex to extract Venmo ID',
-    'Regex to extract time sent',
-  ];
+const AIPromptInput = memo(
+  ({
+    aiPrompt,
+    setAiPrompt,
+    handleGenerateFields,
+    emlContent,
+    isGeneratingFieldsLoading,
+  }: {
+    aiPrompt: string;
+    setAiPrompt: (aiPrompt: string) => void;
+    handleGenerateFields: () => void;
+    emlContent: string;
+    isGeneratingFieldsLoading: boolean;
+  }) => {
+    const [placeholderIndex, setPlaceholderIndex] = useState(0);
+    const placeholders = [
+      'Regex to extract email subject',
+      'Regex to extract GitHub username',
+      'Regex to extract Venmo ID',
+      'Regex to extract time sent',
+    ];
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
-    }, 3000);
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setPlaceholderIndex((prevIndex) => (prevIndex + 1) % placeholders.length);
+      }, 3000);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }, []);
 
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="rounded-lg border border-[#EDCEF8] p-3 pl-0 shadow-[0px_0px_10px_0px_#EDCEF8]">
-        <div className="flex items-center justify-between">
-          <span className="w-full text-base font-medium">
-            <Input
-              className="w-full border-0 hover:border-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-              placeholder={placeholders[placeholderIndex]}
-              value={aiPrompt}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleGenerateFields();
-                }
-              }}
-              onChange={(e) => setAiPrompt(e.target.value)}
-            />
-          </span>
-          <Button
-            className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
-            variant="secondary"
-            size="sm"
-            disabled={!emlContent || isGeneratingFieldsLoading}
-            loading={isGeneratingFieldsLoading}
-            startIcon={
-              <Image
-                src="/assets/Sparkle.svg"
-                alt="sparkle"
-                width={16}
-                height={16}
-                style={{
-                  maxWidth: '100%',
-                  height: 'auto',
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="rounded-lg border border-[#EDCEF8] p-3 pl-0 shadow-[0px_0px_10px_0px_#EDCEF8]">
+          <div className="flex items-center justify-between">
+            <span className="w-full text-base font-medium">
+              <Input
+                className="w-full border-0 hover:border-0 focus:border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                placeholder={placeholders[placeholderIndex]}
+                value={aiPrompt}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleGenerateFields();
+                  }
                 }}
+                onChange={(e) => setAiPrompt(e.target.value)}
               />
-            }
-            onClick={handleGenerateFields}
-          >
-            {isGeneratingFieldsLoading ? 'Generating...' : 'Generate'}
-          </Button>
+            </span>
+            <Button
+              className="rounded-lg border-[#EDCEF8] bg-[#FCF3FF] text-sm text-[#9B23C5]"
+              variant="secondary"
+              size="sm"
+              disabled={!emlContent || isGeneratingFieldsLoading}
+              loading={isGeneratingFieldsLoading}
+              startIcon={
+                <Image
+                  src="/assets/Sparkle.svg"
+                  alt="sparkle"
+                  width={16}
+                  height={16}
+                  style={{
+                    maxWidth: '100%',
+                    height: 'auto',
+                  }}
+                />
+              }
+              onClick={handleGenerateFields}
+            >
+              {isGeneratingFieldsLoading ? 'Generating...' : 'Generate'}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 AIPromptInput.displayName = 'AIPromptInput';
 
@@ -221,10 +228,12 @@ const ExtractFields = ({
   emlContent,
   optOut,
   setCanCompile,
+  skipEmlUpload,
 }: {
   emlContent: string;
   optOut: boolean;
   setCanCompile: (canCompile: boolean) => void;
+  skipEmlUpload: boolean;
 }) => {
   const store = useCreateBlueprintStore();
 
@@ -254,11 +263,19 @@ const ExtractFields = ({
 
   // Sync checkbox states with decomposedRegexes
   useEffect(() => {
-    setIsExtractSubjectChecked(store.decomposedRegexes?.some(r => r.name === 'subject') ?? false);
-    setIsExtractReceiverChecked(store.decomposedRegexes?.some(r => r.name === 'email_recipient') ?? false);
-    setIsExtractSenderNameChecked(store.decomposedRegexes?.some(r => r.name === 'email_sender') ?? false);
-    setIsExtractSenderDomainChecked(store.decomposedRegexes?.some(r => r.name === 'sender_domain') ?? false);
-    setIsExtractTimestampChecked(store.decomposedRegexes?.some(r => r.name === 'email_timestamp') ?? false);
+    setIsExtractSubjectChecked(store.decomposedRegexes?.some((r) => r.name === 'subject') ?? false);
+    setIsExtractReceiverChecked(
+      store.decomposedRegexes?.some((r) => r.name === 'email_recipient') ?? false
+    );
+    setIsExtractSenderNameChecked(
+      store.decomposedRegexes?.some((r) => r.name === 'email_sender') ?? false
+    );
+    setIsExtractSenderDomainChecked(
+      store.decomposedRegexes?.some((r) => r.name === 'sender_domain') ?? false
+    );
+    setIsExtractTimestampChecked(
+      store.decomposedRegexes?.some((r) => r.name === 'email_timestamp') ?? false
+    );
   }, [store.decomposedRegexes]);
 
   // Handle canCompile state updates based on conditions
@@ -268,7 +285,7 @@ const ExtractFields = ({
     const noRegexes = !regexGeneratedOutputs.length;
 
     // Check for errors in regexGeneratedOutputErrors array
-    const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
+    const hasRegexErrors = regexGeneratedOutputErrors.some((error) => error && error.length > 0);
 
     // Check for errors in the output itself
     const hasOutputErrors = regexGeneratedOutputs.some((output) =>
@@ -279,8 +296,16 @@ const ExtractFields = ({
           : true
     );
 
-    setCanCompile(!hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors);
-  }, [emlContent, isGeneratingFields, regexGeneratedOutputs, regexGeneratedOutputErrors, setCanCompile]);
+    setCanCompile(
+      !hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors
+    );
+  }, [
+    emlContent,
+    isGeneratingFields,
+    regexGeneratedOutputs,
+    regexGeneratedOutputErrors,
+    setCanCompile,
+  ]);
 
   // Memoize the stringified value to avoid expensive recalculation on every render
   const decomposedRegexesKey = useMemo(
@@ -339,7 +364,9 @@ const ExtractFields = ({
               if (part.isPublic && part.maxLength !== undefined && regexOutputs[partIndex]) {
                 const actualLength = regexOutputs[partIndex].length;
                 if (actualLength > part.maxLength) {
-                  errorParts.push(`Part ${partIndex + 1}: length ${actualLength} exceeds max ${part.maxLength}`);
+                  errorParts.push(
+                    `Part ${partIndex + 1}: length ${actualLength} exceeds max ${part.maxLength}`
+                  );
                 }
               }
             });
@@ -381,7 +408,7 @@ const ExtractFields = ({
                       publicPartsTotalLength += partLength;
                       return {
                         ...part,
-                        maxLength: partLength
+                        maxLength: partLength,
                       };
                     } else {
                       // Use the manually set value in calculation
@@ -396,7 +423,7 @@ const ExtractFields = ({
                 decomposedRegexes[index] = {
                   ...decomposedRegexes[index],
                   parts: updatedParts,
-                  maxLength: publicPartsTotalLength || 64
+                  maxLength: publicPartsTotalLength || 64,
                 };
                 setField('decomposedRegexes', decomposedRegexes);
               }
@@ -544,7 +571,8 @@ const ExtractFields = ({
                         ]);
                       } else {
                         // Remove the subject regex when unchecked
-                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'subject') ?? [];
+                        const filtered =
+                          store.decomposedRegexes?.filter((r) => r.name !== 'subject') ?? [];
                         setField('decomposedRegexes', filtered);
                       }
                     }}
@@ -604,7 +632,9 @@ const ExtractFields = ({
                         ]);
                       } else {
                         // Remove the email_recipient regex when unchecked
-                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_recipient') ?? [];
+                        const filtered =
+                          store.decomposedRegexes?.filter((r) => r.name !== 'email_recipient') ??
+                          [];
                         setField('decomposedRegexes', filtered);
                       }
                     }}
@@ -649,7 +679,7 @@ const ExtractFields = ({
                             {
                               isPublic: true,
                               regexDef:
-                               "[A-Za-z0-9!#$%&'\\*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                                "[A-Za-z0-9!#$%&'\\*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
                               maxLength: 64,
                             },
                             {
@@ -666,7 +696,8 @@ const ExtractFields = ({
                         ]);
                       } else {
                         // Remove the email_sender regex when unchecked
-                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_sender') ?? [];
+                        const filtered =
+                          store.decomposedRegexes?.filter((r) => r.name !== 'email_sender') ?? [];
                         setField('decomposedRegexes', filtered);
                       }
                     }}
@@ -724,7 +755,8 @@ const ExtractFields = ({
                         ]);
                       } else {
                         // Remove the sender_domain regex when unchecked
-                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'sender_domain') ?? [];
+                        const filtered =
+                          store.decomposedRegexes?.filter((r) => r.name !== 'sender_domain') ?? [];
                         setField('decomposedRegexes', filtered);
                       }
                     }}
@@ -785,7 +817,9 @@ const ExtractFields = ({
                         ]);
                       } else {
                         // Remove the email_timestamp regex when unchecked
-                        const filtered = store.decomposedRegexes?.filter(r => r.name !== 'email_timestamp') ?? [];
+                        const filtered =
+                          store.decomposedRegexes?.filter((r) => r.name !== 'email_timestamp') ??
+                          [];
                         setField('decomposedRegexes', filtered);
                       }
                     }}
@@ -993,7 +1027,7 @@ const ExtractFields = ({
                                 updatedRegexes[index] = {
                                   ...regex,
                                   parts,
-                                  maxLength: totalPublicMaxLength || 64
+                                  maxLength: totalPublicMaxLength || 64,
                                 };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
@@ -1029,7 +1063,7 @@ const ExtractFields = ({
                                 updatedRegexes[index] = {
                                   ...regex,
                                   parts,
-                                  maxLength: totalPublicMaxLength || 64
+                                  maxLength: totalPublicMaxLength || 64,
                                 };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
@@ -1125,7 +1159,10 @@ const ExtractFields = ({
                                     // Allow empty string, but treat as undefined
                                     // Also handle invalid numbers by treating them as undefined
                                     const parsedValue = parseInt(rawValue);
-                                    const newMaxLength = rawValue === '' || isNaN(parsedValue) ? undefined : parsedValue;
+                                    const newMaxLength =
+                                      rawValue === '' || isNaN(parsedValue)
+                                        ? undefined
+                                        : parsedValue;
 
                                     parts[partIndex] = {
                                       ...parts[partIndex],
@@ -1136,12 +1173,15 @@ const ExtractFields = ({
 
                                     // Calculate total max length for all public parts
                                     // Use 64 as default when maxLength is undefined
-                                    const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
-                                      if (p && p.isPublic) {
-                                        return acc + (p.maxLength ?? 64);
-                                      }
-                                      return acc;
-                                    }, 0);
+                                    const totalPublicMaxLength = parts.reduce(
+                                      (acc: number, p: any) => {
+                                        if (p && p.isPublic) {
+                                          return acc + (p.maxLength ?? 64);
+                                        }
+                                        return acc;
+                                      },
+                                      0
+                                    );
 
                                     updatedRegexes[index] = {
                                       ...regex,
@@ -1376,6 +1416,7 @@ const ExtractFields = ({
         <Status
           emlContent={emlContent}
           isGeneratingFields={isGeneratingFields}
+          skipEmlUpload={skipEmlUpload}
           regexGeneratedOutputs={regexGeneratedOutputs}
           regexGeneratedOutputErrors={regexGeneratedOutputErrors}
         />

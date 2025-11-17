@@ -144,6 +144,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     try {
       const proof = new Proof(blueprint, emailProof);
       let verified;
+
       if (proof.props.zkFramework === ZkFramework.Noir) {
         const noirWasm = await initNoirWasm();
         const options = { noirWasm };

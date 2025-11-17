@@ -395,7 +395,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
     if (step === '1') {
       // Check canCompile state from ExtractFields component
-      return !canCompile;
+      return !canCompile && !skipEmlUpload;
     }
 
     if (step === '2') {
@@ -543,7 +543,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           />
         )}
         {step === '1' && (
-          <ExtractFields emlContent={savedEmls[id]} optOut={optOut} setCanCompile={setCanCompile} />
+          <ExtractFields
+            emlContent={savedEmls[id]}
+            skipEmlUpload={skipEmlUpload}
+            optOut={optOut}
+            setCanCompile={setCanCompile}
+          />
         )}
         {step === '2' && isBlueprintLoading && (
           <div className="flex items-center justify-center py-8">
