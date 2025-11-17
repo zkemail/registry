@@ -472,7 +472,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
               className="mr-2"
               checked={optOut}
               onCheckedChange={(checked) => {
-                setOptOut(!checked); // On toggle means data sharing is on
+                setOptOut(checked);
                 localStorage.setItem('optOut', checked.toString());
               }}
             />
