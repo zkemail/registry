@@ -421,11 +421,15 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     if (!showSampleEMLPreview) return <></>;
     if (parsedEmail?.html) {
       return (
-        <div
-          className="m-6"
-          dangerouslySetInnerHTML={{
-            __html: parsedEmail?.html!,
+        <iframe
+          title="email-viewer"
+          sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+          style={{
+            width: '100%',
+            height: '100vh',
+            border: 'none',
           }}
+          srcDoc={parsedEmail?.html || ''}
         />
       );
     }
