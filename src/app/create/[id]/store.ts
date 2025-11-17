@@ -19,6 +19,7 @@ import { get, set } from 'idb-keyval';
 // Extend BlueprintProps with auto-selection tracking
 interface ExtendedBlueprintProps extends BlueprintProps {
   ignoreBodyHashCheckAutoSelected?: boolean; // Track if auto-selected
+  skipEmlUpload?: boolean; // Track if EML upload should be skipped
 }
 
 type CreateBlueprintState = ExtendedBlueprintProps & {
@@ -46,6 +47,7 @@ const initialState: ExtendedBlueprintProps = {
   circuitName: '',
   ignoreBodyHashCheck: false,
   ignoreBodyHashCheckAutoSelected: false,
+  skipEmlUpload: false,
   shaPrecomputeSelector: '',
   emailBodyMaxLength: 1024,
   emailHeaderMaxLength: 10240,
@@ -77,7 +79,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       setField: (field: keyof ExtendedBlueprintProps, value: any) => {
         set({ [field]: value });
         // Only validate if the field exists in the base BlueprintProps schema
-        if (field in initialState && field !== 'ignoreBodyHashCheckAutoSelected') {
+        // Skip validation for client-only fields
+        if (field in initialState && field !== 'ignoreBodyHashCheckAutoSelected' && field !== 'skipEmlUpload') {
           get().validateField(field as keyof BlueprintProps);
         }
       },
@@ -265,6 +268,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
             blueprint,
             // Preserve client-only fields if they exist
             ignoreBodyHashCheckAutoSelected: currentState.ignoreBodyHashCheckAutoSelected,
+            skipEmlUpload: currentState.skipEmlUpload ?? false,
           });
         } catch (err) {
           console.error('Failed to get blueprint for id ', id);
@@ -310,6 +314,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           file: null,
           blueprint: null,
           validationErrors: {},
+          skipEmlUpload: false,
         });
       },
       setFile: async (file: File | null) => {
