@@ -14,7 +14,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const step = searchParams.get('step');
-    if (pathname.includes('create') && step === '2') {
+    if (pathname.includes('create') && step === '1') {
       setWidthClass('md:w-[768px] xl:w-[1164px]');
     } else {
       setWidthClass('md:w-[768px]');
