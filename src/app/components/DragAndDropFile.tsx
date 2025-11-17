@@ -143,6 +143,8 @@ const DragAndDropFile = ({
               if (file) {
                 setFile(file);
               }
+              // Reset the input so the same file can be selected again
+              e.target.value = '';
             }}
           />
         </div>
