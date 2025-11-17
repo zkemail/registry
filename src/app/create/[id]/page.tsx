@@ -379,7 +379,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   };
 
   useEffect(() => {
-    if (step === '2') {
+    if (step === '1') {
       genrateHighlightRegexContent();
     }
   }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
@@ -394,12 +394,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
 
     if (step === '1') {
-      // Check canCompile state from ExtractFields component
-      return !canCompile;
+      return !store.decomposedRegexes.length;
     }
 
     if (step === '2') {
-      return !store.decomposedRegexes.length;
+      // Check canCompile state from ExtractFields component
+      return !canCompile;
     }
 
     return !!errors.length || isDKIMMissing;
@@ -466,7 +466,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     <div className="flex flex-col justify-center gap-2 px-4 xl:flex-row">
       <div
         className={`mt-16 flex flex-col gap-6 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] xl:my-16 ${
-          pathname.includes('create') && step === '2' ? 'mb-0' : 'mb-16'
+          pathname.includes('create') && step === '1' ? 'mb-0' : 'mb-16'
         }`}
       >
         <div className="mb-4 rounded-md border border-grey-200 bg-neutral-100 p-2">
@@ -652,7 +652,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           <SampleEMLPreview />
         </div>
       </div>
-      {pathname.includes('create') && step === '2' ? (
+      {pathname.includes('create') && step === '1' ? (
         <div className="my-4 flex w-full min-w-96 flex-col gap-4 transition-all duration-300 xl:my-16 xl:w-96 xl:gap-2">
           <div className="rounded-3xl border border-grey-500 bg-white p-5 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)] transition-all duration-300">
             <div>
