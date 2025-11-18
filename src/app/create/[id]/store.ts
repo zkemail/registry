@@ -155,22 +155,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
 
         
         // Parse decomposedRegexes since we are saving them as string to make handling TextArea easier
-        // TODO: need to add the maxmatch length and max length per public part in the client side for user
+        // Note: Default value calculation is now done in ExtractFields.tsx when max length is updated
         data.decomposedRegexes?.forEach((dcr) => {
           dcr.parts =
           typeof dcr.parts === 'string'
           ? (JSON.parse((dcr.parts as unknown as string).trim()) as DecomposedRegexPart[])
           : dcr.parts;
-          dcr.maxLength = dcr.maxLength || 64;
-          dcr.maxMatchLength = dcr.maxMatchLength || 64;
-          dcr.isHashed = dcr.isHashed || false;
-          
-          
-          dcr.parts?.forEach((part) => {
-            if (part.isPublic) {
-              part.maxLength = part.maxLength || 64;
-            }
-          });
         });
         
         console.log('Creating blueprint with: ', data);

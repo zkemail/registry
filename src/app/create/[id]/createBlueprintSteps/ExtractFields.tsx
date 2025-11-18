@@ -42,6 +42,28 @@ const parseRegexParts = (parts: any): any => {
   return parts || [];
 };
 
+// Calculate maxLength: sum of all public part maxLengths
+const calculateMaxLength = (parts: any[]): number => {
+  const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
+    if (p && p.isPublic) {
+      return acc + (p.maxLength ?? 64);
+    }
+    return acc;
+  }, 0);
+  return totalPublicMaxLength || 64;
+};
+
+// Calculate maxMatchLength: sum of all public part maxLengths + 16 padding
+const calculateMaxMatchLength = (parts: any[]): number => {
+  const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
+    if (p && p.isPublic) {
+      return acc + (p.maxLength ?? 64);
+    }
+    return acc;
+  }, 0);
+  return totalPublicMaxLength + 16;
+};
+
 const Status = memo(({
   emlContent,
   isGeneratingFields,
@@ -288,6 +310,55 @@ const ExtractFields = ({
     [store.decomposedRegexes]
   );
 
+  // Ensure maxMatchLength is always recalculated when parts change
+  // Use a memoized key based on parts to detect changes without causing infinite loops
+  const partsKey = useMemo(() => {
+    return store.decomposedRegexes?.map((regex: DecomposedRegex) => {
+      const parts = parseRegexParts(regex.parts);
+      return parts.map((p: any) => ({
+        isPublic: p.isPublic,
+        maxLength: p.maxLength,
+      }));
+    });
+  }, [store.decomposedRegexes]);
+
+  useEffect(() => {
+    if (!store.decomposedRegexes?.length) return;
+
+    const updatedRegexes = store.decomposedRegexes.map((regex: DecomposedRegex) => {
+      const parts = parseRegexParts(regex.parts);
+      const calculatedMaxLength = calculateMaxLength(parts);
+      const calculatedMaxMatchLength = calculateMaxMatchLength(parts);
+      
+      // Update if maxLength or maxMatchLength is missing, undefined, or different to ensure they're always set correctly
+      const needsUpdate = 
+        regex.maxLength === undefined || regex.maxLength === null || regex.maxLength !== calculatedMaxLength ||
+        regex.maxMatchLength === undefined || regex.maxMatchLength === null || regex.maxMatchLength !== calculatedMaxMatchLength;
+      
+      if (needsUpdate) {
+        return {
+          ...regex,
+          maxLength: calculatedMaxLength,
+          maxMatchLength: calculatedMaxMatchLength,
+        };
+      }
+      return regex;
+    });
+
+    // Check if any regex was updated
+    const hasChanges = updatedRegexes.some((updated, index) => {
+      const original = store.decomposedRegexes[index];
+      return !original || 
+        updated.maxLength !== original.maxLength ||
+        updated.maxMatchLength !== original.maxMatchLength;
+    });
+
+    if (hasChanges) {
+      setField('decomposedRegexes', updatedRegexes);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partsKey]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -327,9 +398,6 @@ const ExtractFields = ({
             // Only update state if component is still mounted
             if (cancelled) return;
 
-            const outputUpdated =
-              JSON.stringify(regexOutputs) !== JSON.stringify(regexGeneratedOutputs[index]);
-
             // Validate output lengths against maxLength for public parts
             const parts = parseRegexParts(parsedRegex.parts);
             let validationError = '';
@@ -364,39 +432,39 @@ const ExtractFields = ({
                 return updated;
               });
 
-              // update the max length of the regex at that particular index
-              // Only update when the output changes and there's no validation error
-              if (outputUpdated && !validationError) {
-                // Calculate total length only for public parts
-                let publicPartsTotalLength = 0;
+              // Always update maxLength and maxMatchLength based on the actual regex outputs
+              // This ensures they're calculated from the real output lengths, not just the part definitions
+              if (!validationError && regexOutputs && regexOutputs.length > 0) {
                 const parts = parseRegexParts(parsedRegex.parts);
 
-                // Update individual part max lengths only if not manually set
-                // This preserves user-defined values
+                // Update individual part max lengths based on actual output lengths
+                // Only auto-update if maxLength is undefined (preserves user-defined values)
                 const updatedParts = parts.map((part: any, partIndex: number) => {
                   if (part.isPublic && regexOutputs[partIndex]) {
                     const partLength = regexOutputs[partIndex].length;
                     // Only auto-update if maxLength is undefined (not manually set)
                     if (part.maxLength === undefined) {
-                      publicPartsTotalLength += partLength;
                       return {
                         ...part,
                         maxLength: partLength
                       };
-                    } else {
-                      // Use the manually set value in calculation
-                      publicPartsTotalLength += part.maxLength;
-                      return part;
                     }
+                    // Keep the manually set value
+                    return part;
                   }
                   return part;
                 });
+
+                // Calculate maxLength and maxMatchLength from the updated parts
+                const calculatedMaxLength = calculateMaxLength(updatedParts);
+                const calculatedMaxMatchLength = calculateMaxMatchLength(updatedParts);
 
                 const decomposedRegexes = [...store.decomposedRegexes];
                 decomposedRegexes[index] = {
                   ...decomposedRegexes[index],
                   parts: updatedParts,
-                  maxLength: publicPartsTotalLength || 64
+                  maxLength: calculatedMaxLength,
+                  maxMatchLength: calculatedMaxMatchLength
                 };
                 setField('decomposedRegexes', decomposedRegexes);
               }
@@ -430,6 +498,8 @@ const ExtractFields = ({
     };
   }, [emlContent, decomposedRegexesKey]);
 
+  console.log(store.decomposedRegexes, 'store.decomposedRegexes');
+
   const handleGenerateFields = async (index: number) => {
     const updatedIsGeneratingFieldsLoading = [...isGeneratingFieldsLoading];
     updatedIsGeneratingFieldsLoading[index] = true;
@@ -461,18 +531,12 @@ const ExtractFields = ({
       const data = await response.json();
 
       const updatedRegexes = [...store.decomposedRegexes];
-      // Calculate total max length for public parts (using 64 as default)
-      const totalPublicMaxLength = data[0].parts.reduce((acc: number, part: any) => {
-        if (part.isPublic) {
-          return acc + (part.maxLength ?? 64);
-        }
-        return acc;
-      }, 0);
       updatedRegexes[index] = {
         name: data[0].name,
         location: data[0].location === 'body' ? 'body' : 'header',
         parts: data[0].parts,
-        maxLength: totalPublicMaxLength || 64,
+        maxLength: calculateMaxLength(data[0].parts),
+        maxMatchLength: calculateMaxMatchLength(data[0].parts),
       };
 
       setField('decomposedRegexes', updatedRegexes);
@@ -518,25 +582,27 @@ const ExtractFields = ({
                       const checked = !isExtractSubjectChecked;
                       setIsExtractSubjectChecked(checked);
                       if (checked) {
+                        const subjectParts = [
+                          {
+                            isPublic: false,
+                            regexDef: '(?:\\r\\n|^)subject:',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef: '[^\\r\\n]+',
+                            maxLength: 64,
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '\\r\\n',
+                          },
+                        ];
                         const subjectRegex: DecomposedRegex = {
                           name: 'subject',
                           location: 'header',
-                          parts: [
-                            {
-                              isPublic: false,
-                              regexDef: '(?:\\r\\n|^)subject:',
-                            },
-                            {
-                              isPublic: true,
-                              regexDef: '[^\\r\\n]+',
-                              maxLength: 64,
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '\\r\\n',
-                            },
-                          ],
-                          maxLength: 64,
+                          parts: subjectParts,
+                          maxLength: calculateMaxLength(subjectParts),
+                          maxMatchLength: calculateMaxMatchLength(subjectParts),
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -573,30 +639,32 @@ const ExtractFields = ({
                       const checked = !isExtractReceiverChecked;
                       setIsExtractReceiverChecked(checked);
                       if (checked) {
+                        const receiverParts = [
+                          {
+                            isPublic: false,
+                            regexDef: '(?:\\r\\n|^)to:',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '(?:[^\\r\\n]+<)?',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef:
+                              '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
+                            maxLength: 64,
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '>?\\r\\n',
+                          },
+                        ];
                         const receiverRegex: DecomposedRegex = {
                           name: 'email_recipient',
-                          parts: [
-                            {
-                              isPublic: false,
-                              regexDef: '(?:\\r\\n|^)to:',
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '(?:[^\\r\\n]+<)?',
-                            },
-                            {
-                              isPublic: true,
-                              regexDef:
-                                '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
-                              maxLength: 64,
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '>?\\r\\n',
-                            },
-                          ],
+                          parts: receiverParts,
                           location: 'header',
-                          maxLength: 64,
+                          maxLength: calculateMaxLength(receiverParts),
+                          maxMatchLength: calculateMaxMatchLength(receiverParts),
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -635,30 +703,32 @@ const ExtractFields = ({
                       const checked = !isExtractSenderNameChecked;
                       setIsExtractSenderNameChecked(checked);
                       if (checked) {
+                        const senderNameParts = [
+                          {
+                            isPublic: false,
+                            regexDef: '(?:\\r\\n|^)from:',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '(?:[^\\r\\n]+<)?',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef:
+                             "[A-Za-z0-9!#$%&'\\*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                            maxLength: 64,
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '>?\\r\\n',
+                          },
+                        ];
                         const senderNameRegex: DecomposedRegex = {
                           name: 'email_sender',
-                          parts: [
-                            {
-                              isPublic: false,
-                              regexDef: '(?:\\r\\n|^)from:',
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '(?:[^\\r\\n]+<)?',
-                            },
-                            {
-                              isPublic: true,
-                              regexDef:
-                               "[A-Za-z0-9!#$%&'\\*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
-                              maxLength: 64,
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '>?\\r\\n',
-                            },
-                          ],
+                          parts: senderNameParts,
                           location: 'header',
-                          maxLength: 64,
+                          maxLength: calculateMaxLength(senderNameParts),
+                          maxMatchLength: calculateMaxMatchLength(senderNameParts),
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -698,25 +768,27 @@ const ExtractFields = ({
                       const checked = !isExtractSenderDomainChecked;
                       setIsExtractSenderDomainChecked(checked);
                       if (checked) {
+                        const senderDomainParts = [
+                          {
+                            isPublic: false,
+                            regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+',
+                            maxLength: 64,
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '[>\\r\\n]',
+                          },
+                        ];
                         const senderDomainRegex: DecomposedRegex = {
                           name: 'sender_domain',
-                          parts: [
-                            {
-                              isPublic: false,
-                              regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
-                            },
-                            {
-                              isPublic: true,
-                              regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+',
-                              maxLength: 64,
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '[>\\r\\n]',
-                            },
-                          ],
+                          parts: senderDomainParts,
                           location: 'header',
-                          maxLength: 64,
+                          maxLength: calculateMaxLength(senderDomainParts),
+                          maxMatchLength: calculateMaxMatchLength(senderDomainParts),
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -755,29 +827,31 @@ const ExtractFields = ({
                       const checked = !isExtractTimestampChecked;
                       setIsExtractTimestampChecked(checked);
                       if (checked) {
+                        const timestampParts = [
+                          {
+                            isPublic: false,
+                            regexDef: '(?:\\r\\n|^)dkim-signature:',
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: '(?:[a-z]+=[^;]+; )+t=',
+                          },
+                          {
+                            isPublic: true,
+                            regexDef: '[0-9]+',
+                            maxLength: 64,
+                          },
+                          {
+                            isPublic: false,
+                            regexDef: ';',
+                          },
+                        ];
                         const timestampRegex: DecomposedRegex = {
                           name: 'email_timestamp',
-                          parts: [
-                            {
-                              isPublic: false,
-                              regexDef: '(?:\\r\\n|^)dkim-signature:',
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: '(?:[a-z]+=[^;]+; )+t=',
-                            },
-                            {
-                              isPublic: true,
-                              regexDef: '[0-9]+',
-                              maxLength: 64,
-                            },
-                            {
-                              isPublic: false,
-                              regexDef: ';',
-                            },
-                          ],
+                          parts: timestampParts,
                           location: 'header',
-                          maxLength: 64,
+                          maxLength: calculateMaxLength(timestampParts),
+                          maxMatchLength: calculateMaxMatchLength(timestampParts),
                         };
                         setField('decomposedRegexes', [
                           ...(store.decomposedRegexes ?? []),
@@ -834,7 +908,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'header' },
+                  { maxLength: 64, location: 'header', maxMatchLength: 16, parts: [] },
                 ]);
               }}
             >
@@ -982,18 +1056,12 @@ const ExtractFields = ({
                               onClick={() => {
                                 const parts = parseRegexParts(regex.parts);
                                 parts[partIndex].isPublic = false;
-                                // Recalculate total max length for all public parts
-                                const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
-                                  if (p && p.isPublic) {
-                                    return acc + (p.maxLength ?? 64);
-                                  }
-                                  return acc;
-                                }, 0);
                                 const updatedRegexes = [...store.decomposedRegexes];
                                 updatedRegexes[index] = {
                                   ...regex,
                                   parts,
-                                  maxLength: totalPublicMaxLength || 64
+                                  maxLength: calculateMaxLength(parts),
+                                  maxMatchLength: calculateMaxMatchLength(parts)
                                 };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
@@ -1029,7 +1097,8 @@ const ExtractFields = ({
                                 updatedRegexes[index] = {
                                   ...regex,
                                   parts,
-                                  maxLength: totalPublicMaxLength || 64
+                                  maxLength: totalPublicMaxLength || 64,
+                                  maxMatchLength: calculateMaxMatchLength(parts)
                                 };
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
@@ -1057,6 +1126,7 @@ const ExtractFields = ({
                               updatedRegexes[index] = {
                                 ...regex,
                                 parts: parts,
+                                maxMatchLength: calculateMaxMatchLength(parts),
                               };
                               setField('decomposedRegexes', updatedRegexes);
                             }}
@@ -1092,6 +1162,8 @@ const ExtractFields = ({
                               };
                               const updatedRegexes = [...store.decomposedRegexes];
                               console.log('parts: 717', parts);
+                              // Only update parts - maxLength and maxMatchLength will be recalculated
+                              // by generateRegexOutputs based on actual test outputs
                               updatedRegexes[index] = {
                                 ...regex,
                                 parts: parts,
@@ -1127,26 +1199,34 @@ const ExtractFields = ({
                                     const parsedValue = parseInt(rawValue);
                                     const newMaxLength = rawValue === '' || isNaN(parsedValue) ? undefined : parsedValue;
 
+                                    // Update the specific part's maxLength
                                     parts[partIndex] = {
                                       ...parts[partIndex],
                                       maxLength: newMaxLength,
                                     };
 
                                     const updatedRegexes = [...store.decomposedRegexes];
+                                    const currentRegex = updatedRegexes[index];
 
-                                    // Calculate total max length for all public parts
-                                    // Use 64 as default when maxLength is undefined
-                                    const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
-                                      if (p && p.isPublic) {
-                                        return acc + (p.maxLength ?? 64);
+                                    // Apply defaults calculation (moved from store.ts saveDraft)
+                                    // Set defaults for public parts that don't have maxLength set
+                                    // Do this AFTER updating the specific part to avoid overwriting user input
+                                    parts.forEach((p: any, idx: number) => {
+                                      if (p.isPublic && p.maxLength === undefined && idx !== partIndex) {
+                                        p.maxLength = 64;
                                       }
-                                      return acc;
-                                    }, 0);
+                                    });
+
+                                    // Calculate maxLength and maxMatchLength using the updated parts
+                                    const calculatedMaxLength = calculateMaxLength(parts);
+                                    const calculatedMaxMatchLength = calculateMaxMatchLength(parts);
 
                                     updatedRegexes[index] = {
-                                      ...regex,
+                                      ...currentRegex,
                                       parts: parts,
-                                      maxLength: totalPublicMaxLength || 64,
+                                      maxLength: calculatedMaxLength,
+                                      maxMatchLength: calculatedMaxMatchLength,
+                                      isHashed: currentRegex.isHashed || false,
                                     };
                                     setField('decomposedRegexes', updatedRegexes);
                                   }}
@@ -1193,6 +1273,7 @@ const ExtractFields = ({
                       updatedRegexes[index] = {
                         ...regex,
                         parts: parts,
+                        maxMatchLength: calculateMaxMatchLength(parts),
                       };
                       setField('decomposedRegexes', updatedRegexes);
                     }}
@@ -1247,7 +1328,7 @@ const ExtractFields = ({
                 }
                 setField('decomposedRegexes', [
                   ...(store.decomposedRegexes ?? []),
-                  { maxLength: 64, location: 'body' },
+                  { maxLength: 64, location: 'body', maxMatchLength: 16, parts: [] },
                 ]);
               }}
             >
