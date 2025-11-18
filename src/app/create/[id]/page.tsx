@@ -77,9 +77,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isConfirmInputsUpdateModalOpen, setIsConfirmInputsUpdateModalOpen] = useState(false);
   const [isUpdateInputsLoading, setIsUpdateInputsLoading] = useState(false);
   const [isNextButtonClicked, setIsNextButtonClicked] = useState(false);
-  const [skipEmlUpload, setSkipEmlUpload] = useState(false);
   const [hasLoadedBlueprint, setHasLoadedBlueprint] = useState(false);
   const [isBlueprintLoading, setIsBlueprintLoading] = useState(false);
+  
+  // Get skipEmlUpload from store instead of local state
+  const skipEmlUpload = store.skipEmlUpload ?? false;
+  const setSkipEmlUpload = (value: boolean) => store.setField('skipEmlUpload', value);
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
@@ -394,12 +397,12 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
 
     if (step === '1') {
-      return !store.decomposedRegexes.length;
+      return !store.decomposedRegexes.length && !skipEmlUpload;
     }
 
     if (step === '2') {
       // Check canCompile state from ExtractFields component
-      return !canCompile;
+      return !canCompile && !skipEmlUpload;
     }
 
     return !!errors.length || isDKIMMissing;
@@ -547,7 +550,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           />
         )}
         {step === '1' && (
-          <ExtractFields emlContent={savedEmls[id]} optOut={optOut} setCanCompile={setCanCompile} />
+          <ExtractFields emlContent={savedEmls[id]} skipEmlUpload={skipEmlUpload} optOut={optOut} setCanCompile={setCanCompile} />
         )}
         {step === '2' && isBlueprintLoading && (
           <div className="flex items-center justify-center py-8">

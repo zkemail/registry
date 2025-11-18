@@ -25,9 +25,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 // Memoized Status component to prevent recreation on each render
 interface StatusProps {
   emlContent: string;
+  showNoRegexesError: boolean;
   isGeneratingFields: boolean;
   regexGeneratedOutputs: string[];
   regexGeneratedOutputErrors: string[];
+  skipEmlUpload: boolean;
 }
 
 // Pure utility function - doesn't need to be recreated on each render
@@ -46,9 +48,12 @@ const Status = memo(({
   emlContent,
   isGeneratingFields,
   regexGeneratedOutputs,
-  regexGeneratedOutputErrors
+  regexGeneratedOutputErrors,
+  showNoRegexesError,
+  skipEmlUpload
 }: StatusProps) => {
-  if (!emlContent) {
+  console.log('skipEmlUpload', skipEmlUpload);
+  if (!emlContent && !skipEmlUpload) {
     return (
       <div className="flex items-center gap-2 text-red-400">
         <Image
@@ -73,7 +78,8 @@ const Status = memo(({
       </div>
     );
   }
-  if (!regexGeneratedOutputs.length) {
+
+  if (showNoRegexesError) {
     return (
       <div className="flex items-center gap-2 text-red-400">
         <Image
@@ -94,7 +100,7 @@ const Status = memo(({
   const hasRegexErrors = regexGeneratedOutputErrors.some(error => error && error.length > 0);
 
   if (
-    !regexGeneratedOutputs.length ||
+    (!regexGeneratedOutputs.length ||
     hasRegexErrors ||
     regexGeneratedOutputs.some((output) =>
       Array.isArray(output)
@@ -102,7 +108,7 @@ const Status = memo(({
         : output
           ? output.includes('Error')
           : true
-    )
+    )) && !skipEmlUpload
   ) {
     return (
       <div className="flex items-center gap-2 text-red-400">
@@ -221,10 +227,12 @@ const ExtractFields = ({
   emlContent,
   optOut,
   setCanCompile,
+  skipEmlUpload,
 }: {
   emlContent: string;
   optOut: boolean;
   setCanCompile: (canCompile: boolean) => void;
+  skipEmlUpload: boolean;
 }) => {
   const store = useCreateBlueprintStore();
 
@@ -1374,7 +1382,9 @@ const ExtractFields = ({
       </div>
       <div data-testid="regex-status">
         <Status
+          skipEmlUpload={skipEmlUpload}
           emlContent={emlContent}
+          showNoRegexesError={!store.decomposedRegexes?.length}
           isGeneratingFields={isGeneratingFields}
           regexGeneratedOutputs={regexGeneratedOutputs}
           regexGeneratedOutputErrors={regexGeneratedOutputErrors}
