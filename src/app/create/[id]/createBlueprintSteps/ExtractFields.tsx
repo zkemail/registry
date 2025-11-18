@@ -1085,13 +1085,14 @@ const ExtractFields = ({
                       <div className="flex flex-col gap-3">
                         <div className="relative">
                           <Input
-                            value={part.regexDef?.replace(/\r/g, '\\r').replace(/\n/g, '\\n')}
+                            value={part.regexDef?.replace(/\\/g, '\\\\').replace(/\r/g, '\\r').replace(/\n/g, '\\n')}
                             onChange={(e) => {
                               const parts = [...parseRegexParts(regex.parts)];
                               // Convert displayed \r and \n back to actual escape sequences
                               const rawValue = e.target.value
                                 .replace(/\\r/g, '\r')
-                                .replace(/\\n/g, '\n');
+                                .replace(/\\n/g, '\n')
+                                .replace(/\\\\/g, '\\');
                               console.log(rawValue, 'rawValue');
                               parts[partIndex] = {
                                 ...parts[partIndex],
