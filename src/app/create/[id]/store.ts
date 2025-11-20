@@ -65,6 +65,7 @@ const initialState: ExtendedBlueprintProps = {
   decomposedRegexes: [],
   clientZkFramework: ZkFramework.Circom,
   serverZkFramework: ZkFramework.Circom,
+  internalVersion: '0002_max_length_per_regex_part',
 };
 
 export const useCreateBlueprintStore = create<CreateBlueprintState>()(
