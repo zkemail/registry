@@ -99,9 +99,7 @@ const Status = memo(({
     regexGeneratedOutputs.some((output) =>
       Array.isArray(output)
         ? output.join('').includes('Error')
-        : output
-          ? output.includes('Error')
-          : true
+        : typeof output === 'string' && output.includes('Error')
     )
   ) {
     return (
@@ -274,9 +272,7 @@ const ExtractFields = ({
     const hasOutputErrors = regexGeneratedOutputs.some((output) =>
       Array.isArray(output)
         ? output.join('').includes('Error')
-        : output
-          ? output.includes('Error')
-          : true
+        : typeof output === 'string' && output.includes('Error')
     );
 
     setCanCompile(!hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors);
