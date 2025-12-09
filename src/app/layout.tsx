@@ -28,6 +28,7 @@ export const metadata: Metadata = {
       },
     ],
   },
+  metadataBase: new URL('https://registry.zk.email'),
   openGraph: {
     title: 'ZK Email Registry',
     description: 'Create email blueprints to create proofs about emails.',
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
     siteName: 'ZK Email Registry',
     images: [
       {
-        url: '/og-image.png',
+        url: 'https://registry.zk.email/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'ZK Email Registry',
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ZK Email Registry',
     description: 'Create email blueprints to create proofs about emails.',
-    images: ['/og-image.png'],
+    images: ['https://registry.zk.email/og-image.jpg'],
   },
 };
 
