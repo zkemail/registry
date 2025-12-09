@@ -38,7 +38,7 @@ export const metadata: Metadata = {
       {
         url: 'https://registry.zk.email/og-image.jpg',
         width: 1200,
-        height: 630,
+        height: 600,
         alt: 'ZK Email Registry',
       },
     ],
