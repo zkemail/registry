@@ -28,6 +28,27 @@ export const metadata: Metadata = {
       },
     ],
   },
+  openGraph: {
+    title: 'ZK Email Registry',
+    description: 'Create email blueprints to create proofs about emails.',
+    url: 'https://registry.zk.email',
+    siteName: 'ZK Email Registry',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ZK Email Registry',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ZK Email Registry',
+    description: 'Create email blueprints to create proofs about emails.',
+    images: ['/og-image.png'],
+  },
 };
 
 export default function RootLayout({
