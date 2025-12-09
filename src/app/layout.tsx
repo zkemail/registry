@@ -31,11 +31,11 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ZK Email Registry',
     description: 'Create email blueprints to create proofs about emails.',
-    url: 'https://registry.zk.email', // your site URL
+    url: 'https://registry.zk.email',
     siteName: 'ZK Email Registry',
     images: [
       {
-        url: '/og-image.png', // or full URL: 'https://registry.zk.email/og-image.png'
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'ZK Email Registry',
