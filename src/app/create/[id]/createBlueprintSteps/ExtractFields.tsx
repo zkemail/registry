@@ -589,16 +589,16 @@ const ExtractFields = ({
                         const subjectParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)subject:',
+                            regexDef: '(?:\r\n|^)subject:',
                           },
                           {
                             isPublic: true,
-                            regexDef: '[^\\r\\n]+',
+                            regexDef: '[^\r\n]+',
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '\\r\\n',
+                            regexDef: '\r\n',
                           },
                         ];
                         const subjectRegex: DecomposedRegex = {
@@ -646,21 +646,21 @@ const ExtractFields = ({
                         const receiverParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)to:',
+                            regexDef: '(?:\r\n|^)to:',
                           },
                           {
                             isPublic: false,
-                            regexDef: '(?:[^\\r\\n]+<)?',
+                            regexDef: '(?:[^\r\n]+<)?',
                           },
                           {
                             isPublic: true,
                             regexDef:
-                              '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
+                              '[a-zA-Z0-9!#$%&\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[a-zA-Z0-9_\\.-]+',
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '>?\\r\\n',
+                            regexDef: '>?\r\n',
                           },
                         ];
                         const receiverRegex: DecomposedRegex = {
@@ -710,21 +710,21 @@ const ExtractFields = ({
                         const senderNameParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)from:',
+                            regexDef: '(?:\r\n|^)from:',
                           },
                           {
                             isPublic: false,
-                            regexDef: '(?:[^\\r\\n]+<)?',
+                            regexDef: '(?:[^\r\n]+<)?',
                           },
                           {
                             isPublic: true,
                             regexDef:
-                             "[A-Za-z0-9!#$%&'\\*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                             "[A-Za-z0-9!#$%&'*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '>?\\r\\n',
+                            regexDef: '>?\r\n',
                           },
                         ];
                         const senderNameRegex: DecomposedRegex = {
@@ -775,16 +775,16 @@ const ExtractFields = ({
                         const senderDomainParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
+                            regexDef: '(?:\r\n|^)from:[^\r\n]*@',
                           },
                           {
                             isPublic: true,
-                            regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+',
+                            regexDef: '[A-Za-z0-9][A-Za-z0-9\.-]+',
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '[>\\r\\n]',
+                            regexDef: '[>\r\n]',
                           },
                         ];
                         const senderDomainRegex: DecomposedRegex = {
@@ -834,7 +834,7 @@ const ExtractFields = ({
                         const timestampParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)dkim-signature:',
+                            regexDef: '(?:\r\n|^)dkim-signature:',
                           },
                           {
                             isPublic: false,
