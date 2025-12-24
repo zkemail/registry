@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useBlueprintFiltersStore } from '@/lib/stores/useBlueprintFiltersStore';
+import { useCreateBlueprintStore } from '@/app/create/[id]/store';
+import { set as setIdb } from 'idb-keyval';
 
 const Navbar = () => {
   const token = useAuthStore((state) => state.token);
@@ -40,7 +42,23 @@ const Navbar = () => {
   };
 
   const handleCreateBlueprint = () => {
-    localStorage.removeItem('create-blueprint');
+    // Clear persisted create-blueprint store in IndexedDB
+    try {
+      // Fire and forget – if this fails we still reset in-memory state below
+      setIdb('create-blueprint', null).catch((err) => {
+        console.error('Failed to clear persisted create-blueprint store', err);
+      });
+    } catch (err) {
+      console.error('Error while scheduling create-blueprint store clear', err);
+    }
+
+    // Reset in-memory create blueprint store so we always start from a clean slate
+    try {
+      useCreateBlueprintStore.getState().reset();
+    } catch (err) {
+      console.error('Failed to reset create blueprint store', err);
+    }
+
     router.push('/create');
   };
 

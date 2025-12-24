@@ -183,7 +183,7 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           let emlStr = '';
           // Always use savedEmls for email content
           // File objects cannot be properly serialized/deserialized from storage
-          const blueprintId = state.id ?? 'new';
+          const blueprintId = state.blueprint?.props.id ?? state.id ?? 'new';
           emlStr = savedEmls[blueprintId] || '';
 
           // If we don't have the email content in savedEmls and have a valid File object,
@@ -196,8 +196,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
             }
           }
           console.log('got email content');
-          // Create a new blueprint
-          if (!state.id || state.id === 'new') {
+          // If we don't have a blueprint instance yet, always create a new one
+          if (!state.blueprint) {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
             if (emlStr) {
@@ -214,18 +214,27 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
             return blueprint.props.id!;
           }
 
-          // Update an existing blueprint
-          if (state.blueprint && state.blueprint.canUpdate(data)) {
-            await state.blueprint.update(data);
-            return state.blueprint.props.id!;
+          // We have an existing blueprint instance at this point
+          const blueprint = state.blueprint;
+          const canUpdateFn = (blueprint as any)?.canUpdate;
+
+          // Prefer SDK's canUpdate logic when available
+          if (typeof canUpdateFn === 'function') {
+            if (canUpdateFn.call(blueprint, data)) {
+              await blueprint.update(data);
+              return blueprint.props.id!;
+            }
+
+            // Create a new version of the blueprint when it can't be updated in-place
+            console.log('creating new version');
+            await blueprint.submitNewVersionDraft(data);
+            return blueprint.props.id!;
           }
 
-          // Create a new version of an blueprint
-          if (state.blueprint && !state.blueprint.canUpdate(data)) {
-            console.log('creating new version');
-            await state.blueprint.submitNewVersionDraft(data);
-            return state.blueprint.props.id!;
-          }
+          // Fallback: if canUpdate is not available (or not a function), always create a new version
+          console.warn('Blueprint.canUpdate is not available, submitting new version draft instead');
+          await blueprint.submitNewVersionDraft(data);
+          return blueprint.props.id!;
 
           throw new Error('Unknown error saving blueprint');
         } catch (err) {
