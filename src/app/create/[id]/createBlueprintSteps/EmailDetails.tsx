@@ -58,11 +58,12 @@ const EmailDetails = ({
     // Only auto-select if:
     // 1. Currently false (not manually set)
     // 2. There are no body patterns
-    // 3. Not already auto-selected (to avoid re-triggering)
+    // 3. Never interacted with before (undefined = fresh state)
+    // Note: false means user manually changed, true means was auto-selected
     if (
       !store.ignoreBodyHashCheck &&
       !hasBodyPatterns(store.decomposedRegexes) &&
-      !store.ignoreBodyHashCheckAutoSelected
+      store.ignoreBodyHashCheckAutoSelected === undefined
     ) {
       setField('ignoreBodyHashCheck', true);
       setField('removeSoftLinebreaks', false);
