@@ -25,6 +25,8 @@ interface ExtendedBlueprintProps extends BlueprintProps {
 type CreateBlueprintState = ExtendedBlueprintProps & {
   blueprint: Blueprint | null;
   validationErrors: ValidationErrors;
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
   setField: (field: keyof ExtendedBlueprintProps, value: any) => void;
   validateField: (field: keyof BlueprintProps) => void;
   validateAll: () => boolean;
@@ -76,6 +78,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       blueprint: null,
       validationErrors: {},
       file: null,
+      hasHydrated: false,
+      setHasHydrated: (value: boolean) => set({ hasHydrated: value }),
 
       setField: (field: keyof ExtendedBlueprintProps, value: any) => {
         set({ [field]: value });
@@ -335,8 +339,12 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       name: 'create-blueprint',
       // Exclude 'file' from persistence as File objects cannot be serialized
       partialize: (state) => {
-        const { file, blueprint, ...rest } = state;
+        const { file, blueprint, hasHydrated, setHasHydrated, ...rest } = state;
         return rest;
+      },
+      onRehydrateStorage: () => (state) => {
+        // This is called after the store has been rehydrated from storage
+        state?.setHasHydrated(true);
       },
       storage: {
         getItem: async (name) => {
