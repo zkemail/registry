@@ -30,9 +30,19 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const searchParams = useSearchParams();
   const localProofInfo = searchParams.get('emailProofInfo');
 
-  const emailProof = localProofInfo
-    ? JSON.parse(localProofInfo)
-    : useProofEmailStore((state) => state.data[id!]?.[proofId]);
+  const storeProof = useProofEmailStore((state) => state.data[id!]?.[proofId]);
+
+  const emailProof = (() => {
+    if (localProofInfo) {
+      try {
+        return JSON.parse(localProofInfo);
+      } catch (err) {
+        console.error('Failed to parse emailProofInfo from URL:', err);
+        return storeProof;
+      }
+    }
+    return storeProof;
+  })();
 
   console.log('emailProof: ', emailProof);
 
