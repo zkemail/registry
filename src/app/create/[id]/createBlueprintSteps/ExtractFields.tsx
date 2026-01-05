@@ -993,7 +993,7 @@ const ExtractFields = ({
                   }}
                 />
               </div>
-              <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3 sm:p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-base font-medium text-gray-900">Regex Definition</p>
                   <Link
@@ -1021,7 +1021,7 @@ const ExtractFields = ({
                 {regex?.parts?.map((part: any, partIndex: any) => {
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex flex-row items-center gap-2">
                           <span
                             className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium text-white"
@@ -1035,7 +1035,7 @@ const ExtractFields = ({
                           </span>
                           <Label>Field</Label>
                         </div>
-                        <div className="flex flex-row items-center gap-2">
+                        <div className="flex flex-row items-center gap-2 self-end sm:self-auto">
                           <div className="relative inline-flex items-center rounded-xl border border-grey-500 bg-white p-1 shadow-sm">
                             {/* Animated active background */}
                             <motion.div
