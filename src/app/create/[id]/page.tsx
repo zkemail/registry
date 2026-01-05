@@ -48,6 +48,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     file,
     setFile,
     blueprint,
+    hasHydrated: storeHasHydrated,
   } = store;
 
   const [errors, setErrors] = useState<string[]>([]);
@@ -118,7 +119,13 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [savedEmls[id]]);
 
   // Load data if an id is provided
+  // Wait for store hydration before resetting to prevent race condition
+  // where hydrated state overwrites the reset state
   useEffect(() => {
+    if (!storeHasHydrated) {
+      return;
+    }
+    
     if (id === 'new') {
       reset();
       setHasLoadedBlueprint(false);
@@ -140,7 +147,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       };
       loadBlueprint();
     }
-  }, [id]); // Only run when id changes, not on step changes
+  }, [id, storeHasHydrated]); // Run when id or hydration state changes
 
   useEffect(() => {
     // Load all EMLs from IndexedDB on mount
@@ -444,8 +451,8 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     return <></>;
   };
 
-  // Show loader while auth store is hydrating from localStorage
-  if (!hasHydrated) {
+  // Show loader while auth store or create blueprint store is hydrating from storage
+  if (!hasHydrated || !storeHasHydrated) {
     return (
       <div className="my-16 flex justify-center">
         <Loader />
