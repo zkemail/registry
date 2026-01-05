@@ -40,6 +40,11 @@ export const BlueprintTitle = ({
     }
   };
 
+  const handleCopySlug = () => {
+    navigator.clipboard.writeText(blueprint.props.slug);
+    toast.success('Slug copied to clipboard');
+  };
+
   return (
     <div className="rounded-3xl border border-grey-200 bg-[#FFFFFF] p-6 shadow-sm">
       <div className="mb-1 flex w-full items-center gap-2 justify-between">
@@ -71,7 +76,23 @@ export const BlueprintTitle = ({
       </div>
 
       <div className="mb-5 space-y-3">
-        <p className="text-sm font-medium text-grey-700">{blueprint.props.slug}</p>
+        <div className="flex items-center gap-2 max-w-full min-w-0">
+          <p className="text-sm font-medium text-grey-700 truncate min-w-0" title={blueprint.props.slug}>
+            {blueprint.props.slug}
+          </p>
+          <button
+            onClick={handleCopySlug}
+            className="flex-shrink-0 p-1 rounded hover:bg-grey-100 transition-colors"
+            title="Copy slug"
+          >
+            <Image
+              src="/assets/CopySimple.svg"
+              alt="Copy"
+              width={16}
+              height={16}
+            />
+          </button>
+        </div>
         <p className="text-sm text-grey-800 break-words text-wrap">{blueprint.props.description}</p>
 
         {blueprint.props.decomposedRegexes?.length > 0 && (
