@@ -344,7 +344,11 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
       },
       onRehydrateStorage: () => (state) => {
         // This is called after the store has been rehydrated from storage
-        state?.setHasHydrated(true);
+        if (state) {
+          state.setHasHydrated(true);
+        } else {
+          useCreateBlueprintStore.setState({ hasHydrated: true });
+        }
       },
       storage: {
         getItem: async (name) => {
