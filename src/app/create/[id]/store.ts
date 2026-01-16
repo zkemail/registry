@@ -63,7 +63,7 @@ const initialState: ExtendedBlueprintProps = {
   },
   externalInputs: [],
   decomposedRegexes: [],
-  clientZkFramework: ZkFramework.Circom,
+  clientZkFramework: ZkFramework.Noir,
   serverZkFramework: ZkFramework.Circom,
   internalVersion: '0002_max_length_per_regex_part',
 };
@@ -200,14 +200,8 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           if (!state.id || state.id === 'new') {
             console.log('creating a new blueprint');
             const blueprint = sdk.createBlueprint(data);
-            if (emlStr) {
-              await blueprint.assignPreferredZkFramework(emlStr);
-            } else {
-              data.clientZkFramework = ZkFramework.Noir;
-              data.serverZkFramework = ZkFramework.Sp1;
-            }
-            console.log('Assigned clientZkFramework: ', blueprint.props.clientZkFramework);
-            console.log('Assigned serverZkFramework: ', blueprint.props.serverZkFramework);
+            // Framework selection is user-driven via UI dropdowns
+            // Defaults are set in initialState (Noir for client, Circom for server)
             await blueprint.submitDraft();
             console.log('saved draft');
             set({ blueprint });
@@ -238,13 +232,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
           console.log('setting existing blueprint');
           const currentState = get();
           const blueprint = await sdk.getBlueprintById(id);
-
-          // Assign preferred ZK framework based on email content if available
-          const emlStore = useEmlStore.getState();
-          const savedEmls = await emlStore.getAllEmls();
-          if (savedEmls[id]) {
-            await blueprint.assignPreferredZkFramework(savedEmls[id]);
-          }
 
           // TODO: sdk should not return undefined fields - workaround so we have sane defaults
           for (const [key, value] of Object.entries(blueprint.props)) {

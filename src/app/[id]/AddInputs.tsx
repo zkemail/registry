@@ -142,7 +142,7 @@ const AddInputs = () => {
                   While it may take a bit more time, your email remains securely on your system.
                 </>
               ) : (
-                'Local proving only works for blueprints compiled with Circom'
+                'Local proving is not available for this blueprint'
               )}
             </p>
           </div>

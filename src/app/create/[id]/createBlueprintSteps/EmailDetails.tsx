@@ -255,16 +255,11 @@ const EmailDetails = ({
           console.log('setting clientZkFramework to ', value);
           setField('clientZkFramework', value);
         }}
-        options={
-          // TODO: remove these comments once circom client side works
-          // process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-          //   ?
-          [
-            // { label: 'Circom', value: ZkFramework.Circom },
-            { label: 'Noir', value: ZkFramework.Noir },
-          ]
-          // : [{ label: 'Circom', value: ZkFramework.Circom }]
-        }
+        options={[
+          // TODO: Re-enable Circom option once client-side Circom proving is fixed
+          // { label: 'Circom', value: ZkFramework.Circom },
+          { label: 'Noir', value: ZkFramework.Noir },
+        ]}
       />
       {isNoirIncompatible ? (
         <div className="flex w-full flex-row gap-7 rounded-2xl border border-[#FFF085] bg-[#FEFCE8] px-4 py-6">
