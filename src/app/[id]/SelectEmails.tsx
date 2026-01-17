@@ -499,16 +499,16 @@ const SelectEmails = ({ id }: { id: string }) => {
                   </div>
                 </div>
                 <p className="text-base text-grey-700">
-                  {blueprint?.props.serverZkFramework &&
+                  {blueprint?.props.clientZkFramework &&
                   // @ts-ignore ZkFramework can be None
-                  blueprint?.props.serverZkFramework !== ZkFramework.None ? (
+                  blueprint?.props.clientZkFramework !== ZkFramework.None ? (
                     <>
                       This method prioritizes your privacy by generating proofs directly on your
                       device. While it may take a bit more time, your email remains securely on your
                       system.
                     </>
                   ) : (
-                    'Local proving only works for blueprints compiled with Circom'
+                    'Local proving is not available for this blueprint'
                   )}
                 </p>
               </div>
