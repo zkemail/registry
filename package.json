@@ -43,7 +43,7 @@
     "next": "^15.3.8",
     "next-themes": "^0.3.0",
     "postal-mime": "^2.3.2",
-    "posthog-js": "^1.200.1",
+    "posthog-js": "^1.333.0",
     "react": "^18.2.0",
     "react-confetti": "^6.2.2",
     "react-dom": "^18.2.0",
