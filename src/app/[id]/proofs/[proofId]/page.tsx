@@ -32,7 +32,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   const emailProof = localProofInfo
     ? JSON.parse(localProofInfo)
-    : useProofEmailStore((state) => state.data[id!]?.[proofId]);
+    : data[id!]?.[proofId];
 
   console.log('emailProof: ', emailProof);
 

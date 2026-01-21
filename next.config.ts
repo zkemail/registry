@@ -1,14 +1,14 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  turbopack: {
+    rules: {
+      '*.webp': ['file'],
+    },
+  },
   experimental: {
     serverSourceMaps: false,
     ppr: false,
-    turbo: {
-      loaders: {
-        '.webp': ['file'],
-      },
-    },
   },
   productionBrowserSourceMaps: false, // Enable source maps
   images: {

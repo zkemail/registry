@@ -15,11 +15,11 @@ const ViewProof = () => {
   const proofId = searchParams.get('proofId');
   // TODO: handle case where proofId is not provided
 
-  const { getUpdatingStatus } = useProofEmailStore();
+  const { getUpdatingStatus, data: proofEmailData } = useProofEmailStore();
   const blueprint = useProofStore((state) => state.blueprint);
 
   const emailProof = blueprint
-    ? useProofEmailStore((state) => state.data[blueprint.props.id!]?.[proofId!])
+    ? proofEmailData[blueprint.props.id!]?.[proofId!]
     : undefined;
 
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status ?? ProofStatus.None);
