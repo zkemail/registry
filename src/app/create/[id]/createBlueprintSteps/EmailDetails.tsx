@@ -100,8 +100,8 @@ const EmailDetails = ({
             <div className="text-sm text-blue-800">
               <p className="mb-1 font-semibold">Performance Optimization Applied</p>
               <p>
-                Since your blueprint doesn't extract any data from the email body, the "Skip body
-                hash check" option has been automatically enabled. This significantly improves:
+                Since your blueprint doesn&apos;t extract any data from the email body, the &quot;Skip body
+                hash check&quot; option has been automatically enabled. This significantly improves:
               </p>
               <ul className="ml-5 mt-1 list-disc space-y-0.5">
                 <li>Circuit compilation time</li>
@@ -126,7 +126,7 @@ const EmailDetails = ({
               <div className="text-sm text-yellow-800">
                 <p className="mb-1 font-semibold">Performance Impact Warning</p>
                 <p>
-                  Body hash verification is enabled even though your blueprint doesn't extract data
+                  Body hash verification is enabled even though your blueprint doesn&apos;t extract data
                   from the email body. This will increase compilation and proof generation time
                   significantly without providing additional functionality.
                 </p>

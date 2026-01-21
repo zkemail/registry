@@ -41,6 +41,7 @@ export const BlueprintTitle = ({
   };
 
   const handleCopySlug = () => {
+    if (!blueprint.props.slug) return;
     navigator.clipboard.writeText(blueprint.props.slug);
     toast.success('Slug copied to clipboard');
   };
