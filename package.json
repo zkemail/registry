@@ -31,7 +31,7 @@
     "@radix-ui/react-switch": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.1.6",
     "@react-oauth/google": "^0.12.1",
-    "@zk-email/sdk": "3.0.0-nightly.14",
+    "@zk-email/sdk": "3.0.0-nightly.15",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "crypto": "^1.0.1",
