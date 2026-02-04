@@ -55,7 +55,7 @@ const calculateMaxLength = (parts: any[]): number => {
   return totalPublicMaxLength || 64;
 };
 
-// Calculate maxMatchLength: sum of all public part maxLengths + 16 padding
+// Calculate maxMatchLength: sum of all public part maxLengths + sum of private part lengths + 16 padding
 const calculateMaxMatchLength = (parts: any[]): number => {
   const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
     if (p && p.isPublic) {
@@ -63,7 +63,15 @@ const calculateMaxMatchLength = (parts: any[]): number => {
     }
     return acc;
   }, 0);
-  return totalPublicMaxLength + 16;
+
+  const totalPrivateLength = parts.reduce((acc: number, p: any) => {
+    if (p && !p.isPublic && p.regexDef) {
+      return acc + p.regexDef.length;
+    }
+    return acc;
+  }, 0);
+
+  return totalPublicMaxLength + totalPrivateLength + 16;
 };
 
 const Status = memo(({
