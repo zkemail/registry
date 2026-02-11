@@ -12,6 +12,7 @@ import { toast } from 'react-toastify';
 import Loader from '@/components/ui/loader';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { getCombinedBlueprintStatus } from '@/app/utils';
+import { getErrorMessage } from '@/lib/errors';
 
 const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const router = useRouter();
@@ -67,7 +68,7 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
       }
     } catch (err) {
       console.error('Failed to delete blueprint: ', err);
-      toast.error('Failed to delete blueprint');
+      toast.error(`Failed to delete blueprint: ${getErrorMessage(err)}`);
     } finally {
       setIsDeleteBlueprintLoading(false);
     }

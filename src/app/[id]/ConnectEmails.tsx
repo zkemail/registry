@@ -7,6 +7,7 @@ import useGoogleAuth from '../hooks/useGoogleAuth';
 import { toast } from 'react-toastify';
 import { findOrCreateDSP } from '../utils';
 import { useEmailCacheStore } from '@/lib/stores/useEmailCacheStore';
+import { getErrorMessage } from '@/lib/errors';
 
 const ConnectEmails = () => {
   const { setFile, setStep, setEmlUploadMode } = useProofStore();
@@ -105,7 +106,7 @@ const ConnectEmails = () => {
                 emailCacheStore.clearCache();
                 setEmlUploadMode('upload');
               })
-              .catch((err) => toast.error(err.message ?? err));
+              .catch((err) => toast.error(getErrorMessage(err)));
           }
         }}
         id="drag-and-drop-emails"
@@ -155,7 +156,7 @@ const ConnectEmails = () => {
                     setEmlUploadMode('upload');
                   })
                   .catch((err) => {
-                    toast.error(err.message ?? err);
+                    toast.error(getErrorMessage(err));
                   });
               }
             }}
