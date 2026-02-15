@@ -21,7 +21,6 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
   const [versions, setVersions] = useState<Blueprint[]>([]);
   const [isFetchingBlueprintLoading, setIsFetchingBlueprintLoading] = useState(false);
   const [isDeleteBlueprintLoading, setIsDeleteBlueprintLoading] = useState(false);
-
   useEffect(() => {
     setIsFetchingBlueprintLoading(true);
     sdk
@@ -45,6 +44,58 @@ const VersionsPage = ({ params }: { params: Promise<{ id: string }> }) => {
         });
     }
   }, [mainBlueprint]);
+
+  // Poll compilation status for any version that is "In Progress"
+  useEffect(() => {
+    const hasInProgress = versions.some(
+      (v) => getCombinedBlueprintStatus(v) === Status.InProgress
+    );
+
+    if (!hasInProgress) return;
+
+    const POLL_INTERVAL_MS = 5_000;
+    let isPolling = false;
+
+    const intervalId = setInterval(async () => {
+      // Prevent overlapping polls if a previous one is still in flight
+      if (isPolling) return;
+      isPolling = true;
+
+      try {
+        const inProgressVersions = versions.filter(
+          (v) => getCombinedBlueprintStatus(v) === Status.InProgress
+        );
+
+        if (inProgressVersions.length === 0) {
+          clearInterval(intervalId);
+          return;
+        }
+
+        await Promise.all(
+          inProgressVersions.map((blueprint) => blueprint.checkStatus())
+        );
+
+        // Trigger re-render with updated blueprint props
+        setVersions((prev) => [...prev]);
+
+        // Stop polling if all versions are now done
+        const stillInProgress = versions.some(
+          (v) => getCombinedBlueprintStatus(v) === Status.InProgress
+        );
+        if (!stillInProgress) {
+          clearInterval(intervalId);
+        }
+      } catch (err) {
+        console.error('Failed to poll compilation status: ', err);
+      } finally {
+        isPolling = false;
+      }
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [versions]);
 
   const onDelete = async (blueprint: Blueprint) => {
     setIsDeleteBlueprintLoading(true);
