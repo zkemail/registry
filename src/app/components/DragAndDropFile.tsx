@@ -16,6 +16,7 @@ const DragAndDropFile = ({
   errorMessage,
   loading,
   tooltipComponent,
+  required,
 }: {
   accept: string;
   title?: string;
@@ -26,6 +27,7 @@ const DragAndDropFile = ({
   errorMessage?: string;
   tooltipComponent?: React.ReactNode;
   loading?: boolean;
+  required?: boolean;
 }) => {
   return (
     <div className="flex w-full flex-col gap-4">
@@ -33,6 +35,7 @@ const DragAndDropFile = ({
         <div className="flex flex-row gap-2">
           <Label className="text-base text-grey-900" htmlFor={title}>
             {title}
+            {required && <span className="text-red-500"> *</span>}
           </Label>
 
           {tooltipComponent ? (
