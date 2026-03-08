@@ -58,7 +58,7 @@ const initialState: ExtendedBlueprintProps = {
   enableBodyMasking: false,
   isPublic: true,
   verifierContract: {
-    chain: 84532,
+    chain: 11155111, // Ethereum Sepolia
     address: '',
   },
   externalInputs: [],

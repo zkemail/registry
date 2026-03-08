@@ -92,6 +92,8 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
   const router = useRouter();
   const [status, setStatus] = useState<ProofStatus | undefined>(emailProof?.status);
   const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
+  const [isVerifyingOnChainLoading, setIsVerifyingOnChainLoading] = useState(false);
+  const hasWallet = typeof window !== 'undefined' && !!(window as any).ethereum;
 
   useEffect(() => {
     try {
@@ -160,6 +162,37 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
     setIsVerifyingProofLoading(false);
   };
 
+  const onVerifyOnChain = async () => {
+    setIsVerifyingOnChainLoading(true);
+    let proof: Proof;
+
+    if (emailProof) {
+      proof = new Proof(blueprint, emailProof);
+    } else {
+      try {
+        proof = await getProof(proofId);
+      } catch (err) {
+        console.error(`Failed to get proof for id: ${proofId}: `, err);
+        toast.error('Failed to get proof');
+        setIsVerifyingOnChainLoading(false);
+        return;
+      }
+    }
+
+    try {
+      const verified = await blueprint.verifyProofOnChain(proof);
+      if (verified) {
+        toast.success('Proof verified successfully on chain');
+      } else {
+        toast.error('Failed to verify proof on chain');
+      }
+    } catch (err) {
+      console.error(`Failed to verify proof on chain with id: ${proofId}: `, err);
+      toast.error('Failed to verify proof on chain');
+    }
+    setIsVerifyingOnChainLoading(false);
+  };
+
   return (
     <>
       <Button
@@ -213,7 +246,7 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
           />
         </Button>
       </div>
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center gap-2">
         <Button
           variant="default"
           size="sm"
@@ -223,6 +256,19 @@ const ProofRow = ({ proofId, index, blueprint }: ProofProps) => {
         >
           Verify
         </Button>
+        {hasWallet &&
+          blueprint?.props.verifierContract?.address &&
+          emailProof?.zkFramework !== ZkFramework.Noir && (
+            <Button
+              variant="secondary"
+              size="sm"
+              disabled={status !== ProofStatus.Done}
+              loading={isVerifyingOnChainLoading}
+              onClick={onVerifyOnChain}
+            >
+              Verify On-Chain
+            </Button>
+          )}
       </div>
     </>
   );
