@@ -269,6 +269,18 @@ const EmailDetails = ({
       )}
 
       <Select
+        label="Target Chain"
+        value={store.verifierContract?.chain ?? 11155111}
+        onChange={(value) => {
+          setField('verifierContract', { chain: Number(value), address: '' });
+        }}
+        options={[
+          { label: 'Ethereum Sepolia', value: 11155111 },
+          { label: 'Paseo Testnet (Polkadot)', value: 420420417 },
+        ]}
+      />
+
+      <Select
         label="Server Zk Framework"
         value={store.serverZkFramework}
         onChange={(value) => {
