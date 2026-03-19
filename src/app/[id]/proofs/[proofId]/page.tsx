@@ -369,6 +369,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
             target="_blank"
             href={(() => {
               const EXPLORER_MAP: Record<number, string> = {
+                84532: 'https://sepolia.basescan.org/address',
                 11155111: 'https://sepolia.etherscan.io/address',
                 420420417: 'https://blockscout-testnet.polkadot.io/address',
               };
