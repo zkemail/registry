@@ -202,9 +202,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
             const blueprint = sdk.createBlueprint(data);
             if (emlStr) {
               await blueprint.assignPreferredZkFramework(emlStr);
-            } else {
-              data.clientZkFramework = ZkFramework.Noir;
-              data.serverZkFramework = ZkFramework.Sp1;
             }
             console.log('Assigned clientZkFramework: ', blueprint.props.clientZkFramework);
             console.log('Assigned serverZkFramework: ', blueprint.props.serverZkFramework);
