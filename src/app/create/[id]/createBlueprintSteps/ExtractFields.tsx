@@ -55,7 +55,7 @@ const calculateMaxLength = (parts: any[]): number => {
   return totalPublicMaxLength || 64;
 };
 
-// Calculate maxMatchLength: sum of all public part maxLengths + 16 padding
+// Calculate maxMatchLength: sum of all public part maxLengths + sum of private part lengths + 16 padding
 const calculateMaxMatchLength = (parts: any[]): number => {
   const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
     if (p && p.isPublic) {
@@ -63,7 +63,15 @@ const calculateMaxMatchLength = (parts: any[]): number => {
     }
     return acc;
   }, 0);
-  return totalPublicMaxLength + 16;
+
+  const totalPrivateLength = parts.reduce((acc: number, p: any) => {
+    if (p && !p.isPublic && p.regexDef) {
+      return acc + p.regexDef.length;
+    }
+    return acc;
+  }, 0);
+
+  return totalPublicMaxLength + totalPrivateLength + 16;
 };
 
 const Status = memo(({
@@ -127,9 +135,7 @@ const Status = memo(({
     regexGeneratedOutputs.some((output) =>
       Array.isArray(output)
         ? output.join('').includes('Error')
-        : output
-          ? output.includes('Error')
-          : true
+        : typeof output === 'string' && output.includes('Error')
     )) && !skipEmlUpload
   ) {
     return (
@@ -304,9 +310,7 @@ const ExtractFields = ({
     const hasOutputErrors = regexGeneratedOutputs.some((output) =>
       Array.isArray(output)
         ? output.join('').includes('Error')
-        : output
-          ? output.includes('Error')
-          : true
+        : typeof output === 'string' && output.includes('Error')
     );
 
     setCanCompile(!hasNoEmail && !isGenerating && !noRegexes && !hasRegexErrors && !hasOutputErrors);
@@ -593,16 +597,16 @@ const ExtractFields = ({
                         const subjectParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)subject:',
+                            regexDef: '(?:\r\n|^)subject:',
                           },
                           {
                             isPublic: true,
-                            regexDef: '[^\\r\\n]+',
+                            regexDef: '[^\r\n]+',
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '\\r\\n',
+                            regexDef: '\r\n',
                           },
                         ];
                         const subjectRegex: DecomposedRegex = {
@@ -650,21 +654,21 @@ const ExtractFields = ({
                         const receiverParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)to:',
+                            regexDef: '(?:\r\n|^)to:',
                           },
                           {
                             isPublic: false,
-                            regexDef: '(?:[^\\r\\n]+<)?',
+                            regexDef: '(?:[^\r\n]+<)?',
                           },
                           {
                             isPublic: true,
                             regexDef:
-                              '[a-zA-Z0-9!#$%&\\*\\+-/=\\\\?\\\\^_`{\\\\|}~\\\\.]+@[a-zA-Z0-9_\\\\\.-]+',
+                              '[a-zA-Z0-9!#$%&\\*\\+-/=\\?\\^_`{\\|}~\\.]+@[a-zA-Z0-9_\\.-]+',
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '>?\\r\\n',
+                            regexDef: '>?\r\n',
                           },
                         ];
                         const receiverRegex: DecomposedRegex = {
@@ -714,21 +718,21 @@ const ExtractFields = ({
                         const senderNameParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)from:',
+                            regexDef: '(?:\r\n|^)from:',
                           },
                           {
                             isPublic: false,
-                            regexDef: '(?:[^\\r\\n]+<)?',
+                            regexDef: '(?:[^\r\n]+<)?',
                           },
                           {
                             isPublic: true,
                             regexDef:
-                             "[A-Za-z0-9!#$%&'\\*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
+                             "[A-Za-z0-9!#$%&'*\\+\\-/=\\?\\^_`{\\|}~\\.]+@[A-Za-z0-9\\.-]+",
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '>?\\r\\n',
+                            regexDef: '>?\r\n',
                           },
                         ];
                         const senderNameRegex: DecomposedRegex = {
@@ -779,16 +783,16 @@ const ExtractFields = ({
                         const senderDomainParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)from:[^\\r\\n]*@',
+                            regexDef: '(?:\r\n|^)from:[^\r\n]*@',
                           },
                           {
                             isPublic: true,
-                            regexDef: '[A-Za-z0-9][A-Za-z0-9\\.-]+',
+                            regexDef: '[A-Za-z0-9][A-Za-z0-9\.-]+',
                             maxLength: 64,
                           },
                           {
                             isPublic: false,
-                            regexDef: '[>\\r\\n]',
+                            regexDef: '[>\r\n]',
                           },
                         ];
                         const senderDomainRegex: DecomposedRegex = {
@@ -838,7 +842,7 @@ const ExtractFields = ({
                         const timestampParts = [
                           {
                             isPublic: false,
-                            regexDef: '(?:\\r\\n|^)dkim-signature:',
+                            regexDef: '(?:\r\n|^)dkim-signature:',
                           },
                           {
                             isPublic: false,
@@ -997,7 +1001,7 @@ const ExtractFields = ({
                   }}
                 />
               </div>
-              <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-4">
+              <div className="flex flex-col gap-3 rounded-xl border border-grey-500 p-3 sm:p-4">
                 <div className="flex items-center justify-between">
                   <p className="text-base font-medium text-gray-900">Regex Definition</p>
                   <Link
@@ -1025,7 +1029,7 @@ const ExtractFields = ({
                 {regex?.parts?.map((part: any, partIndex: any) => {
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex flex-row items-center gap-2">
                           <span
                             className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium text-white"
@@ -1039,7 +1043,7 @@ const ExtractFields = ({
                           </span>
                           <Label>Field</Label>
                         </div>
-                        <div className="flex flex-row items-center gap-2">
+                        <div className="flex flex-row items-center gap-2 self-end sm:self-auto">
                           <div className="relative inline-flex items-center rounded-xl border border-grey-500 bg-white p-1 shadow-sm">
                             {/* Animated active background */}
                             <motion.div

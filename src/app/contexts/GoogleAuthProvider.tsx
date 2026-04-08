@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, ReactNode } from 'react';
+import React, { useEffect, useState, useRef, ReactNode } from 'react';
 import {
   hasGrantedAllScopesGoogle,
   useGoogleLogin,
@@ -83,23 +83,29 @@ const GoogleAuthProvider = ({ children }: ProvidersProps) => {
    * Helpers
    */
 
-  const googleLogIn = (cb: () => void) =>
-    useGoogleLogin({
-      onSuccess: (tokenResponse) => {
-        setGoogleAuthToken(tokenResponse);
-        setIsGoogleAuthed(true);
+  const loginCallbackRef = useRef<(() => void) | null>(null);
 
-        cb();
-        // localStorage.setItem(
-        //   getGoogleAuthTokenKey(),
-        //   JSON.stringify(tokenResponse)
-        // );
-      },
-      scope: 'email profile https://www.googleapis.com/auth/gmail.readonly',
-      flow: 'implicit',
-      ux_mode: 'redirect',
-      prompt: 'consent',
-    } as UseGoogleLoginOptionsImplicitFlow);
+  const login = useGoogleLogin({
+    onSuccess: (tokenResponse) => {
+      setGoogleAuthToken(tokenResponse);
+      setIsGoogleAuthed(true);
+
+      loginCallbackRef.current?.();
+      // localStorage.setItem(
+      //   getGoogleAuthTokenKey(),
+      //   JSON.stringify(tokenResponse)
+      // );
+    },
+    scope: 'email profile https://www.googleapis.com/auth/gmail.readonly',
+    flow: 'implicit',
+    ux_mode: 'redirect',
+    prompt: 'consent',
+  } as UseGoogleLoginOptionsImplicitFlow);
+
+  const googleLogIn = (cb: () => void) => {
+    loginCallbackRef.current = cb;
+    return login;
+  };
 
   const googleLogOut = () => {
     setIsScopesApproved(false);

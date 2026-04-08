@@ -306,7 +306,7 @@ const VersionCard = ({
         showActionBar={false}
         modalContent={
           <div>
-            This action cannot be undone. This will permanently delete this version and it's data
+            This action cannot be undone. This will permanently delete this version and its data
             from our servers.
             <div className="mt-4 flex flex-row justify-end gap-4">
               <div className="mt-4">
@@ -372,7 +372,7 @@ const VersionCard = ({
                   </div>
                   <p className="text-base text-grey-700">
                     Make changes in the blueprint description, email query and sender domain fields.
-                    Doesn't require you to upload the test eml.
+                    Doesn&apos;t require you to upload the test eml.
                   </p>
                 </div>
                 <div

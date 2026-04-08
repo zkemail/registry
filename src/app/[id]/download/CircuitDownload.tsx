@@ -15,7 +15,7 @@ const CircuitDownload = ({
     <div className="mt-4 flex flex-col gap-4">
       <h2 className="text-xl font-bold">{title}</h2>
       {Object.entries(downloadLinks).map(([name, url]) => (
-        <div className="flex items-center justify-between">
+        <div key={name} className="flex items-center justify-between">
           {name}
           <Button variant="ghost" size="icon" onClick={() => startDownload(url, name)}>
             <Image

@@ -45,20 +45,20 @@ const initialState: ExtendedBlueprintProps = {
   tags: [],
   emailQuery: '',
   circuitName: '',
-  ignoreBodyHashCheck: false,
-  ignoreBodyHashCheckAutoSelected: false,
+  ignoreBodyHashCheck: true,
+  ignoreBodyHashCheckAutoSelected: undefined,
   skipEmlUpload: false,
   shaPrecomputeSelector: '',
   emailBodyMaxLength: 1024,
   emailHeaderMaxLength: 10240,
-  removeSoftLinebreaks: true,
+  removeSoftLinebreaks: false,
   githubUsername: '',
   senderDomain: '',
   enableHeaderMasking: false,
   enableBodyMasking: false,
   isPublic: true,
   verifierContract: {
-    chain: 84532,
+    chain: 84532, // Base Sepolia
     address: '',
   },
   externalInputs: [],
@@ -202,9 +202,6 @@ export const useCreateBlueprintStore = create<CreateBlueprintState>()(
             const blueprint = sdk.createBlueprint(data);
             if (emlStr) {
               await blueprint.assignPreferredZkFramework(emlStr);
-            } else {
-              data.clientZkFramework = ZkFramework.Noir;
-              data.serverZkFramework = ZkFramework.Sp1;
             }
             console.log('Assigned clientZkFramework: ', blueprint.props.clientZkFramework);
             console.log('Assigned serverZkFramework: ', blueprint.props.serverZkFramework);

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import LoginButton from './LoginButton';
 import { Button } from '@/components/ui/button';
+import { del } from 'idb-keyval';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useBlueprintFiltersStore } from '@/lib/stores/useBlueprintFiltersStore';
@@ -39,7 +40,9 @@ const Navbar = () => {
     }
   };
 
-  const handleCreateBlueprint = () => {
+  const handleCreateBlueprint = async () => {
+    // Clear persisted draft state so "Create" always starts fresh
+    await del('create-blueprint');
     localStorage.removeItem('create-blueprint');
     router.push('/create');
   };

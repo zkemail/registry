@@ -1,15 +1,17 @@
 'use client';
 
 import Image from 'next/image';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
+import { del } from 'idb-keyval';
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [widthClass, setWidthClass] = useState('md:w-[768px]');
 
   useEffect(() => {
@@ -42,7 +44,12 @@ export default function Template({ children }: { children: React.ReactNode }) {
             </p>
             <div className="flex gap-3">
               <Button
-                onClick={() => window.location.href = '/create'}
+                onClick={async () => {
+                  // Clear persisted draft state so creating starts clean
+                  await del('create-blueprint');
+                  localStorage.removeItem('create-blueprint');
+                  router.push('/create');
+                }}
                 className="lg:hidden rounded-xl bg-white text-black hover:bg-gray-100"
               >
                 Create Blueprint

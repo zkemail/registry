@@ -34,7 +34,7 @@ const EmailDetails = ({
   const { setField } = store;
   const [shaPrecomputeSelectorValidationErrors, setShaPrecomputeSelectorValidationErrors] =
     useState('');
-  const [isNoirIncompatible, setIsNoirIncompatible] = useState(false);
+  const [detectedKeyBitLength, setDetectedKeyBitLength] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     const updateEmailBodyMaxLength = async () => {
@@ -58,11 +58,12 @@ const EmailDetails = ({
     // Only auto-select if:
     // 1. Currently false (not manually set)
     // 2. There are no body patterns
-    // 3. Not already auto-selected (to avoid re-triggering)
+    // 3. Never interacted with before (undefined = fresh state)
+    // Note: false means user manually changed, true means was auto-selected
     if (
       !store.ignoreBodyHashCheck &&
       !hasBodyPatterns(store.decomposedRegexes) &&
-      !store.ignoreBodyHashCheckAutoSelected
+      store.ignoreBodyHashCheckAutoSelected === undefined
     ) {
       setField('ignoreBodyHashCheck', true);
       setField('removeSoftLinebreaks', false);
@@ -99,8 +100,8 @@ const EmailDetails = ({
             <div className="text-sm text-blue-800">
               <p className="mb-1 font-semibold">Performance Optimization Applied</p>
               <p>
-                Since your blueprint doesn't extract any data from the email body, the "Skip body
-                hash check" option has been automatically enabled. This significantly improves:
+                Since your blueprint doesn&apos;t extract any data from the email body, the &quot;Skip body
+                hash check&quot; option has been automatically enabled. This significantly improves:
               </p>
               <ul className="ml-5 mt-1 list-disc space-y-0.5">
                 <li>Circuit compilation time</li>
@@ -125,7 +126,7 @@ const EmailDetails = ({
               <div className="text-sm text-yellow-800">
                 <p className="mb-1 font-semibold">Performance Impact Warning</p>
                 <p>
-                  Body hash verification is enabled even though your blueprint doesn't extract data
+                  Body hash verification is enabled even though your blueprint doesn&apos;t extract data
                   from the email body. This will increase compilation and proof generation time
                   significantly without providing additional functionality.
                 </p>
@@ -230,7 +231,6 @@ const EmailDetails = ({
         value={store.clientZkFramework}
         onChange={async (value) => {
           console.log('dkimPublicKey: ', publicDkimKey);
-          let dkimKeyBitLength: number | undefined = undefined;
           try {
             const res = await fetch('/api/dkimKeyBitLength', {
               method: 'POST',
@@ -239,18 +239,10 @@ const EmailDetails = ({
             });
             if (res.ok) {
               const data = await res.json();
-              dkimKeyBitLength = data?.bits;
+              setDetectedKeyBitLength(data?.bits);
             }
           } catch (e) {
             // ignore; will treat as unknown length
-          }
-          console.log('dkimKeyBitLength: ', dkimKeyBitLength);
-
-          if (value === ZkFramework.Noir && dkimKeyBitLength && dkimKeyBitLength !== 2048) {
-            console.log(isNoirIncompatible, 'isNoirIncompatible');
-            setIsNoirIncompatible(true);
-          } else {
-            setIsNoirIncompatible(false);
           }
           console.log('setting clientZkFramework to ', value);
           setField('clientZkFramework', value);
@@ -266,22 +258,28 @@ const EmailDetails = ({
           // : [{ label: 'Circom', value: ZkFramework.Circom }]
         }
       />
-      {isNoirIncompatible ? (
-        <div className="flex w-full flex-row gap-7 rounded-2xl border border-[#FFF085] bg-[#FEFCE8] px-4 py-6">
-          <Image src="/assets/ClientFrameworkWarning.svg" alt="warning" width={160} height={120} />
-          <div>
-            <p className="text-lg font-medium text-grey-900">Temporary compatibility issue!</p>
-            <p className="text-base font-medium text-grey-700">
-              The uploaded eml uses an older security key(1024-bit RSA).
-            </p>
-            <p className="flex flex-row items-start gap-2 text-base font-medium text-grey-700">
-              <Image src="/assets/YellowWarningCircle.svg" alt="info" width={16} height={16} />
-              We're running into some issues with Noir proofs for 1024-bit RSA emails. But don't
-              worry, we're on it and working to get past this!
-            </p>
-          </div>
+      {store.clientZkFramework === ZkFramework.Noir && detectedKeyBitLength && (
+        <div className="flex w-full flex-row items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+          <InfoIcon className="h-5 w-5 flex-shrink-0 text-blue-600" />
+          <p className="text-sm text-blue-800">
+            Detected {detectedKeyBitLength}-bit RSA key. Both 1024-bit and 2048-bit keys are
+            supported. Circuits will be compiled for both key sizes automatically.
+          </p>
         </div>
-      ) : null}
+      )}
+
+      <Select
+        label="Target Chain"
+        value={store.verifierContract?.chain ?? 84532}
+        onChange={(value) => {
+          setField('verifierContract', { chain: Number(value), address: '' });
+        }}
+        options={[
+          { label: 'Base Sepolia', value: 84532 },
+          { label: 'Ethereum Sepolia', value: 11155111 },
+          { label: 'Paseo Testnet (Polkadot)', value: 420420417 },
+        ]}
+      />
 
       <Select
         label="Server Zk Framework"

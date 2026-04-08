@@ -32,7 +32,7 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
 
   const emailProof = localProofInfo
     ? JSON.parse(localProofInfo)
-    : useProofEmailStore((state) => state.data[id!]?.[proofId]);
+    : data[id!]?.[proofId];
 
   console.log('emailProof: ', emailProof);
 
@@ -40,7 +40,9 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
   const [status, setStatus] = useState<ProofStatus>(emailProof?.status!);
   const [isFetchBlueprintLoading, setIsFetchBlueprintLoading] = useState(false);
   const [isVerifyingProofLoading, setIsVerifyingProofLoading] = useState(false);
+  const [isVerifyingOnChainLoading, setIsVerifyingOnChainLoading] = useState(false);
   const [isExploding, setIsExploding] = useState(false);
+  const hasWallet = typeof window !== 'undefined' && !!(window as any).ethereum;
 
   let urlProofParams = '';
   if (emailProof) {
@@ -169,6 +171,30 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
     setIsVerifyingProofLoading(false);
   };
 
+  const onVerifyOnChain = async () => {
+    setIsVerifyingOnChainLoading(true);
+
+    if (!blueprint) {
+      toast.error('Failed to verify proof: could not find matching blueprint');
+      setIsVerifyingOnChainLoading(false);
+      return;
+    }
+
+    try {
+      const proof = new Proof(blueprint, emailProof);
+      const verified = await blueprint.verifyProofOnChain(proof);
+      if (verified) {
+        toast.success('Proof verified successfully on chain');
+      } else {
+        throw new Error('Failed to verify proof on chain');
+      }
+    } catch (err) {
+      console.error(`Failed to verify proof on chain with id: ${proofId}: `, err);
+      toast.error('Failed to verify proof on chain');
+    }
+    setIsVerifyingOnChainLoading(false);
+  };
+
   const handleProofDownload = () => {
     const proofData = {
       publicData: emailProof.publicData,
@@ -248,6 +274,32 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           >
             Verify
           </Button>
+          {hasWallet &&
+            blueprint?.props.verifierContract?.address &&
+            emailProof?.zkFramework !== ZkFramework.Noir && (
+              <Button
+                loading={isVerifyingOnChainLoading}
+                variant="secondary"
+                size="sm"
+                className="flex flex-row gap-2"
+                disabled={status !== ProofStatus.Done}
+                onClick={onVerifyOnChain}
+                startIcon={
+                  <Image
+                    src="/assets/VerifyOnChain.svg"
+                    alt="Verify on-chain"
+                    width={16}
+                    height={16}
+                    style={{
+                      maxWidth: '100%',
+                      height: 'auto',
+                    }}
+                  />
+                }
+              >
+                Verify On-Chain
+              </Button>
+            )}
           <Button
             className="flex flex-row gap-2"
             size="sm"
@@ -315,7 +367,17 @@ const ProofInfo = ({ params }: { params: Promise<{ id: string; proofId: string }
           <div className="text-base font-medium text-grey-700">Verifier Address</div>
           <Link
             target="_blank"
-            href={`https://sepolia.basescan.org/address/${blueprint?.props.verifierContract?.address}`}
+            href={(() => {
+              const EXPLORER_MAP: Record<number, string> = {
+                84532: 'https://sepolia.basescan.org/address',
+                11155111: 'https://sepolia.etherscan.io/address',
+                420420417: 'https://blockscout-testnet.polkadot.io/address',
+              };
+              const base = EXPLORER_MAP[blueprint?.props.verifierContract?.chain ?? 0] ?? '#';
+              return blueprint?.props.verifierContract?.address
+                ? `${base}/${blueprint.props.verifierContract.address}`
+                : '#';
+            })()}
             className="break-words text-base font-medium text-grey-800 underline"
           >
             {blueprint?.props.verifierContract?.address || '-'}
