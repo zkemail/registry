@@ -29,6 +29,9 @@ export const metadata: Metadata = {
     ],
   },
   metadataBase: new URL('https://registry.zk.email'),
+  other: {
+    'ahrefs-site-verification': '614ed9e619996ef4d03da37f0539303b90c608fe5d20c4368e6b7f671a240065',
+  },
   openGraph: {
     title: 'ZK Email Registry',
     description: 'Create email blueprints to create proofs about emails.',
