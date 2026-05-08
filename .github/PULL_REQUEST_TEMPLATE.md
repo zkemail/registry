@@ -12,8 +12,7 @@
 
 ## Target Branch
 
-- [ ] `dev` - New feature or non-urgent fix
-- [ ] `staging` - Ready for QA validation
+- [ ] `staging` - New feature or non-urgent fix (deploys to staging for QA)
 - [ ] `main` - Hotfix for production issue
 
 ## Changes Made
