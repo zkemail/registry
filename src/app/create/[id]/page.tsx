@@ -2,7 +2,7 @@
 
 import { useCreateBlueprintStore } from './store';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { extractEMLDetails, DecomposedRegex, testBlueprint, parseEmail } from '@zk-email/sdk';
@@ -25,6 +25,8 @@ import { debounce } from '@/app/utils';
 import ModalGenerator from '@/components/ModalGenerator';
 import { useEmlStore } from '@/lib/stores/useEmlStore';
 import Loader from '@/components/ui/loader';
+import { captureEvent, getClientInfo } from '@/lib/analytics';
+import { getErrorMessage } from '@/lib/errors';
 
 type Step = '0' | '1' | '2';
 
@@ -86,6 +88,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
 
   const searchParams = useSearchParams();
   let step = searchParams.get('step') || '0';
+  const pageStartRef = useRef<number>(performance.now());
+  const stepStartRef = useRef<number>(performance.now());
+  const lastStepRef = useRef<string>(step);
 
   const setStep = (step: Step, id?: string) => {
     if (id) {
@@ -106,6 +111,39 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       posthog.reset();
     };
   }, [optOut]);
+
+  useEffect(() => {
+    const now = performance.now();
+    if (lastStepRef.current !== step) {
+      captureEvent('create_blueprint_step_time_spent', {
+        step: lastStepRef.current,
+        step_label: steps[parseInt(lastStepRef.current)],
+        duration_ms: Math.round(now - stepStartRef.current),
+        blueprint_id: id,
+        ...getClientInfo(),
+      });
+      lastStepRef.current = step;
+      stepStartRef.current = now;
+    }
+  }, [step, id, steps]);
+
+  useEffect(() => {
+    return () => {
+      const now = performance.now();
+      captureEvent('create_blueprint_step_time_spent', {
+        step: lastStepRef.current,
+        step_label: steps[parseInt(lastStepRef.current)],
+        duration_ms: Math.round(now - stepStartRef.current),
+        blueprint_id: id,
+        ...getClientInfo(),
+      });
+      captureEvent('create_blueprint_page_time_spent', {
+        duration_ms: Math.round(now - pageStartRef.current),
+        blueprint_id: id,
+        ...getClientInfo(),
+      });
+    };
+  }, [id, steps]);
 
   useEffect(() => {
     if (savedEmls[id]) {
@@ -133,7 +171,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
           setHasLoadedBlueprint(true);
         } catch (err) {
           console.error('Failed to load blueprint:', err);
-          toast.error('Failed to load blueprint');
+          toast.error(getErrorMessage(err));
         } finally {
           setIsBlueprintLoading(false);
         }
@@ -183,7 +221,7 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
       router.push(`/${blueprintId}`);
     } catch (error) {
       console.error('Failed to compile:', error);
-      toast.error(`Failed to compile blueprint: ${error?.toString()?.replace('Error: ', '')}`);
+      toast.error(`Failed to compile blueprint: ${getErrorMessage(error)}`);
     } finally {
       setIsCompileLoading(false);
     }
