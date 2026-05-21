@@ -156,6 +156,7 @@ const EmailDetails = ({
         <div className="">
           <Input
             title="Max Email Body Length"
+            required
             disabled={store.ignoreBodyHashCheck}
             placeholder="4032"
             error={!!validationErrors.emailBodyMaxLength}

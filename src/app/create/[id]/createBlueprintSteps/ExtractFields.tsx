@@ -580,7 +580,7 @@ const ExtractFields = ({
           <div className="mb-4 w-full overflow-hidden rounded-lg">
             <div className="flex items-center justify-between py-3">
               <div className="flex flex-col gap-1">
-                <Label className="font-medium text-grey-900">Quick header extraction</Label>
+                <Label className="font-medium text-grey-900">Quick header extraction <span className="text-red-500">*</span></Label>
                 <p className="text-base font-medium text-grey-700">
                   We auto-write the regexes for all the toggled fields
                 </p>
@@ -934,7 +934,7 @@ const ExtractFields = ({
             <div key={index} className="mb-2 flex flex-col gap-3 px-1">
               <div className="flex items-center justify-between py-3 pb-1">
                 <div className="flex items-center gap-2">
-                  <Label className="font-medium">Extracted data #{index + 1}</Label>
+                  <Label className="font-medium">Extracted data #{index + 1}{index === 0 ? <><span className="text-red-500"> *</span></> : ''}</Label>
                 </div>
                 <Button
                   size="sm"

@@ -25,6 +25,7 @@ import { debounce } from '@/app/utils';
 import ModalGenerator from '@/components/ModalGenerator';
 import { useEmlStore } from '@/lib/stores/useEmlStore';
 import Loader from '@/components/ui/loader';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Step = '0' | '1' | '2';
 
@@ -169,7 +170,9 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     } catch (err) {
       toast.error('Failed to submit blueprint');
       console.error('Failed to submit blueprint: ', err);
-      setErrors(['Unknown error while submitting blueprint']);
+      // Don't set errors state — save failure is already shown via toast and is not a
+      // validation issue; the Next tooltip should only list form/validation reasons.
+      throw err; // Rethrow so callers (e.g. onClickNext) know save failed and don't advance step
     } finally {
       setIsSaveDraftLoading(false);
     }
@@ -387,34 +390,73 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   }, [JSON.stringify(store.decomposedRegexes), savedEmls[id]]);
 
-  const isNextButtonDisabled = () => {
-    if ((!savedEmls[id] || isFileInvalid) && !skipEmlUpload) {
-      return true;
+  const getNextButtonDisabledReasons = (): string[] => {
+    const reasons: string[] = [];
+    const validationErrors = store.validationErrors || {};
+
+    // EML file requirement (when not skipping)
+    if (!skipEmlUpload) {
+      if (!savedEmls[id]) {
+        reasons.push('Upload a sample .eml file or enable "Skip EML upload"');
+      } else if (isFileInvalid) {
+        reasons.push('The uploaded file is invalid. Upload a valid .eml or enable "Skip EML upload"');
+      }
     }
 
     if (step === '0') {
-      return !store.circuitName || !store.title || !store.description || store.title?.includes(' ');
+      if (!store.circuitName) reasons.push('Pattern name is required');
+      if (!store.title) {
+        reasons.push('Title is required');
+      } else if (store.title?.includes(' ')) {
+        reasons.push('Title must not contain spaces');
+      }
+      if (!store.description) reasons.push('Description is required');
+      if (!store.emailQuery) reasons.push('Email Query is required');
+      else if (validationErrors.emailQuery) reasons.push(`Email Query: ${validationErrors.emailQuery}`);
+      if (!store.senderDomain) reasons.push('Sender domain is required');
+      else if (validationErrors.senderDomain) reasons.push(`Sender domain: ${validationErrors.senderDomain}`);
+      if (validationErrors.emailHeaderMaxLength) {
+        reasons.push(`Max Email Header Length: ${validationErrors.emailHeaderMaxLength}`);
+      }
+      if (isDKIMMissing && store.senderDomain) {
+        reasons.push('DKIM key not found for the sender domain');
+      }
     }
 
     if (step === '1') {
-      return !store.decomposedRegexes.length && !skipEmlUpload;
+      if (!store.decomposedRegexes.length && !skipEmlUpload) {
+        reasons.push('Add at least one extract field');
+        reasons.push('Or enable "Skip EML upload" to continue');
+      }
+      if (errors.length) {
+        reasons.push(...errors);
+      }
+      if (isDKIMMissing && store.senderDomain) {
+        reasons.push('DKIM key not found for the sender domain');
+      }
     }
 
     if (step === '2') {
-      // Check canCompile state from ExtractFields component
-      return !canCompile && !skipEmlUpload;
+      if (!canCompile && !skipEmlUpload) {
+        reasons.push('Complete extract field configuration to continue');
+        reasons.push('Or enable "Skip EML upload"');
+      }
     }
 
-    return !!errors.length || isDKIMMissing;
+    return reasons;
   };
+
+  const isNextButtonDisabled = () => getNextButtonDisabledReasons().length > 0;
 
   const onClickNext = async () => {
     try {
       setIsNextButtonClicked(true);
       const newId = await handleSaveDraft();
+      // Only advance step if save succeeded (handleSaveDraft throws on failure)
       setStep((parseInt(step) + 1).toString() as Step, newId);
     } catch (err) {
       console.error('failed to save draft and move to next step: ', err);
+      // Don't advance step — user stays on current step
     } finally {
       setIsNextButtonClicked(false);
     }
@@ -607,25 +649,55 @@ const CreateBlueprint = ({ params }: { params: Promise<{ id: string }> }) => {
                 Save as Draft
               </Button>
               {parseInt(step) < 2 ? (
-                <Button
-                  onClick={onClickNext}
-                  loading={isNextButtonClicked}
-                  endIcon={
-                    <Image
-                      src="/assets/ArrowRight.svg"
-                      alt="arrow right"
-                      width={16}
-                      height={16}
-                      style={{
-                        maxWidth: '100%',
-                        height: 'auto',
-                      }}
-                    />
-                  }
-                  disabled={isNextButtonDisabled()}
-                >
-                  Next
-                </Button>
+                <TooltipProvider delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="relative inline-block cursor-pointer [&:has(button:disabled)]:cursor-not-allowed">
+                        {/* Invisible overlay when disabled so tooltip trigger receives hover (disabled buttons block pointer events in some browsers) */}
+                        {isNextButtonDisabled() && (
+                          <span className="pointer-events-auto absolute inset-0 z-10" aria-hidden />
+                        )}
+                        <Button
+                          onClick={onClickNext}
+                          loading={isNextButtonClicked}
+                          endIcon={
+                            <Image
+                              src="/assets/ArrowRight.svg"
+                              alt="arrow right"
+                              width={16}
+                              height={16}
+                              style={{
+                                maxWidth: '100%',
+                                height: 'auto',
+                              }}
+                            />
+                          }
+                          disabled={isNextButtonDisabled()}
+                        >
+                          Next
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      sideOffset={8}
+                      className="max-w-sm border border-grey-500 bg-grey-800 px-3 py-2.5 text-left text-sm text-white shadow-lg"
+                    >
+                      {isNextButtonDisabled() ? (
+                        <div className="flex flex-col gap-1.5 py-0.5">
+                          <p className="font-medium">Complete the following to continue:</p>
+                          <ul className="list-inside list-disc space-y-0.5 text-sm">
+                            {getNextButtonDisabledReasons().map((reason, i) => (
+                              <li key={i}>{reason}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        'Go to next step'
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ) : (
                 <Button
                   onClick={handleCompile}

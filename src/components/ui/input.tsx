@@ -15,6 +15,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
   startIcon?: React.ReactNode;
   tooltipComponent?: React.ReactNode;
   loading?: boolean;
+  required?: boolean;
 }
 
 const inputVariants = cva(
@@ -45,6 +46,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       size,
       tooltipComponent,
       loading,
+      required,
       ...props
     },
     ref
@@ -55,6 +57,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <div className="flex flex-row gap-2">
             <Label className="text-base text-grey-900" htmlFor={props.title}>
               {props.title}
+              {required && <span className="text-red-500"> *</span>}
             </Label>
 
             {tooltipComponent ? (
