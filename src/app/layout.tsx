@@ -64,7 +64,13 @@ export default function RootLayout({
     <html lang="" suppressHydrationWarning>
       <body className={`${fustat.className} flex min-h-screen flex-col bg-[#F5F3EF] antialiased`}>
         <Suspense>
-          <ThemeProvider attribute="class">
+          {/* REASON: The app is a light-only design — the body bg is hardcoded to #F5F3EF
+              and all text colors assume a light background. next-themes defaults to
+              defaultTheme="system"/enableSystem, so dark-mode-OS visitors got the `dark`
+              class on <html>, flipping --foreground to near-white text on the light bg
+              (invisible main page text on first visit). There is no theme toggle in the UI,
+              so we force light. Removing forcedTheme reintroduces the white-on-light bug. */}
+          <ThemeProvider attribute="class" forcedTheme="light" enableSystem={false}>
             <CSPostHogProvider>
               <GoogleOAuthProvider clientId={process.env.GOOGLE_CLIENT_ID || ''}>
                 <GoogleAuthProvider>
