@@ -1025,7 +1025,7 @@ const ExtractFields = ({
                 {regex?.parts?.map((part: any, partIndex: any) => {
                   return (
                     <div key={partIndex} className="flex flex-col gap-3 rounded-lg py-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex flex-row items-center gap-2">
                           <span
                             className="flex h-5 w-5 items-center justify-center rounded-full text-xs font-medium text-white"
@@ -1039,8 +1039,8 @@ const ExtractFields = ({
                           </span>
                           <Label>Field</Label>
                         </div>
-                        <div className="flex flex-row items-center gap-2">
-                          <div className="relative inline-flex items-center rounded-xl border border-grey-500 bg-white p-1 shadow-sm">
+                        <div className="flex items-center gap-2 self-start sm:self-auto sm:justify-end">
+                          <div className="relative grid shrink-0 grid-cols-2 rounded-xl border border-grey-500 bg-white p-1 shadow-sm">
                             {/* Animated active background */}
                             <motion.div
                               layout
@@ -1050,15 +1050,14 @@ const ExtractFields = ({
                                 damping: 40,
                                 mass: 0.3,
                               }}
-                              className={`absolute inset-y-1 ${part.isPublic ? 'w-[calc(50%-6px)]' : 'w-[calc(55%-6px)]'} rounded-lg bg-gray-900`}
+                              className="absolute inset-y-1 w-[calc(50%-4px)] rounded-lg bg-gray-900"
                               style={{
-                                left: part.isPublic ? 'calc(50%)' : '6px',
-                                padding: 4,
+                                left: part.isPublic ? '50%' : '4px',
                               }}
                             />
                             <button
                               type="button"
-                              className={`relative z-[1] flex items-center gap-2 rounded-lg px-3 py-1 text-sm transition-colors ${
+                              className={`relative z-[1] flex min-w-[5.75rem] items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm transition-colors ${
                                 !part.isPublic ? 'text-white' : 'text-gray-700'
                               }`}
                               onClick={() => {
@@ -1087,7 +1086,7 @@ const ExtractFields = ({
                             </button>
                             <button
                               type="button"
-                              className={`relative z-[1] ml-1 flex items-center gap-2 rounded-lg px-3 py-1 text-sm transition-colors ${
+                              className={`relative z-[1] flex min-w-[5.75rem] items-center justify-center gap-1.5 rounded-lg px-2.5 py-1 text-sm transition-colors ${
                                 part.isPublic ? 'text-white' : 'text-gray-700'
                               }`}
                               onClick={() => {
