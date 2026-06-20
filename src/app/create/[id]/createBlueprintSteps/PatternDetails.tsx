@@ -210,7 +210,7 @@ const PatternDetails = ({
         errorMessage={validationErrors.description}
       />
       {/* TODO: Add check for email body max length */}
-      { (emlContent && id !== 'new') || skipEmlUpload ? null : (
+      {(emlContent && id !== 'new') || skipEmlUpload ? null : (
         <DragAndDropFile
           accept=".eml"
           file={file}
@@ -336,6 +336,7 @@ const PatternDetails = ({
         placeholder="1024"
         type="number"
         min={0}
+        step={64}
         error={!!validationErrors.emailHeaderMaxLength}
         errorMessage={
           validationErrors.emailHeaderMaxLength
