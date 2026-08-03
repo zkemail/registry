@@ -13,19 +13,20 @@ test('verify a real proof on-chain against a deployed Paseo verifier', async ({ 
     (window as any).ethereum = { isMetaMask: true, request: async () => null };
   });
 
-  // zkemailverify/test_0001_2 (same blueprint as tests/generateProof.ts), proof
-  // id for a real, already-completed remote proof with a Paseo verifier deployed.
-  // Reused rather than generating a fresh proof each run (that's already covered
-  // by tests/generateProof.ts).
+  // zkemailverify/kusama_grant_paseo_e2e: compiled and deployed to Paseo through
+  // the current pipeline (not test_0001_2, which predates it). Proof id for a
+  // real, already-completed remote proof against its deployed verifier. Reused
+  // rather than generating a fresh one each run (that's covered by
+  // tests/kusama/generateProof.ts).
   await page.goto(
-    'http://localhost:3000/f63c7198-76b1-413c-b785-7655ebdaaec1/proofs/a19c659c-8224-4cb1-b503-cfc4511566c4'
+    'http://localhost:3000/e94e7f93-7575-4e26-a147-de894b19ce3e/proofs/fece17c3-f3ed-4833-bbf9-eccdf530d474'
   );
   await page.waitForLoadState('networkidle');
 
   // Confirms the verifier is deployed and resolves to the correct (Paseo) explorer,
   // not just that some address string is present.
   const verifierLink = page.locator('a', {
-    hasText: '0xEf6B5496Bd6D13E2A518eA7961aA1Df1F41Db033',
+    hasText: '0x72616B78d29d0cccBfEec1bf00E108885286D2f3',
   });
   await expect(verifierLink).toBeVisible();
   await expect(verifierLink).toHaveAttribute('href', /blockscout-testnet\.polkadot\.io/);
