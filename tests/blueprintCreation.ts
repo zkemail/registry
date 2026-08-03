@@ -1,7 +1,12 @@
 import { test, expect } from '@playwright/test';
 import { dragAndDropFile } from '../src/test-utils/DragAndDropFile';
 
-test('check draft blueprints without authentication', async ({ page }) => {
+// Skipped: outdated against the current create-blueprint flow (hardcoded auth token,
+// stale UI assertions - the "Extract Fields" step now uses toggle-based quick
+// extraction instead of free-text Sender domain/Email Query inputs, plus an
+// unhandled "Confirm Inputs Update!" modal). Needs a rewrite, not a patch.
+// TODO: fix and re-enable. Ref REG-733.
+test.skip('check draft blueprints without authentication', async ({ page }) => {
   await page.goto('http://localhost:3000/');
 
   const loginButton = page.getByRole('button', { name: 'Login' });

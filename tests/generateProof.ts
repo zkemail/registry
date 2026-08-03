@@ -2,16 +2,13 @@ import { test, expect } from '@playwright/test';
 import { dragAndDropFile } from '../src/test-utils/DragAndDropFile';
 
 test('test proof generation', async ({ page }) => {
-  test.setTimeout(120000);
-  await page.goto('http://localhost:3000/?search=proof+of+twitter');
+  // Real circom proving takes ~2 min on staging.
+  test.setTimeout(5 * 60 * 1000);
 
+  // zkemailverify/test_0001_2: navigated by id directly (has no "twitter" in its
+  // title/description/slug, so it won't surface under a text search).
+  await page.goto('http://localhost:3000/f63c7198-76b1-413c-b785-7655ebdaaec1');
   await page.waitForLoadState('networkidle');
-
-  await page.getByRole('textbox', { name: 'Search blueprints..' }).click();
-  await page.getByRole('textbox', { name: 'Search blueprints..' }).fill('proof of twitter');
-  await page.waitForLoadState('networkidle');
-  await expect(page.getByRole('link', { name: 'Proof of Twitter stars Stars' })).toBeVisible();
-  await page.getByRole('link', { name: 'Proof of Twitter stars Stars' }).click();
 
   // check the connect emails page
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
@@ -24,23 +21,21 @@ test('test proof generation', async ({ page }) => {
     'PasswordResetRequest.eml'
   );
 
-  //   await expect(page.getByRole('img', { name: 'status' })).toBeVisible();
   await expect(page.locator('#uploadedFile')).toBeVisible();
   await page.locator('#uploadedFile').click();
-  await expect(page.getByRole('button', { name: 'Add Inputs' })).toBeVisible();
-  await page.getByRole('button', { name: 'Add Inputs' }).click();
-  await page.getByPlaceholder('Enter Address').click();
-  await page.getByPlaceholder('Enter Address').fill('0x00');
+  // This blueprint has no external inputs, so it goes straight to the proving-mode
+  // choice - no "Add Inputs" step in between.
   await page.getByTestId('remote-proving').click();
 
-  await page.waitForTimeout(60000);
-  await expect(page.getByRole('heading', { name: 'View Proof' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'View Proof' })).toBeVisible({
+    timeout: 4 * 60 * 1000,
+  });
   await expect(
     page.locator('div').filter({ hasText: 'View ProofPlease standby,' }).nth(3)
   ).toBeVisible();
-  await expect(page.getByText('{"handle": ["ShubhamAga67450')).toBeVisible();
+  await expect(page.getByText('{"email_sender": ["info@x.com"')).toBeVisible();
   await expect(page.getByRole('img', { name: 'status' })).toBeVisible();
-  await expect(page.getByText('{"handle": ["ShubhamAga67450')).toBeVisible();
+  await expect(page.getByText('{"email_sender": ["info@x.com"')).toBeVisible();
   await expect(page.getByRole('button', { name: '| View' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'download' })).toBeVisible();
 
