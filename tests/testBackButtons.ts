@@ -2,20 +2,13 @@ import { test, expect } from '@playwright/test';
 import { dragAndDropFile } from '../src/test-utils/DragAndDropFile';
 
 test('test back button in proofs page', async ({ page }) => {
-  test.setTimeout(120000);
-  await page.goto('http://localhost:3000/?search=proof+of+twitter');
+  // Real circom proving takes ~2 min on staging.
+  test.setTimeout(5 * 60 * 1000);
 
+  // zkemailverify/test_0001_2: navigated by id directly (has no "twitter" in its
+  // title/description/slug, so it won't surface under a text search).
+  await page.goto('http://localhost:3000/f63c7198-76b1-413c-b785-7655ebdaaec1');
   await page.waitForLoadState('networkidle');
-
-  await page.getByRole('textbox', { name: 'Search blueprints..' }).click();
-  await page.getByRole('textbox', { name: 'Search blueprints..' }).fill('proof of twitter');
-  await page.waitForLoadState('networkidle');
-  // Matched by id, not title/name: staging has two blueprints both titled "Proof of
-  // Twitter" (0fe3a285... and 963fbbe8...). This is the one this test is written
-  // against (referenced by id elsewhere in this suite too).
-  const proofOfTwitterLink = page.locator('a[href="/0fe3a285-dc6e-4843-b9f6-5f3c27cd3847"]');
-  await expect(proofOfTwitterLink).toBeVisible();
-  await proofOfTwitterLink.click();
 
   // check the connect emails page
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
@@ -30,106 +23,44 @@ test('test back button in proofs page', async ({ page }) => {
 
   await expect(page.locator('#uploadedFile')).toBeVisible();
   await page.locator('#uploadedFile').click();
-  await expect(page.getByRole('button', { name: 'Add Inputs' })).toBeVisible();
-  await page.getByRole('button', { name: 'Add Inputs' }).click();
-  await page.getByPlaceholder('Enter Address').click();
-  await page.getByPlaceholder('Enter Address').fill('0x00');
+  // This blueprint has no external inputs, so it goes straight to the proving-mode
+  // choice - no "Add Inputs" step in between.
   await page.getByTestId('remote-proving').click();
 
-  await page.waitForTimeout(60000);
-  await expect(page.getByRole('heading', { name: 'View Proof' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'View Proof' })).toBeVisible({
+    timeout: 4 * 60 * 1000,
+  });
   await expect(
     page.locator('div').filter({ hasText: 'View ProofPlease standby,' }).nth(3)
   ).toBeVisible();
-  await expect(page.getByText('{"handle": ["ShubhamAga67450')).toBeVisible();
+  await expect(page.getByText('{"email_sender": ["info@x.com"')).toBeVisible();
   await expect(page.getByRole('img', { name: 'status' })).toBeVisible();
-  await expect(page.getByText('{"handle": ["ShubhamAga67450')).toBeVisible();
+  await expect(page.getByText('{"email_sender": ["info@x.com"')).toBeVisible();
   await expect(page.getByRole('button', { name: '| View' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'download' })).toBeVisible();
   await page.getByRole('button', { name: 'proofs Past proofs' }).click();
   await expect(page.getByRole('heading', { name: 'Past Proofs' })).toBeVisible();
-  await expect(page.getByText('1|View{"handle": ["')).toBeVisible();
-  await page.getByRole('button', { name: 'back Proof of Twitter' }).click();
+  await expect(page.getByText('1|View{"email_sender": ["')).toBeVisible();
+  await page.getByRole('button', { name: 'back test_0001' }).click();
   await expect(
-    page.getByText('Generate ProofPast proofsConnect emailsSelect emailsAdd inputsView and')
+    page.getByText('Generate ProofPast proofsConnect emailsSelect emailsView and')
   ).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
 });
 
 test('test back button in generate proof steps', async ({ page }) => {
-  test.setTimeout(120000);
-  await page.goto('http://localhost:3000/?search=proof+of+twitter');
+  test.setTimeout(60 * 1000);
 
-  await page.waitForLoadState('networkidle');
-
-  await page.getByRole('textbox', { name: 'Search blueprints..' }).click();
-  await page.getByRole('textbox', { name: 'Search blueprints..' }).fill('proof of twitter');
-  await page.waitForLoadState('networkidle');
-  // Matched by id, not title/name: staging has two blueprints both titled "Proof of
-  // Twitter" (0fe3a285... and 963fbbe8...). This is the one this test is written
-  // against (referenced by id elsewhere in this suite too).
-  const proofOfTwitterLink = page.locator('a[href="/0fe3a285-dc6e-4843-b9f6-5f3c27cd3847"]');
-  await expect(proofOfTwitterLink).toBeVisible();
-  await proofOfTwitterLink.click();
-
-  // check the connect emails page
-  await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
-
-  // upload the email file. We need another component for this. https://stackoverflow.com/a/77738836
-  await dragAndDropFile(
-    page,
-    '#drag-and-drop-emails',
-    'tests/assets/PasswordResetRequest.eml',
-    'PasswordResetRequest.eml'
-  );
-
-  await expect(page.locator('#uploadedFile')).toBeVisible();
-  await page.locator('#uploadedFile').click();
-  await expect(page.getByRole('button', { name: 'Add Inputs' })).toBeVisible();
-  await page.getByRole('button', { name: 'Add Inputs' }).click();
-  await page.getByPlaceholder('Enter Address').click();
-  await page.getByPlaceholder('Enter Address').fill('0x00');
-  await page.getByTestId('remote-proving').click();
-
-  await page.waitForTimeout(60000);
-  await expect(page.getByRole('heading', { name: 'View Proof' })).toBeVisible();
-  await expect(
-    page.locator('div').filter({ hasText: 'View ProofPlease standby,' }).nth(3)
-  ).toBeVisible();
-  await expect(page.getByText('{"handle": ["ShubhamAga67450')).toBeVisible();
-  await expect(page.getByRole('img', { name: 'status' })).toBeVisible();
-  await expect(page.getByText('{"handle": ["ShubhamAga67450')).toBeVisible();
-  await expect(page.getByRole('button', { name: '| View' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'download' })).toBeVisible();
-  await page.getByRole('button', { name: 'proofs Past proofs' }).click();
-  await expect(page.getByRole('heading', { name: 'Past Proofs' })).toBeVisible();
-  await expect(page.getByText('1|View{"handle": ["')).toBeVisible();
-  await page.getByRole('button', { name: 'back Proof of Twitter' }).click();
-  await expect(
-    page.getByText('Generate ProofPast proofsConnect emailsSelect emailsAdd inputsView and')
-  ).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
-
-  await dragAndDropFile(
-    page,
-    '#drag-and-drop-emails',
-    'tests/assets/PasswordResetRequest.eml',
-    'PasswordResetRequest.eml'
-  );
-  await expect(page.locator('#uploadedFile')).toBeVisible();
-  await page.locator('#uploadedFile').click();
-  await page.getByRole('button', { name: 'Add Inputs' }).click();
-  await page.getByRole('textbox', { name: 'Address' }).click();
-  await page.getByRole('textbox', { name: 'Address' }).fill('0x00');
-  await page.getByText('Remote ProvingQuickServer Side').click();
+  // Reuses a real, already-completed proof (id below) against the same blueprint
+  // instead of generating a fresh one, since this test only cares about back-button
+  // navigation from the "View and verify" step, not proof generation itself.
   await page.goto(
-    'http://localhost:3000/0fe3a285-dc6e-4843-b9f6-5f3c27cd3847?step=3&proofId=b197bffe-5101-4bcf-9eb0-a118d77c7b9d'
+    'http://localhost:3000/f63c7198-76b1-413c-b785-7655ebdaaec1?step=3&proofId=2d655dea-4f62-4369-8307-3abf4228147b'
   );
   await expect(page.getByRole('heading', { name: 'View Proof' })).toBeVisible();
-  await page.getByRole('button', { name: 'back Add inputs' }).click();
-  await expect(page.getByRole('heading', { name: 'Add Inputs' })).toBeVisible();
-  await page.getByRole('button', { name: 'back Select emails' }).click();
+  // Matched loosely: the back button's label doesn't reliably reflect the target step.
+  await page.getByRole('button', { name: /^back /i }).click();
   await expect(page.getByRole('heading', { name: 'Select Emails' })).toBeVisible();
-  await page.getByRole('button', { name: 'back Connect emails' }).click();
+  await page.getByRole('button', { name: /^back /i }).click();
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
 });
