@@ -288,14 +288,7 @@ const EmailDetails = ({
           console.log('setting serverzkframework to ', value);
           setField('serverZkFramework', value);
         }}
-        options={
-          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-            ? [
-                { label: 'SP1', value: ZkFramework.Sp1 },
-                { label: 'Circom', value: ZkFramework.Circom },
-              ]
-            : [{ label: 'Circom', value: ZkFramework.Circom }]
-        }
+        options={[{ label: 'Circom', value: ZkFramework.Circom }]}
       />
     </div>
   );
