@@ -464,7 +464,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                   temporarily and then deleted right after the proof creation.
                 </p>
               </div>
-              <div
+              {/* <div
                 data-testid="local-proving"
                 className={`rounded-2xl border border-grey-200 p-6 ${
                   selectedEmail === null ||
@@ -511,7 +511,7 @@ const SelectEmails = ({ id }: { id: string }) => {
                     'Local proving only works for blueprints compiled with Circom'
                   )}
                 </p>
-              </div>
+              </div> */}
             </div>
           )}
         </div>

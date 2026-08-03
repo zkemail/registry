@@ -226,7 +226,7 @@ const EmailDetails = ({
           />
         </div>
       )}
-      <Select
+      {/* <Select
         label="Client Zk Framework"
         value={store.clientZkFramework}
         onChange={async (value) => {
@@ -257,7 +257,7 @@ const EmailDetails = ({
           ]
           // : [{ label: 'Circom', value: ZkFramework.Circom }]
         }
-      />
+      /> */}
       {store.clientZkFramework === ZkFramework.Noir && detectedKeyBitLength && (
         <div className="flex w-full flex-row items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
           <InfoIcon className="h-5 w-5 flex-shrink-0 text-blue-600" />
@@ -267,6 +267,16 @@ const EmailDetails = ({
           </p>
         </div>
       )}
+
+      <Select
+        label="Server Zk Framework"
+        value={store.serverZkFramework}
+        onChange={(value) => {
+          console.log('setting serverzkframework to ', value);
+          setField('serverZkFramework', value);
+        }}
+        options={[{ label: 'Circom', value: ZkFramework.Circom }]}
+      />
 
       <Select
         label="Target Chain"
@@ -279,23 +289,6 @@ const EmailDetails = ({
           { label: 'Ethereum Sepolia', value: 11155111 },
           { label: 'Paseo Testnet (Polkadot)', value: 420420417 },
         ]}
-      />
-
-      <Select
-        label="Server Zk Framework"
-        value={store.serverZkFramework}
-        onChange={(value) => {
-          console.log('setting serverzkframework to ', value);
-          setField('serverZkFramework', value);
-        }}
-        options={
-          process.env.NEXT_PUBLIC_DEPLOYMENT_ENV === 'staging'
-            ? [
-                { label: 'SP1', value: ZkFramework.Sp1 },
-                { label: 'Circom', value: ZkFramework.Circom },
-              ]
-            : [{ label: 'Circom', value: ZkFramework.Circom }]
-        }
       />
     </div>
   );
