@@ -226,7 +226,7 @@ const EmailDetails = ({
           />
         </div>
       )}
-      <Select
+      {/* <Select
         label="Client Zk Framework"
         value={store.clientZkFramework}
         onChange={async (value) => {
@@ -257,7 +257,7 @@ const EmailDetails = ({
           ]
           // : [{ label: 'Circom', value: ZkFramework.Circom }]
         }
-      />
+      /> */}
       {store.clientZkFramework === ZkFramework.Noir && detectedKeyBitLength && (
         <div className="flex w-full flex-row items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
           <InfoIcon className="h-5 w-5 flex-shrink-0 text-blue-600" />
