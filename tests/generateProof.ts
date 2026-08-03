@@ -10,8 +10,12 @@ test('test proof generation', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Search blueprints..' }).click();
   await page.getByRole('textbox', { name: 'Search blueprints..' }).fill('proof of twitter');
   await page.waitForLoadState('networkidle');
-  await expect(page.getByRole('link', { name: /Proof of Twitter/i })).toBeVisible();
-  await page.getByRole('link', { name: /Proof of Twitter/i }).click();
+  // Matched by id, not title/name: staging has two blueprints both titled "Proof of
+  // Twitter" (0fe3a285... and 963fbbe8...). This is the one this test is written
+  // against (referenced by id elsewhere in this suite too).
+  const proofOfTwitterLink = page.locator('a[href="/0fe3a285-dc6e-4843-b9f6-5f3c27cd3847"]');
+  await expect(proofOfTwitterLink).toBeVisible();
+  await proofOfTwitterLink.click();
 
   // check the connect emails page
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
