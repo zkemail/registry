@@ -269,6 +269,16 @@ const EmailDetails = ({
       )}
 
       <Select
+        label="Server Zk Framework"
+        value={store.serverZkFramework}
+        onChange={(value) => {
+          console.log('setting serverzkframework to ', value);
+          setField('serverZkFramework', value);
+        }}
+        options={[{ label: 'Circom', value: ZkFramework.Circom }]}
+      />
+
+      <Select
         label="Target Chain"
         value={store.verifierContract?.chain ?? 84532}
         onChange={(value) => {
@@ -279,16 +289,6 @@ const EmailDetails = ({
           { label: 'Ethereum Sepolia', value: 11155111 },
           { label: 'Paseo Testnet (Polkadot)', value: 420420417 },
         ]}
-      />
-
-      <Select
-        label="Server Zk Framework"
-        value={store.serverZkFramework}
-        onChange={(value) => {
-          console.log('setting serverzkframework to ', value);
-          setField('serverZkFramework', value);
-        }}
-        options={[{ label: 'Circom', value: ZkFramework.Circom }]}
       />
     </div>
   );
