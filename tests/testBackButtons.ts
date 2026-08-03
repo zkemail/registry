@@ -10,8 +10,8 @@ test('test back button in proofs page', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Search blueprints..' }).click();
   await page.getByRole('textbox', { name: 'Search blueprints..' }).fill('proof of twitter');
   await page.waitForLoadState('networkidle');
-  await expect(page.getByRole('link', { name: 'Proof of Twitter stars Stars' })).toBeVisible();
-  await page.getByRole('link', { name: 'Proof of Twitter stars Stars' }).click();
+  await expect(page.getByRole('link', { name: /Proof of Twitter/i })).toBeVisible();
+  await page.getByRole('link', { name: /Proof of Twitter/i }).click();
 
   // check the connect emails page
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
@@ -61,8 +61,8 @@ test('test back button in generate proof steps', async ({ page }) => {
   await page.getByRole('textbox', { name: 'Search blueprints..' }).click();
   await page.getByRole('textbox', { name: 'Search blueprints..' }).fill('proof of twitter');
   await page.waitForLoadState('networkidle');
-  await expect(page.getByRole('link', { name: 'Proof of Twitter stars Stars' })).toBeVisible();
-  await page.getByRole('link', { name: 'Proof of Twitter stars Stars' }).click();
+  await expect(page.getByRole('link', { name: /Proof of Twitter/i })).toBeVisible();
+  await page.getByRole('link', { name: /Proof of Twitter/i }).click();
 
   // check the connect emails page
   await expect(page.getByRole('heading', { name: 'Connect emails' })).toBeVisible();
