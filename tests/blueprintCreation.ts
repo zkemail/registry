@@ -22,8 +22,10 @@ test('check draft blueprints without authentication', async ({ page }) => {
   const authStorage = {
     state: {
       username: 'zktestman00',
+      // Re-signed with the staging JWT_SECRET for github_username "zktestman00", exp 2046-01-01.
+      // The previous token expired 2025-06-25, which is why this test started failing in CI.
       token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA4NzYwNjAsImdpdGh1Yl91c2VybmFtZSI6InprdGVzdG1hbjAwIn0.oKGk65EREAjaUz9ENhRTAIrRJP9tV_5OPGptFzc7Rh4',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIzOTgzNzc2MDAsImdpdGh1Yl91c2VybmFtZSI6InprdGVzdG1hbjAwIn0._SkwY7_uVAabXB0Fq1qjWpwj2PnooQKL0z5hrl8a0nE',
       isAdmin: false,
     },
     version: 0,
