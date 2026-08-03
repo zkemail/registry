@@ -69,6 +69,7 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           {token && (
             <Button
+              data-testid="create-blueprint-button"
               onClick={handleCreateBlueprint}
               className="hidden rounded-xl px-4 py-2 md:inline-flex"
             >
