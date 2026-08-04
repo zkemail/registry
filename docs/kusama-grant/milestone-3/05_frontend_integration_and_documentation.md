@@ -22,10 +22,6 @@ Milestone 3 frontend integration: the registry frontend supports target chain se
 - [`src/app/[id]/proofs/[proofId]/page.tsx`](../../src/app/%5Bid%5D/proofs/%5BproofId%5D/page.tsx) builds the verifier contract address link from an `EXPLORER_MAP` keyed by chain ID: `84532` → `sepolia.basescan.org`, `11155111` → `sepolia.etherscan.io`, `420420417` → `blockscout-testnet.polkadot.io`. Falls back to `#` if the chain is unrecognized or no address is set.
 - Also covered by [`tests/kusama/verifyProofOnChain.ts`](../../../tests/kusama/verifyProofOnChain.ts), which asserts the rendered link resolves to Blockscout specifically for this Paseo-targeted blueprint.
 
-### ZK framework selection fix
-
-- [`src/app/create/[id]/store.ts`](../../src/app/create/%5Bid%5D/store.ts): removed a hardcoded `else` branch that previously forced `clientZkFramework = Noir` / `serverZkFramework = Sp1` whenever no email file was uploaded. Now, `assignPreferredZkFramework(emlStr)` only runs when an email is actually present; otherwise the user's manually selected framework values are used unmodified.
-
 ## Demonstration
 
 ```bash
