@@ -32,7 +32,7 @@ Milestone 3 frontend integration: the registry frontend supports target chain se
 bunx playwright test tests/kusama/
 ```
 
-Three real, end-to-end Playwright tests under [`tests/kusama/`](../../../tests/kusama/), all against `zkemailverify/kusama_grant_paseo_e2e` (blueprint `e94e7f93-7575-4e26-a147-de894b19ce3e`), a blueprint compiled and deployed to Paseo through the current pipeline (not `test_0001_2`, which predates it):
+Three real, end-to-end Playwright tests under [`tests/kusama/`](../../../tests/kusama/), all against `zkemailverify/kusama_grant_paseo_e2e` (blueprint `e94e7f93-7575-4e26-a147-de894b19ce3e`), compiled and deployed to Paseo through the current pipeline:
 
 | Test | Exercises |
 | --- | --- |
