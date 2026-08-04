@@ -8,7 +8,13 @@ test('Target Chain dropdown offers and preserves Paseo Testnet (Polkadot)', asyn
   // "zktestman00", exp 2046-01-01 (see PR #311, commit 0303e60 - the version
   // that shipped in blueprintCreation.ts itself was later reverted back to
   // the expired one when that test got skipped, so don't copy it from there).
-  await page.goto('http://localhost:3000/');
+  //
+  // Uses addInitScript instead of an evaluate() call after an initial
+  // navigation to "/": addInitScript runs before any page script on every
+  // subsequent navigation, so the app's very first render already has
+  // auth-storage populated, instead of racing the app's own hydration
+  // against a localStorage write that lands after the page has started
+  // loading.
   const authStorage = {
     state: {
       username: 'zktestman00',
@@ -18,7 +24,7 @@ test('Target Chain dropdown offers and preserves Paseo Testnet (Polkadot)', asyn
     },
     version: 0,
   };
-  await page.evaluate((storage) => {
+  await page.addInitScript((storage) => {
     localStorage.setItem('auth-storage', storage);
   }, JSON.stringify(authStorage));
 
