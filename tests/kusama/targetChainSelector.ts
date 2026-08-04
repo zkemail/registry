@@ -4,13 +4,16 @@ test('Target Chain dropdown offers and preserves Paseo Testnet (Polkadot)', asyn
   test.setTimeout(30 * 1000);
 
   // Auth required to view/edit a blueprint's create-flow steps (unlike proof
-  // viewing, which doesn't need it). Same test JWT used by blueprintCreation.ts.
+  // viewing, which doesn't need it). Re-signed test JWT for github_username
+  // "zktestman00", exp 2046-01-01 (see PR #311, commit 0303e60 - the version
+  // that shipped in blueprintCreation.ts itself was later reverted back to
+  // the expired one when that test got skipped, so don't copy it from there).
   await page.goto('http://localhost:3000/');
   const authStorage = {
     state: {
       username: 'zktestman00',
       token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTA4NzYwNjAsImdpdGh1Yl91c2VybmFtZSI6InprdGVzdG1hbjAwIn0.oKGk65EREAjaUz9ENhRTAIrRJP9tV_5OPGptFzc7Rh4',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIzOTgzNzc2MDAsImdpdGh1Yl91c2VybmFtZSI6InprdGVzdG1hbjAwIn0._SkwY7_uVAabXB0Fq1qjWpwj2PnooQKL0z5hrl8a0nE',
       isAdmin: false,
     },
     version: 0,
