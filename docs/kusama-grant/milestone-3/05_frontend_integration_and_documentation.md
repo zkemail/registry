@@ -6,20 +6,20 @@ Milestone 3 frontend integration: the registry frontend supports target chain se
 
 ### Chain selection
 
-- **UI component:** [`src/app/create/[id]/createBlueprintSteps/EmailDetails.tsx`](../../src/app/create/%5Bid%5D/createBlueprintSteps/EmailDetails.tsx) adds a `Target Chain` `<Select>` to **Step 3 (Optional Details)** of the blueprint creation wizard, with three options: Base Sepolia (`84532`), Ethereum Sepolia (`11155111`), and Paseo Testnet / Polkadot (`420420417`).
-- **Store:** [`src/app/create/[id]/store.ts`](../../src/app/create/%5Bid%5D/store.ts) initializes `verifierContract.chain` to `84532` (Base Sepolia); the component falls back to the same default when unset. The selected chain is used downstream by the compilation pipeline when deploying the Solidity verifier contract.
+- **UI component:** [`src/app/create/[id]/createBlueprintSteps/EmailDetails.tsx`](../../../src/app/create/%5Bid%5D/createBlueprintSteps/EmailDetails.tsx) adds a `Target Chain` `<Select>` to **Step 3 (Optional Details)** of the blueprint creation wizard, with three options: Base Sepolia (`84532`), Ethereum Sepolia (`11155111`), and Paseo Testnet / Polkadot (`420420417`).
+- **Store:** [`src/app/create/[id]/store.ts`](../../../src/app/create/%5Bid%5D/store.ts) initializes `verifierContract.chain` to `84532` (Base Sepolia); the component falls back to the same default when unset. The selected chain is used downstream by the compilation pipeline when deploying the Solidity verifier contract.
 - Covered by [`tests/kusama/targetChainSelector.ts`](../../../tests/kusama/targetChainSelector.ts): confirms Paseo is both an available option and genuinely selected on the real `kusama_grant_paseo_e2e` blueprint. Runs in CI on every push (see Demonstration below).
 
 ### On-chain verification UI
 
-- A **"Verify On-Chain"** button appears in two places: the proof list row ([`src/app/[id]/ProofRow.tsx`](../../src/app/%5Bid%5D/ProofRow.tsx), `onVerifyOnChain` / `isVerifyingOnChainLoading`) and the proof detail page ([`src/app/[id]/proofs/[proofId]/page.tsx`](../../src/app/%5Bid%5D/proofs/%5BproofId%5D/page.tsx), same pattern).
+- A **"Verify On-Chain"** button appears in two places: the proof list row ([`src/app/[id]/ProofRow.tsx`](../../../src/app/%5Bid%5D/ProofRow.tsx), `onVerifyOnChain` / `isVerifyingOnChainLoading`) and the proof detail page ([`src/app/[id]/proofs/[proofId]/page.tsx`](../../../src/app/%5Bid%5D/proofs/%5BproofId%5D/page.tsx), same pattern).
 - Rendered only when a browser wallet (`window.ethereum`) is detected, the blueprint has a `verifierContract.address` set, and the proof is Circom-based (not Noir); disabled while the proof is still `InProgress`.
 - Calls `blueprint.verifyProofOnChain(proof)` from `@zk-email/sdk` and shows a toast with the result.
 - Covered by [`tests/kusama/verifyProofOnChain.ts`](../../../tests/kusama/verifyProofOnChain.ts): clicks the real button against a real, already-completed proof and asserts on-chain verification succeeds. Runs in CI on every push (see Demonstration below).
 
 ### Dynamic block explorer links
 
-- [`src/app/[id]/proofs/[proofId]/page.tsx`](../../src/app/%5Bid%5D/proofs/%5BproofId%5D/page.tsx) builds the verifier contract address link from an `EXPLORER_MAP` keyed by chain ID: `84532` → `sepolia.basescan.org`, `11155111` → `sepolia.etherscan.io`, `420420417` → `blockscout-testnet.polkadot.io`. Falls back to `#` if the chain is unrecognized or no address is set.
+- [`src/app/[id]/proofs/[proofId]/page.tsx`](../../../src/app/%5Bid%5D/proofs/%5BproofId%5D/page.tsx) builds the verifier contract address link from an `EXPLORER_MAP` keyed by chain ID: `84532` → `sepolia.basescan.org`, `11155111` → `sepolia.etherscan.io`, `420420417` → `blockscout-testnet.polkadot.io`. Falls back to `#` if the chain is unrecognized or no address is set.
 - Also covered by [`tests/kusama/verifyProofOnChain.ts`](../../../tests/kusama/verifyProofOnChain.ts), which asserts the rendered link resolves to Blockscout specifically for this Paseo-targeted blueprint.
 
 ## Demonstration
