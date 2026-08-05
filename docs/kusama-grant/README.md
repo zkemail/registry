@@ -9,7 +9,3 @@ This directory tracks delivery evidence for Kusama grant milestones related to t
 - Milestone 3, deliverables 1-3 (other repository, Circom/contracts scope): [sdk-images `circom/docs/kusama-grant/milestone-3`](https://github.com/zkemail/sdk-images/tree/kusama-grant/circom/docs/kusama-grant/milestone-3)
 - Milestone 3, deliverable 4 (other repository, SDK scope): [zk-email-sdk-js `docs/kusama-grant/milestone-3`](https://github.com/zkemail/zk-email-sdk-js/tree/kusama-grant/docs/kusama-grant/milestone-3)
 - Milestone 3, deliverable 5 (this repository): [`./milestone-3/README.md`](./milestone-3/README.md)
-
-## Current Status Snapshot
-
-- Milestone 3 (deliverable 5): `In Progress`
