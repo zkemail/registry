@@ -110,7 +110,8 @@ the bundle's own `hardhat.config.ts`, not something separate to prove.
 
 | Field | Value |
 | --- | --- |
-| sdk-images generator commit | [`a6e5c43`](https://github.com/zkemail/sdk-images/commit/a6e5c43) ("test(circom): generator-regression test + fixture README fix (#70)"), confirmed unchanged on `staging` between 2026-07-27 and this blueprint's compile time (2026-08-03) |
+| Blueprint compile timestamp | `2026-08-03T17:40:26Z` (the blueprint's own `updated_at`, readable via the API - see Reproduce below) |
+| sdk-images generator commit | [`a6e5c43`](https://github.com/zkemail/sdk-images/commit/a6e5c43) ("test(circom): generator-regression test + fixture README fix (#70)"), confirmed unchanged on `staging` between 2026-07-27 and the compile timestamp above |
 | `circuit.zip` hash (sha256) | `edc4a3b89b7699911c2b402fdf0a64ac3a1091b240c70420534bb4bec9f40592` |
 | `circuit.zkey` hash (sha256) | `e8358bbc0c70db9f3d76ed92473dcf6c1e8de5b8a3e1fb2ea7f13778a75c34fe` (from `circuit_zkey.zip`; the separate `circuit.zkey.gz` asset for this blueprint is a 43-byte stub, not the real file) |
 | Wrapper (`ZKEmailVerifier`) runtime bytecode hash | `0x5655a9fe87e1a1bd736b117c89a181c71f7985a682f419e3396574165a37ef55` |
@@ -127,9 +128,13 @@ shasum -a 256 circuit.zip
 unzip circuit_zkey.zip -d zkey_unzipped
 shasum -a 256 zkey_unzipped/circuit.zkey
 
+# blueprint compile timestamp, straight from the API (updated_at)
+curl -s https://staging-conductor.zk.email/blueprint/e94e7f93-7575-4e26-a147-de894b19ce3e \
+  | jq -r '.updated_at.seconds' | xargs -I{} date -u -r {} "+%Y-%m-%dT%H:%M:%SZ"
+
 # generator commit: confirm nothing touched the contract generator between a6e5c43
 # and the blueprint's compile time
-git log a6e5c43..origin/staging --oneline --before="<compile timestamp>" \
+git log a6e5c43..origin/staging --oneline --before="2026-08-03T17:40:26Z" \
   -- circom/src/contract.rs circom/templates/ circom/src/main.rs
 # (empty output confirms a6e5c43 was still the live generator state)
 ```
