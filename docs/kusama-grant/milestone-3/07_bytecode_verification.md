@@ -64,3 +64,39 @@ jq -r '.bytecode' hh-artifacts/src/ZKEmailVerifier.sol/ZKEmailVerifier.json | ca
 cast code 0x72616B78d29d0cccBfEec1bf00E108885286D2f3 \
   --rpc-url https://services.polkadothub-rpc.com/testnet | cut -c1-12
 ```
+
+## Groth16Verifier Provenance
+
+The wrapper's `GROTH16_VERIFIER()` is immutable and readable on-chain, so the address it points
+to (and that contract's own bytecode) can be verified with the same method used above for the
+wrapper itself, rather than just asserted.
+
+| Field | Value |
+| --- | --- |
+| Contract | `Groth16Verifier` |
+| Address (read from the wrapper's own `GROTH16_VERIFIER()`, not just asserted) | [`0xDfbcfE9D3C6ecdc0d614Ff671b5A3fd73E6d3DBC`](https://blockscout-testnet.polkadot.io/address/0xDfbcfE9D3C6ecdc0d614Ff671b5A3fd73E6d3DBC) |
+| Source | `src/Groth16Verifier.sol` in the same `circuit.zip` bundle, same `hardhat.config.ts` (`resolc` `0.5.0`, `solc` `0.8.30`, optimizer `runs = 10000`) |
+| PVM bytecode magic | `0x50564d0000` |
+| Runtime bytecode hash (keccak256) | `0xc1d5f187d0d06a9a5a31f2254299fd0f3190efe19086e7192b3c3af430f586ee` |
+
+Locally compiled and on-chain hashes are identical: the deployed Groth16Verifier is exactly this
+bundle's source, same compiler settings, same provenance chain as the wrapper.
+
+### Reproduce
+
+```bash
+# read the verifier address directly off the deployed wrapper, rather than trusting a stated address
+cast call 0x72616B78d29d0cccBfEec1bf00E108885286D2f3 "GROTH16_VERIFIER()(address)" \
+  --rpc-url https://services.polkadothub-rpc.com/testnet
+
+# on-chain runtime-bytecode hash of that address
+cast code 0xDfbcfE9D3C6ecdc0d614Ff671b5A3fd73E6d3DBC \
+  --rpc-url https://services.polkadothub-rpc.com/testnet | cast keccak
+
+# locally compiled runtime-bytecode hash (same unzipped bundle as above)
+jq -r '.bytecode' hh-artifacts/src/Groth16Verifier.sol/Groth16Verifier.json | cast keccak
+
+# PVM bytecode magic
+cast code 0xDfbcfE9D3C6ecdc0d614Ff671b5A3fd73E6d3DBC \
+  --rpc-url https://services.polkadothub-rpc.com/testnet | cut -c1-12
+```
