@@ -1,0 +1,33 @@
+{
+  "repo": "registry",
+  "updated_at": "2026-08-26T20:00:00Z",
+  "branch": "staging",
+  "commit_sha": "9b12918be73817e4a79033d2bc67d0a85f203de9",
+  "dependency": {
+    "package": "@zk-email/sdk",
+    "version": "3.0.0-nightly.36"
+  },
+  "ci": {
+    "playwright.yml": {
+      "job": "test",
+      "run_url": "https://github.com/zkemail/registry/actions/runs/33000352081/job/98280253814",
+      "date": "2026-08-26"
+    }
+  },
+  "reference_blueprint": {
+    "id": "e94e7f93-7575-4e26-a147-de894b19ce3e",
+    "verifier_contract_chain": 420420417,
+    "verifier_contract_address": "0x72616B78d29d0cccBfEec1bf00E108885286D2f3",
+    "groth16_verifier_address": "0xDfbcfE9D3C6ecdc0d614Ff671b5A3fd73E6d3DBC",
+    "verifier_deployment_tx": "0x2de5759fc470311c6ef5be16855fbaee095725c3f3fb671fc31da422300d344e",
+    "proof_verify_tx": "0xb866a4b151dfba6838ba31275afc5dbc9e45b16918f1c6a69fab1d7592364934"
+  },
+  "revocation_demo": {
+    "domain_hash": "0xbbcc9f0af825b951a41a390086b09f7d8b4c4434d5315255b2ab6ffee1e8c781",
+    "key_hash": "0x0462b6e208f3552371d7c7d2fbeb31691e5f789b9e5f0bdfaa68a6a84f01d9aa",
+    "revoke_tx": "0x384c1540afaaf6782c5cff3bad71cd05854bd2f422246e8acf2f7cd42af74562",
+    "failed_verify_tx": "0xea3d710de2c21f6792d084262d6f65d5376d1cfb0e8ac3dafd6e62df42c8e5c5",
+    "restore_tx": "0xde60c1eca66d5caa295b885fb83a12023f49ef44a148d84d551ef49e4cb41f14",
+    "succeeding_verify_tx": "0x77fb1ffde5f93a74038cc639bed5f4880c0e0d2d4c76401afb58bdcf5c8de422"
+  }
+}
