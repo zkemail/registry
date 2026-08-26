@@ -100,3 +100,36 @@ jq -r '.bytecode' hh-artifacts/src/Groth16Verifier.sol/Groth16Verifier.json | ca
 cast code 0xDfbcfE9D3C6ecdc0d614Ff671b5A3fd73E6d3DBC \
   --rpc-url https://services.polkadothub-rpc.com/testnet | cut -c1-12
 ```
+
+## Full Provenance Summary
+
+Everything above in one place: the `sdk-images` commit that generated this blueprint's contracts,
+the downloadable artifacts that came out of it, and the two deployed contracts' runtime bytecode.
+Compiler settings aren't re-stated here beyond what's already above - they're read directly from
+the bundle's own `hardhat.config.ts`, not something separate to prove.
+
+| Field | Value |
+| --- | --- |
+| sdk-images generator commit | [`a6e5c43`](https://github.com/zkemail/sdk-images/commit/a6e5c43) ("test(circom): generator-regression test + fixture README fix (#70)"), confirmed unchanged on `staging` between 2026-07-27 and this blueprint's compile time (2026-08-03) |
+| `circuit.zip` hash (sha256) | `edc4a3b89b7699911c2b402fdf0a64ac3a1091b240c70420534bb4bec9f40592` |
+| `circuit.zkey` hash (sha256) | `e8358bbc0c70db9f3d76ed92473dcf6c1e8de5b8a3e1fb2ea7f13778a75c34fe` (from `circuit_zkey.zip`; the separate `circuit.zkey.gz` asset for this blueprint is a 43-byte stub, not the real file) |
+| Wrapper (`ZKEmailVerifier`) runtime bytecode hash | `0x5655a9fe87e1a1bd736b117c89a181c71f7985a682f419e3396574165a37ef55` |
+| Groth16Verifier runtime bytecode hash | `0xc1d5f187d0d06a9a5a31f2254299fd0f3190efe19086e7192b3c3af430f586ee` |
+| Compiler settings | see the [Deployment Manifest](#deployment-manifest) above - `resolc 0.5.0`, `solc 0.8.30`, optimizer `runs = 10000`, all read from the bundle's own `hardhat.config.ts` |
+
+### Reproduce
+
+```bash
+# circuit.zip hash
+shasum -a 256 circuit.zip
+
+# zkey hash (from the zip bundle, not the separate .gz asset)
+unzip circuit_zkey.zip -d zkey_unzipped
+shasum -a 256 zkey_unzipped/circuit.zkey
+
+# generator commit: confirm nothing touched the contract generator between a6e5c43
+# and the blueprint's compile time
+git log a6e5c43..origin/staging --oneline --before="<compile timestamp>" \
+  -- circom/src/contract.rs circom/templates/ circom/src/main.rs
+# (empty output confirms a6e5c43 was still the live generator state)
+```
