@@ -24,6 +24,7 @@ This milestone spans five deliverables across three repositories: sdk-images (1-
 - [`05_frontend_integration_and_documentation.md`](./05_frontend_integration_and_documentation.md) - registry
 - [`06_public_howto.md`](./06_public_howto.md) - registry
 - [`07_bytecode_verification.md`](./07_bytecode_verification.md) - registry
+- [`08_revocation_demo.md`](./08_revocation_demo.md) - registry - additional evidence added in response to curator review, not itself a milestone deliverable
 
 ## Summary
 
