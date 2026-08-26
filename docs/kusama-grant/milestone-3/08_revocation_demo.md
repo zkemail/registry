@@ -17,7 +17,7 @@ bytes32 public constant DOMAIN_HASH = keccak256(bytes("x.com"));
 
 (`contracts/src/ZKEmailVerifier.sol` in the blueprint's `circuit.zip`, see
 [`07_bytecode_verification.md`](./07_bytecode_verification.md).) This specific deployed wrapper
-(`0x72616B78d29d0cccBfEec1bf00E108885286D2f3`) can only ever check x.com - a different domain
+([`manifest.json#L20`](./manifest.json#L20)) can only ever check x.com - a different domain
 would need an entirely new blueprint and a fresh contract deployment. Revoking and immediately
 re-registering the same key on the existing real registry demonstrates the actual revocation
 state transition against the real deployed contracts, with a minimal window (a few seconds
