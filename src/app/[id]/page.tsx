@@ -145,12 +145,25 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       blueprint.props.clientStatus === Status.Failed ||
       blueprint.props.serverStatus === Status.Failed
     ) {
+      const errorMessage = blueprint.props.clientError || blueprint.props.serverError;
       return (
         <div className="flex flex-col gap-1 rounded-3xl border border-grey-500 bg-white p-6 shadow-[2px_4px_2px_0px_rgba(0,0,0,0.02),_2px_3px_4.5px_0px_rgba(0,0,0,0.07)]">
           <h4 className="text-lg font-bold text-grey-800">Compilation Failed :(</h4>
           <p className="text-base font-medium text-grey-700">
-            The blueprint failed due to some technical reasons. Please recompile again.
+            {errorMessage
+              ? 'The blueprint compilation failed. See error details below.'
+              : 'The blueprint failed due to some technical reasons. Please recompile again.'}
           </p>
+          {errorMessage && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-sm font-medium text-grey-600 hover:text-grey-800">
+                Show error details
+              </summary>
+              <pre className="mt-2 max-h-64 overflow-auto rounded-lg bg-grey-100 p-3 text-xs text-grey-800">
+                {errorMessage}
+              </pre>
+            </details>
+          )}
           <Image
             src="/assets/CompilationFailed.svg"
             alt="compilation failed"

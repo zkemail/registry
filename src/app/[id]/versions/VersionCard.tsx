@@ -167,6 +167,17 @@ const VersionCard = ({
       <div>
         <p className="text-grey-700">{blueprint.props.description}</p>
       </div>
+      {getBlueprintStatus() === Status.Failed &&
+        (blueprint.props.clientError || blueprint.props.serverError) && (
+          <details>
+            <summary className="cursor-pointer text-sm font-medium text-red-600 hover:text-red-800">
+              Show error details
+            </summary>
+            <pre className="mt-2 max-h-48 overflow-auto rounded-lg bg-grey-100 p-3 font-mono text-xs text-grey-800">
+              {blueprint.props.clientError || blueprint.props.serverError}
+            </pre>
+          </details>
+        )}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {getBlueprintStatus() === Status.Done ? (
