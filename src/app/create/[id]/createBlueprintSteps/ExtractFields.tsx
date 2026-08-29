@@ -74,6 +74,13 @@ const calculateMaxMatchLength = (parts: any[]): number => {
   return totalPublicMaxLength + totalPrivateLength + 16;
 };
 
+const withCalculatedLengths = (regex: DecomposedRegex, parts: DecomposedRegexPart[]) => ({
+  ...regex,
+  parts,
+  maxLength: calculateMaxLength(parts),
+  maxMatchLength: calculateMaxMatchLength(parts),
+});
+
 const Status = memo(({
   emlContent,
   isGeneratingFields,
@@ -1066,15 +1073,10 @@ const ExtractFields = ({
                                 !part.isPublic ? 'text-white' : 'text-gray-700'
                               }`}
                               onClick={() => {
-                                const parts = parseRegexParts(regex.parts);
+                                const parts = [...parseRegexParts(regex.parts)];
                                 parts[partIndex].isPublic = false;
                                 const updatedRegexes = [...store.decomposedRegexes];
-                                updatedRegexes[index] = {
-                                  ...regex,
-                                  parts,
-                                  maxLength: calculateMaxLength(parts),
-                                  maxMatchLength: calculateMaxMatchLength(parts)
-                                };
+                                updatedRegexes[index] = withCalculatedLengths(regex, parts);
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
                               aria-pressed={!part.isPublic}
@@ -1095,23 +1097,10 @@ const ExtractFields = ({
                                 part.isPublic ? 'text-white' : 'text-gray-700'
                               }`}
                               onClick={() => {
-                                const parts = parseRegexParts(regex.parts);
+                                const parts = [...parseRegexParts(regex.parts)];
                                 parts[partIndex].isPublic = true;
-                                // Recalculate total max length for all public parts
-                                // Use 64 as default when maxLength is undefined
-                                const totalPublicMaxLength = parts.reduce((acc: number, p: any) => {
-                                  if (p && p.isPublic) {
-                                    return acc + (p.maxLength ?? 64);
-                                  }
-                                  return acc;
-                                }, 0);
                                 const updatedRegexes = [...store.decomposedRegexes];
-                                updatedRegexes[index] = {
-                                  ...regex,
-                                  parts,
-                                  maxLength: totalPublicMaxLength || 64,
-                                  maxMatchLength: calculateMaxMatchLength(parts)
-                                };
+                                updatedRegexes[index] = withCalculatedLengths(regex, parts);
                                 setField('decomposedRegexes', updatedRegexes);
                               }}
                               aria-pressed={part.isPublic}
@@ -1132,14 +1121,10 @@ const ExtractFields = ({
                             variant="destructive"
                             size="smIcon"
                             onClick={() => {
-                              const parts = parseRegexParts(regex.parts);
+                              const parts = [...parseRegexParts(regex.parts)];
                               parts.splice(partIndex, 1);
                               const updatedRegexes = [...store.decomposedRegexes];
-                              updatedRegexes[index] = {
-                                ...regex,
-                                parts: parts,
-                                maxMatchLength: calculateMaxMatchLength(parts),
-                              };
+                              updatedRegexes[index] = withCalculatedLengths(regex, parts);
                               setField('decomposedRegexes', updatedRegexes);
                             }}
                           >
@@ -1277,17 +1262,13 @@ const ExtractFields = ({
                       />
                     }
                     onClick={() => {
-                      const parts = parseRegexParts(regex.parts);
+                      const parts = [...parseRegexParts(regex.parts)];
                       parts.push({
                         isPublic: false,
                         regexDef: '',
                       });
                       const updatedRegexes = [...store.decomposedRegexes];
-                      updatedRegexes[index] = {
-                        ...regex,
-                        parts: parts,
-                        maxMatchLength: calculateMaxMatchLength(parts),
-                      };
+                      updatedRegexes[index] = withCalculatedLengths(regex, parts);
                       setField('decomposedRegexes', updatedRegexes);
                     }}
                   >
