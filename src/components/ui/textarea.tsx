@@ -7,15 +7,17 @@ export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   title?: string;
   errorMessage?: string;
   helpText?: string;
+  required?: boolean;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, errorMessage, helpText, ...props }, ref) => {
+  ({ className, errorMessage, helpText, required, ...props }, ref) => {
     return (
       <div className="flex flex-col gap-2">
         {props.title ? (
           <Label className="text-base text-grey-900" htmlFor={props.title}>
             {props.title}
+            {required && <span className="text-red-500"> *</span>}
           </Label>
         ) : null}
         <textarea

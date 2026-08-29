@@ -172,6 +172,7 @@ const PatternDetails = ({
     <div className="flex flex-col gap-6">
       <Input
         title="Pattern Name"
+        required
         // disabled={id !== 'new'}
         placeholder="Name of the Blueprint"
         value={store.title}
@@ -203,6 +204,7 @@ const PatternDetails = ({
       <Input title="Slug" disabled value={store.slug} loading={isCheckExistingBlueprintLoading} />
       <Textarea
         title="Description"
+        required
         placeholder="Prove that you own a particular GitHub account"
         value={store.description}
         rows={3}
@@ -227,6 +229,7 @@ const PatternDetails = ({
             </div>
           }
           title="Upload test .eml"
+          required
           id="drag-and-drop-emails"
           data-testid="drag-and-drop-emails"
           helpText="Our AI will autofill fields based on contents inside your mail. Don't worry you can edit them later"
@@ -265,6 +268,7 @@ const PatternDetails = ({
       </div>
       <Input
         title="Email Query"
+        required
         disabled={store.clientStatus === Status.Done && store.serverStatus === Status.Done}
         value={store.emailQuery}
         onChange={(e) => setField('emailQuery', e.target.value)}
@@ -289,6 +293,7 @@ const PatternDetails = ({
       />
       <Input
         title="Sender domain"
+        required
         loading={isVerifyDKIMLoading}
         placeholder="twitter.com"
         helpText="This is the domain used for DKIM verification, which may not exactly match the senders domain (you can check via the d= field in the DKIM-Signature header). Note to only include the part after the @ symbol"
@@ -333,6 +338,7 @@ const PatternDetails = ({
       />
       <Input
         title="Max Email Header Length"
+        required
         placeholder="1024"
         type="number"
         min={0}
