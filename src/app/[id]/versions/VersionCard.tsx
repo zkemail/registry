@@ -17,6 +17,7 @@ import { getFileContent } from '@/lib/utils';
 import { Step } from '../store';
 import DragAndDropFile from '@/app/components/DragAndDropFile';
 import { useEmlStore } from '@/lib/stores/useEmlStore';
+import { getErrorMessage } from '@/lib/errors';
 
 interface VersionCardProps {
   blueprint: Blueprint;
@@ -78,7 +79,7 @@ const VersionCard = ({
       toast.success('Compilation cancelled');
     } catch (err) {
       console.error('Failed to cancel blueprint compilation: ', err);
-      toast.error('Failed to cancel blueprint compilation');
+      toast.error(`Failed to cancel blueprint compilation: ${getErrorMessage(err)}`);
     }
   };
 
@@ -91,7 +92,7 @@ const VersionCard = ({
       }
     } catch (err) {
       // TODO: Handle different kind of errors, e.g. per field errors
-      toast.error('Failed to submit blueprint');
+      toast.error(`Failed to submit blueprint: ${getErrorMessage(err)}`);
       console.error('Failed to submit blueprint: ', err);
     } finally {
       setIsSaveDraftLoading(false);

@@ -1,5 +1,5 @@
 'use client';
-import { use, useEffect } from 'react';
+import { use, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { getStatusColorLight, getStatusIcon, getStatusName } from '../utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,8 @@ import { Blueprint, Status, ZkFramework } from '@zk-email/sdk';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { initNoirWasm } from '@/lib/utils';
+import { captureEvent, getClientInfo } from '@/lib/analytics';
+import { isAuthError, isNotFoundError, getErrorMessage } from '@/lib/errors';
 
 const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
   const { id } = use(params);
@@ -42,6 +44,9 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
     : ['Connect emails', 'Select emails', 'View and verify'];
 
   let step = searchParams.get('step') || '0';
+  const pageStartRef = useRef<number>(performance.now());
+  const stepStartRef = useRef<number>(performance.now());
+  const lastStepRef = useRef<string>(step);
 
   useEffect(() => {
     reset();
@@ -59,15 +64,51 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
         }
       })
       .catch((err) => {
-        if (err.toString().includes('401')) {
+        if (isAuthError(err)) {
           clearAuth();
           return;
         }
         console.error(`Failed to get blueprint with id ${id}: `, err);
-        toast.error('This blueprint could not be found');
+        toast.error(isNotFoundError(err) ? 'This blueprint could not be found' : getErrorMessage(err));
         router.push('/');
       });
   }, []);
+
+  useEffect(() => {
+    const now = performance.now();
+    if (lastStepRef.current !== step) {
+      captureEvent('proof_wizard_step_time_spent', {
+        step: lastStepRef.current,
+        step_label: steps[parseInt(lastStepRef.current)],
+        duration_ms: Math.round(now - stepStartRef.current),
+        blueprint_id: id,
+        has_external_inputs: !!blueprint?.props.externalInputs?.length,
+        ...getClientInfo(),
+      });
+      lastStepRef.current = step;
+      stepStartRef.current = now;
+    }
+  }, [step, id, steps, blueprint]);
+
+  useEffect(() => {
+    return () => {
+      const now = performance.now();
+      captureEvent('proof_wizard_step_time_spent', {
+        step: lastStepRef.current,
+        step_label: steps[parseInt(lastStepRef.current)],
+        duration_ms: Math.round(now - stepStartRef.current),
+        blueprint_id: id,
+        has_external_inputs: !!blueprint?.props.externalInputs?.length,
+        ...getClientInfo(),
+      });
+      captureEvent('proof_wizard_page_time_spent', {
+        duration_ms: Math.round(now - pageStartRef.current),
+        blueprint_id: id,
+        has_external_inputs: !!blueprint?.props.externalInputs?.length,
+        ...getClientInfo(),
+      });
+    };
+  }, [id, steps, blueprint]);
 
   const onCancelCompilation = async () => {
     if (!blueprint) return;
@@ -76,7 +117,7 @@ const Pattern = ({ params }: { params: Promise<{ id: string }> }) => {
       router.push(`/create/${id}`);
     } catch (err) {
       console.error('Failed to cancel blueprint compilation: ', err);
-      toast.error('Failed to cancel blueprint compilation');
+      toast.error(`Failed to cancel blueprint compilation: ${getErrorMessage(err)}`);
     }
   };
 

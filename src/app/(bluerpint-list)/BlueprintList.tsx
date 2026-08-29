@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import Loader from '@/components/ui/loader';
 import { useAuthStore } from '@/lib/stores/useAuthStore';
 import { toast } from 'react-toastify';
+import { getErrorMessage } from '@/lib/errors';
 
 const PAGINATION_LIMIT = 20;
 
@@ -269,7 +270,7 @@ export default function BlueprintList({ search, filters, sort }: BlueprintListPr
         {isLoading ? (
           <Loader />
         ) : error ? (
-          <div className="text-red-600">Error loading more blueprints: {error.message}</div>
+          <div className="text-red-600">Error loading more blueprints: {getErrorMessage(error)}</div>
         ) : !hasMore && blueprints.length > 0 ? (
           <div className="text-grey-500">No more blueprints to load</div>
         ) : blueprints.length === 0 && !isLoading ? (

@@ -15,6 +15,7 @@ import { useEmlStore } from '@/lib/stores/useEmlStore';
 import sdk from '@/lib/sdk';
 import { initNoirWasm } from '@/lib/utils';
 import { get, set } from 'idb-keyval';
+import { captureEvent, getClientInfo } from '@/lib/analytics';
 
 export type Step = '0' | '1' | '2' | '3';
 export type EmlUploadMode = 'upload' | 'connect';
@@ -159,6 +160,20 @@ export const useProofStore = create<ProofState>()(
 
         // Create prover and generate proof
         const prover = blueprint.createProver({ isLocal });
+        const startTime =
+          typeof performance !== 'undefined' ? performance.now() : Date.now();
+        captureEvent('proof_generation_started', {
+          is_local: isLocal,
+          zk_framework: blueprint.props.clientZkFramework,
+          client_zk_framework: blueprint.props.clientZkFramework,
+          server_zk_framework: blueprint.props.serverZkFramework,
+          blueprint_id: blueprint.props.id,
+          blueprint_slug: blueprint.props.slug,
+          blueprint_version: blueprint.props.version,
+          external_inputs_count: externalInputs?.length ?? 0,
+          eml_upload_mode: get().emlUploadMode,
+          ...getClientInfo(),
+        });
         let proof: Proof;
         try {
           let options: GenerateProofOptions = {};
@@ -167,9 +182,41 @@ export const useProofStore = create<ProofState>()(
             options.noirWasm = noirWasm;
           }
           proof = await prover.generateProof(file, externalInputs || [], options);
+          const endTime =
+            typeof performance !== 'undefined' ? performance.now() : Date.now();
+          captureEvent('proof_generation_succeeded', {
+            is_local: isLocal,
+            zk_framework: blueprint.props.clientZkFramework,
+            client_zk_framework: blueprint.props.clientZkFramework,
+            server_zk_framework: blueprint.props.serverZkFramework,
+            blueprint_id: blueprint.props.id,
+            blueprint_slug: blueprint.props.slug,
+            blueprint_version: blueprint.props.version,
+            external_inputs_count: externalInputs?.length ?? 0,
+            eml_upload_mode: get().emlUploadMode,
+            duration_ms: Math.round(endTime - startTime),
+            proof_id: proof.props.id,
+            ...getClientInfo(),
+          });
           // save proof.props with blueprint.props.id as proof on useProofEmailStore here
         } catch (err) {
           console.error('Failed to generate a proof request');
+          const endTime =
+            typeof performance !== 'undefined' ? performance.now() : Date.now();
+          captureEvent('proof_generation_failed', {
+            is_local: isLocal,
+            zk_framework: blueprint.props.clientZkFramework,
+            client_zk_framework: blueprint.props.clientZkFramework,
+            server_zk_framework: blueprint.props.serverZkFramework,
+            blueprint_id: blueprint.props.id,
+            blueprint_slug: blueprint.props.slug,
+            blueprint_version: blueprint.props.version,
+            external_inputs_count: externalInputs?.length ?? 0,
+            eml_upload_mode: get().emlUploadMode,
+            duration_ms: Math.round(endTime - startTime),
+            error_message: err instanceof Error ? err.message : String(err),
+            ...getClientInfo(),
+          });
           throw err;
         }
 
